@@ -62,7 +62,7 @@ export function getAllBundleBookSlides(bundles: Bundle[]): BundleBookSlide[] {
 	const slides: BundleBookSlide[] = [];
 
 	for (const bundle of bundles) {
-		for (const book of bundle.books) {
+		for (const book of bundle.books || []) {
 			slides.push({
 				id: `${bundle.id}-${book.id}`,
 				title: book.title,
@@ -81,7 +81,7 @@ export function getAggregatedFaqs(bundles: Bundle[]): Faq[] {
 	const merged: Faq[] = [];
 
 	for (const bundle of bundles) {
-		for (const faq of bundle.faqs) {
+		for (const faq of bundle.faqs || []) {
 			if (seen.has(faq.question)) continue;
 			seen.add(faq.question);
 			merged.push(faq);
