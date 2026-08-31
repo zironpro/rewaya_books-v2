@@ -1,0 +1,697 @@
+import { ApolloServer } from "@apollo/server";
+import { startServerAndCreateNextHandler } from "@as-integrations/next";
+import { gql } from "graphql-tag";
+
+import { Bundle } from "@/lib/db/models/Bundle";
+import { Category } from "@/lib/db/models/Category";
+import { HeroBanner } from "@/lib/db/models/HeroBanner";
+import { HomepageSection } from "@/lib/db/models/HomepageSection";
+import { Order } from "@/lib/db/models/Order";
+import { Product } from "@/lib/db/models/Product";
+import { ShippingConfig } from "@/lib/db/models/ShippingConfig";
+import { TaxConfig } from "@/lib/db/models/TaxConfig";
+import { User } from "@/lib/db/models/User";
+import { Coupon } from "@/lib/db/models/Coupon";
+import { Notification } from "@/lib/db/models/Notification";
+import connectToDatabase from "@/lib/db/mongodb";
+
+// Define the GraphQL schema
+const typeDefs = gql`
+  type Product {
+    id: ID!
+    title: String!
+    slug: String!
+    author: String
+    description: String
+    price: Float!
+    originalPrice: Float
+    stock: Int
+    coverImage: String
+    images: [String]
+    categoryId: String
+    categorySlug: String
+    categoryName: String
+    isbn: String
+    pages: Int
+    language: String
+    format: String
+    ribbon: String
+    publisher: String
+    createdAt: String
+    updatedAt: String
+    sortOrder: Int
+  }
+
+  type Category {
+    id: ID!
+    name: String!
+    slug: String!
+    count: Int
+    status: String
+    sort: Int
+    image: String
+    products: [Product]
+    createdAt: String
+    updatedAt: String
+  }
+
+  type Bundle {
+    id: ID!
+    title: String!
+    slug: String!
+    description: String
+    price: Float!
+    originalPrice: Float
+    coverImage: String
+    books: [Product]
+    isFeatured: Boolean
+    createdAt: String
+    updatedAt: String
+  }
+
+  type User {
+    id: ID!
+    name: String
+    email: String!
+    role: String
+    phone: String
+    city: String
+    region: String
+    createdAt: String
+  }
+
+  type ShippingConfig {
+    id: ID!
+    name: String!
+    countries: [String!]!
+    standardFee: Float!
+    expressFee: Float!
+    isExpressEnabled: Boolean
+    freeThreshold: Float!
+    deliveryTime: String!
+    expressDeliveryTime: String
+    status: String
+  }
+
+  type TaxConfig {
+    id: ID!
+    name: String!
+    rate: Float!
+    region: String!
+    type: String!
+    appliedToShipping: Boolean
+    status: String
+  }
+
+  type Coupon {
+    id: ID!
+    code: String!
+    discountType: String!
+    discountAmount: Float!
+    minPurchase: Float
+    maxUses: Int
+    usedCount: Int
+    expiryDate: String
+    status: String
+    createdAt: String
+    updatedAt: String
+  }
+
+  type HeroBanner {
+    id: ID!
+    title: String!
+    subtitle: String
+    ctaLabel: String
+    ctaHref: String
+    sortOrder: Int
+    enabled: Boolean
+    createdAt: String
+    updatedAt: String
+  }
+
+  type HomepageSection {
+    id: ID!
+    key: String!
+    title: String!
+    subtitle: String
+    categorySlug: String!
+    limit: Int
+    badge: String
+    sortOrder: Int
+    enabled: Boolean
+    createdAt: String
+    updatedAt: String
+  }
+
+  type OrderItem {
+    productId: ID
+    bundleId: ID
+    title: String!
+    price: Float!
+    quantity: Int!
+    product: Product
+    bundle: Bundle
+  }
+
+  type ShippingAddress {
+    firstName: String!
+    lastName: String!
+    addressLine1: String!
+    addressLine2: String
+    city: String!
+    state: String!
+    postalCode: String!
+    country: String!
+    phone: String
+  }
+
+  type Order {
+    id: ID!
+    email: String!
+    status: String!
+    total: Float!
+    shippingCost: Float
+    taxAmount: Float
+    items: [OrderItem!]!
+    shippingAddress: ShippingAddress
+    couponCode: String
+    discountAmount: Float
+    paymentMethod: String
+    shippingMethod: String
+    isPaid: Boolean
+    stripeTransactionId: String
+    invoiceUrl: String
+    invoiceNumber: String
+    createdAt: String
+  }
+
+  type Query {
+    products: [Product!]!
+    productBySlug(slug: String!): Product
+    bundles: [Bundle!]!
+    bundleBySlug(slug: String!): Bundle
+    orders: [Order!]!
+    orderById(id: ID!): Order
+    heroBanners: [HeroBanner!]!
+    homepageSections: [HomepageSection!]!
+    users: [User!]!
+    shippingConfigs: [ShippingConfig!]!
+    taxConfigs: [TaxConfig!]!
+    categories: [Category!]!
+    coupons: [Coupon!]!
+    coupon(id: ID!): Coupon
+    validateCoupon(code: String!, cartTotal: Float!): Coupon
+  }
+
+  input ProductInput {
+    title: String!
+    slug: String!
+    author: String
+    description: String
+    price: Float!
+    originalPrice: Float
+    stock: Int
+    coverImage: String
+    categoryId: String
+    categorySlug: String
+    categoryName: String
+    isbn: String
+    pages: Int
+    language: String
+    format: String
+    ribbon: String
+    publisher: String
+    sortOrder: Int
+  }
+
+  input ShippingConfigInput {
+    name: String!
+    countries: [String!]!
+    standardFee: Float!
+    expressFee: Float!
+    isExpressEnabled: Boolean
+    freeThreshold: Float!
+    deliveryTime: String!
+    expressDeliveryTime: String
+    status: String
+  }
+
+  input TaxConfigInput {
+    name: String!
+    rate: Float!
+    region: String!
+    type: String!
+    appliedToShipping: Boolean
+    status: String
+  }
+
+  input CouponInput {
+    code: String!
+    discountType: String!
+    discountAmount: Float!
+    minPurchase: Float
+    maxUses: Int
+    expiryDate: String
+    status: String
+  }
+
+  input HeroBannerInput {
+    title: String!
+    subtitle: String
+    ctaLabel: String
+    ctaHref: String
+    sortOrder: Int
+    enabled: Boolean
+  }
+
+  input CategoryInput {
+    name: String!
+    slug: String!
+    count: Int
+    status: String
+    sort: Int
+    image: String
+    products: [ID!]
+  }
+
+  input OrderItemInput {
+    productId: ID
+    bundleId: ID
+    title: String!
+    price: Float!
+    quantity: Int!
+  }
+
+  input CheckoutInput {
+    email: String!
+    items: [OrderItemInput!]!
+    total: Float!
+    shippingAddress: ShippingAddressInput!
+  }
+
+  input ShippingAddressInput {
+    firstName: String!
+    lastName: String!
+    addressLine1: String!
+    addressLine2: String
+    city: String!
+    state: String!
+    postalCode: String!
+    country: String!
+    phone: String
+  }
+
+  input BundleInput {
+    title: String!
+    slug: String!
+    description: String
+    price: Float!
+    originalPrice: Float
+    coverImage: String
+    books: [ID!]
+    isFeatured: Boolean
+  }
+
+  input HeroBannerInput {
+    title: String!
+    subtitle: String
+    ctaLabel: String
+    ctaHref: String
+    sortOrder: Int
+    enabled: Boolean
+  }
+
+  input HomepageSectionInput {
+    key: String!
+    title: String!
+    subtitle: String
+    categorySlug: String!
+    limit: Int
+    badge: String
+    sortOrder: Int
+    enabled: Boolean
+  }
+
+  type Mutation {
+    updateOrderStatus(id: ID!, status: String!): Order!
+    createProduct(input: ProductInput!): Product!
+    updateProduct(id: ID!, input: ProductInput!): Product!
+    deleteProduct(id: ID!): Boolean!
+    checkout(input: CheckoutInput!): Order!
+    
+    createBundle(input: BundleInput!): Bundle!
+    updateBundle(id: ID!, input: BundleInput!): Bundle!
+    deleteBundle(id: ID!): Boolean!
+    
+    createHeroBanner(input: HeroBannerInput!): HeroBanner!
+    deleteHeroBanner(id: ID!): Boolean!
+    
+    createHomepageSection(input: HomepageSectionInput!): HomepageSection!
+    deleteHomepageSection(id: ID!): Boolean!
+    
+    createShippingConfig(input: ShippingConfigInput!): ShippingConfig!
+    updateShippingConfig(id: ID!, input: ShippingConfigInput!): ShippingConfig!
+    deleteShippingConfig(id: ID!): Boolean!
+    
+    createTaxConfig(input: TaxConfigInput!): TaxConfig!
+    updateTaxConfig(id: ID!, input: TaxConfigInput!): TaxConfig!
+    deleteTaxConfig(id: ID!): Boolean!
+    
+    createCategory(input: CategoryInput!): Category!
+    updateCategory(id: ID!, input: CategoryInput!): Category!
+    deleteCategory(id: ID!): Boolean!
+
+    createCoupon(input: CouponInput!): Coupon!
+    updateCoupon(id: ID!, input: CouponInput!): Coupon!
+    deleteCoupon(id: ID!): Boolean!
+  }
+`;
+
+// Define the resolvers
+const resolvers = {
+	Query: {
+		products: async () => {
+			await connectToDatabase();
+			return await Product.find({}).sort({ sortOrder: 1 });
+		},
+		productBySlug: async (_: any, { slug }: { slug: string }) => {
+			await connectToDatabase();
+			return await Product.findOne({ slug });
+		},
+		bundles: async () => {
+			await connectToDatabase();
+			return await Bundle.find({}).populate("books");
+		},
+		bundleBySlug: async (_: any, { slug }: { slug: string }) => {
+			await connectToDatabase();
+			return await Bundle.findOne({ slug }).populate("books");
+		},
+		orders: async () => {
+			await connectToDatabase();
+			return await Order.find({}).sort({ createdAt: -1 });
+		},
+		orderById: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			return await Order.findById(id);
+		},
+		heroBanners: async () => {
+			await connectToDatabase();
+			return await HeroBanner.find({}).sort({ sortOrder: 1 });
+		},
+		homepageSections: async () => {
+			await connectToDatabase();
+			return await HomepageSection.find({}).sort({ sortOrder: 1 });
+		},
+		users: async () => {
+			await connectToDatabase();
+			return await User.find({}).sort({ createdAt: -1 });
+		},
+		shippingConfigs: async () => {
+			await connectToDatabase();
+			return await ShippingConfig.find({});
+		},
+		taxConfigs: async () => {
+			await connectToDatabase();
+			return await TaxConfig.find({});
+		},
+		categories: async () => {
+			await connectToDatabase();
+			return await Category.find({}).populate("products").sort({ sort: 1 });
+		},
+		coupons: async () => {
+			await connectToDatabase();
+			return await Coupon.find().sort({ createdAt: -1 });
+		},
+		coupon: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			return await Coupon.findById(id);
+		},
+		validateCoupon: async (_: any, { code, cartTotal }: { code: string, cartTotal: number }) => {
+			await connectToDatabase();
+			const coupon = await Coupon.findOne({ code: code.toUpperCase() });
+			
+			if (!coupon) throw new Error("Invalid coupon code");
+			if (coupon.status !== "Active") throw new Error("Coupon is no longer active");
+			if (coupon.expiryDate) {
+				const expiry = new Date(coupon.expiryDate);
+				expiry.setHours(23, 59, 59, 999);
+				if (expiry < new Date()) {
+					throw new Error("Coupon has expired");
+				}
+			}
+			if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) throw new Error("Coupon usage limit reached");
+			if (coupon.minPurchase && cartTotal < coupon.minPurchase) throw new Error(`Minimum purchase of AED ${coupon.minPurchase} required`);
+			
+			return coupon;
+		},
+	},
+	OrderItem: {
+		product: async (parent: any) => {
+			if (!parent.productId) return null;
+			await connectToDatabase();
+			return await Product.findById(parent.productId);
+		},
+		bundle: async (parent: any) => {
+			if (!parent.bundleId) return null;
+			await connectToDatabase();
+			return await Bundle.findById(parent.bundleId).populate("books");
+		}
+	},
+	Mutation: {
+		updateOrderStatus: async (_: any, { id, status }: { id: string, status: string }) => {
+			await connectToDatabase();
+			const validStatuses = ["PENDING", "SHIPPED", "DELIVERED", "CANCELLED"];
+			if (!validStatuses.includes(status)) {
+				throw new Error("Invalid status");
+			}
+			
+			const updateData: any = { status };
+			if (status === "DELIVERED") {
+				updateData.isPaid = true;
+			}
+			
+			const order = await Order.findByIdAndUpdate(id, updateData, { new: true });
+			if (!order) throw new Error("Order not found");
+
+			// Trigger Cancelled Notification
+			if (status === "CANCELLED") {
+				await Notification.create({
+					title: "Order Cancelled",
+					message: `Order #${order._id.toString().slice(-6).toUpperCase()} was cancelled.`,
+					type: "cancelled",
+					orderId: order._id.toString(),
+				});
+			}
+
+			return order;
+		},
+		createProduct: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			console.log("CREATE PRODUCT INPUT:", input);
+			const product = new Product(input);
+			await product.save();
+			
+			if (input.categoryId) {
+				await Category.findByIdAndUpdate(input.categoryId, {
+					$push: { products: product._id },
+					$inc: { count: 1 }
+				});
+			}
+			return product;
+		},
+		updateProduct: async (
+			_: any,
+			{ id, input }: { id: string; input: any }
+		) => {
+			await connectToDatabase();
+			console.log("UPDATE PRODUCT INPUT:", input);
+			
+			const oldProduct = await Product.findById(id);
+			
+			if (oldProduct && oldProduct.categoryId !== input.categoryId) {
+				if (oldProduct.categoryId) {
+					await Category.findByIdAndUpdate(oldProduct.categoryId, {
+						$pull: { products: id },
+						$inc: { count: -1 }
+					});
+				}
+				if (input.categoryId) {
+					await Category.findByIdAndUpdate(input.categoryId, {
+						$push: { products: id },
+						$inc: { count: 1 }
+					});
+				}
+			}
+			
+			return await Product.findByIdAndUpdate(id, input, { new: true });
+		},
+		deleteProduct: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const product = await Product.findById(id);
+			if (product && product.categoryId) {
+				await Category.findByIdAndUpdate(product.categoryId, {
+					$pull: { products: id },
+					$inc: { count: -1 }
+				});
+			}
+			const res = await Product.findByIdAndDelete(id);
+			return !!res;
+		},
+		checkout: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const order = new Order({
+				email: input.email,
+				items: input.items,
+				total: input.total,
+				shippingAddress: input.shippingAddress,
+				status: "PENDING",
+			});
+			await order.save();
+
+			// Trigger New Order Notification
+			await Notification.create({
+				title: "New Order Received",
+				message: `Order #${order._id.toString().slice(-6).toUpperCase()} has been placed.`,
+				type: "new_order",
+				orderId: order._id.toString(),
+			});
+
+			return order;
+		},
+		createBundle: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const bundle = new Bundle(input);
+			await bundle.save();
+			return bundle;
+		},
+		updateBundle: async (_: any, { id, input }: { id: string, input: any }) => {
+			await connectToDatabase();
+			const updated = await Bundle.findByIdAndUpdate(id, input, { new: true });
+			return updated;
+		},
+		deleteBundle: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await Bundle.findByIdAndDelete(id);
+			return !!res;
+		},
+		createHeroBanner: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const banner = new HeroBanner(input);
+			await banner.save();
+			return banner;
+		},
+		deleteHeroBanner: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await HeroBanner.findByIdAndDelete(id);
+			return !!res;
+		},
+		createHomepageSection: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const section = new HomepageSection(input);
+			await section.save();
+			return section;
+		},
+		deleteHomepageSection: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await HomepageSection.findByIdAndDelete(id);
+			return !!res;
+		},
+		createShippingConfig: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const config = new ShippingConfig(input);
+			await config.save();
+			return config;
+		},
+		updateShippingConfig: async (_: any, { id, input }: { id: string, input: any }) => {
+			await connectToDatabase();
+			const config = await ShippingConfig.findByIdAndUpdate(id, input, { new: true });
+			return config;
+		},
+		deleteShippingConfig: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await ShippingConfig.findByIdAndDelete(id);
+			return !!res;
+		},
+		createTaxConfig: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const config = new TaxConfig(input);
+			await config.save();
+			return config;
+		},
+		updateTaxConfig: async (_: any, { id, input }: { id: string, input: any }) => {
+			await connectToDatabase();
+			const config = await TaxConfig.findByIdAndUpdate(id, input, { new: true });
+			return config;
+		},
+		deleteTaxConfig: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await TaxConfig.findByIdAndDelete(id);
+			return !!res;
+		},
+		createCategory: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const category = new Category(input);
+			await category.save();
+			return await category.populate("products");
+		},
+		updateCategory: async (
+			_: any,
+			{ id, input }: { id: string; input: any }
+		) => {
+			await connectToDatabase();
+			
+			// Sync category name and slug to all associated products
+			if (input.name || input.slug) {
+				const updateFields: any = {};
+				if (input.name) updateFields.categoryName = input.name;
+				if (input.slug) updateFields.categorySlug = input.slug;
+				
+				if (Object.keys(updateFields).length > 0) {
+					await Product.updateMany(
+						{ categoryId: id },
+						{ $set: updateFields }
+					);
+				}
+			}
+
+			return await Category.findByIdAndUpdate(id, input, { new: true }).populate("products");
+		},
+		deleteCategory: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			// Unset category details on any products that belonged to this category
+			await Product.updateMany(
+				{ categoryId: id },
+				{ $unset: { categoryId: "", categoryName: "", categorySlug: "" } }
+			);
+			const res = await Category.findByIdAndDelete(id);
+			return !!res;
+		},
+		createCoupon: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const coupon = new Coupon(input);
+			await coupon.save();
+			return coupon;
+		},
+		updateCoupon: async (_: any, { id, input }: { id: string, input: any }) => {
+			await connectToDatabase();
+			const updated = await Coupon.findByIdAndUpdate(id, input, { new: true });
+			return updated;
+		},
+		deleteCoupon: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await Coupon.findByIdAndDelete(id);
+			return !!res;
+		},
+	},
+};
+
+// Initialize Apollo Server
+const server = new ApolloServer({
+	typeDefs,
+	resolvers,
+});
+
+// Create Next.js handler
+const handler = startServerAndCreateNextHandler(server);
+
+export { handler as GET, handler as POST };

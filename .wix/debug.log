@@ -1,0 +1,81 @@
+----- CLI crash report at 2026-05-19T14:04:40.509Z
+Error Trace
+DeviceCodeTimedOut: DeviceCodeTimedOut
+    at loginWithDeviceCode (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli-auth\src\auth-strategies\account-auth-strategy.ts:67:13)
+    at async nonInteractiveLogin (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\non-interactive-login.ts:67:24)
+    at async <anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\login.tsx:33:11)
+    at async runCommand (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\render-command.tsx:50:5)
+    at async _Command.<anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\login.tsx:28:9)
+    at async _Command.parseAsync (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\commander\lib\command.js:1104:5)
+    at async <anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\index.tsx:111:25)
+caused by: TimeoutError: Promise timed out after 600000 milliseconds
+    at <anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\p-timeout\index.js:73:24)
+    at new Promise (<anonymous>)
+    at pTimeout (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\p-timeout\index.js:49:25)
+    at pWaitFor (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\p-wait-for\index.js:46:16)
+    at loginWithDeviceCode (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli-auth\src\auth-strategies\account-auth-strategy.ts:41:28)
+    at nonInteractiveLogin (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\non-interactive-login.ts:67:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\login.tsx:33:11)
+    at async runCommand (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\render-command.tsx:50:5)
+    at async _Command.<anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli\src\commands\login.tsx:28:9)
+Error Info
+{}
+----- CLI crash report at 2026-05-20T07:09:57.986Z
+Error Trace
+FailedToGetAuthToken: FailedToGetAuthToken
+    at AuthClient.createToken (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli-auth\src\client.ts:139:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli-auth\src\auth-strategies\account-auth-strategy.ts:44:29)
+    at async Timeout.check (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\p-wait-for\index.js:18:19)
+caused by: Error: Request failed with status code 400
+    at createHttpError (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\@wix\http-client\src\error.ts:54:10)
+    at HttpClientNode.handleRequestError (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\@wix\http-client\src\http-client.ts:268:26)
+    at HttpClientNode.request (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\@wix\http-client\src\http-client.ts:105:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\@wix\cli-auth\src\client.ts:105:11)
+    at async RetryOperation._fn (C:\Users\melwi\AppData\Local\npm-cache\_npx\b86e2fd4d1755c13\node_modules\node_modules\p-retry\index.js:55:20)
+Error Info
+{}
+Request Info
+{
+  "request": {
+    "baseURL": "https://manage.wix.com",
+    "url": "/oauth2/token",
+    "method": "post",
+    "headers": {
+      "Accept": "application/json, text/plain, */*",
+      "Content-Type": "application/json",
+      "X-XSRF-TOKEN": "nocheck",
+      "Cookie": "XSRF-TOKEN=nocheck",
+      "User-Agent": "wix-cli",
+      "Content-Length": 567
+    },
+    "data": "{\"clientId\":\"6f95cec8-3e98-48b9-b4e5-1fb92fcd9973\",\"grantType\":\"urn:ietf:params:oauth:grant-type:device_code\",\"scope\":\"offline_access\",\"deviceCode\":\"5b73f132b1028f9c0316f1a4937a1183cb734dcba122b021ad4168cacf35f39fea80a50f6a584057cb466ab16e0917d6724327a3a72b2103f0c288431bb0b2ea6af285c21277b0e26c922d0fae56ed389f05aa499620ef6ee6c2ca0c040cd014655b8ba684b4ff9f52ae62049bded2aeda1d0ccdf4f1e434ceecf0498ec76dcf928b0ea15f554dcf62088c5a0feaa8372a0144c8fc6e93c7a181fcdf5e24d4a1546feec1e36f2b4f3b4f9ccb91dba4499902bbf997d8d17a8fd93776f2bc6ac7ec367a0fd6ac1810677d44262cadeaf1\"}"
+  },
+  "response": {
+    "message": "Request failed with status code 400",
+    "status": 400,
+    "headers": {
+      "date": "Wed, 20 May 2026 07:09:53 GMT",
+      "content-type": "application/json;charset=UTF-8",
+      "content-length": "25",
+      "x-wix-responded-by": "wix.identity.oauth.v1.refresh_token:Token:com.wixpress.identity.oauth2.oauth2-ng",
+      "x-seen-by": "7U7NzZSqfMgd9YnjHLtUa7xkNjrXdwdgtu6E0yACibU=,Ua1iSBCTq7qSXjmRCGE1N9yKQBFnzPzmMXcJ0Il6I0C9ekaabF9E/kn8EaBDQzUXASrcW+tZQ+mRQpwI2vkiAg==,S30xPaDk5EmV5qZoDf/jyq6OdQ1z5hZVPokBiO+sQ5KqIXnHwzry/fRu1OrE4paFbpeBSzevprdCOsKYYIa6hw==,r6yY0ta7bIKrqK70x072lUGs2HwrTuzArEVCH+Mti1M=,ifPI21wqmFao6mpj9H+rjSOfbkBlZp16qHmRsAzzRB+FsAiagXkCiE37Dvb0lbD7+34RHfq2LrsbMPBYAA5ESw==,f5fnJFP4uzrslDiXmMKkUj1VC3PoCXXCslTb1DYZcVdEQfi00LSS7LJu7sdkoLsDgGNlDdOmrN7qm6G7ot7QDw==,MMcNh4XGZ1OxL9Mqn1R71IGEclWGArqg6lz6y9kOKeGIP5y/DlhCA6565ZaVjSm/SS1J6fUiBrc2zlHybLG+oA==,8B//KzjjUSh51H6TQ48buNSSQ5jq68670+XSq3V27K7DLkxuKceIhrxo8wQbLZ6+GS8ES6c2DVludJh84d7tn+o+DjixiU7sUnQ/VFZBrLs=",
+      "x-wix-request-id": "1779260993.022869057051333",
+      "set-cookie": [
+        "XSRF-TOKEN=1779260993|17qdDDHj3bMn; Path=/; Domain=.wix.com; Secure; SameSite=None"
+      ],
+      "x-robots-tag": "noindex",
+      "server": "Pepyaka",
+      "x-content-type-options": "nosniff",
+      "strict-transport-security": "max-age=120 ; includeSubDomains",
+      "via": "1.1 google",
+      "glb-x-seen-by": "wMMTADooq5AJ3cFomJ/MuXOQWGce7NCZXKms1ErOpBs=",
+      "alt-svc": "h3=\":443\"; ma=2592000"
+    },
+    "data": {
+      "error": "expired_token"
+    }
+  }
+}
