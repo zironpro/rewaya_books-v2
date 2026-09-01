@@ -28,7 +28,7 @@ export function CartOrderSummary({
 			<CardHeader className="border-b pb-4">
 				<CardTitle className="font-bold font-display">Order Summary</CardTitle>
 			</CardHeader>
-			<CardContent className="space-y-0 pt-6">
+			<CardContent className="space-y-0 pt-6 sm:pt-6">
 				<div className="space-y-4">
 					<div className="flex justify-between text-muted-foreground text-sm">
 						<span>Subtotal</span>
@@ -65,7 +65,7 @@ export function CartOrderSummary({
 
 				<div className="flex items-end justify-between">
 					<span className="font-semibold text-sm">Total</span>
-					<span className="font-bold text-2xl text-primary tracking-tight">
+					<span className="font-bold text-2xl text-foreground tracking-tight">
 						{displayTotal ?? "-"}
 					</span>
 				</div>

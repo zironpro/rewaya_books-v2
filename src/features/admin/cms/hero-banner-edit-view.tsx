@@ -8,21 +8,32 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateHeroBannerMutation, useGetHeroBannersQuery } from "@/types/graphql";
+import { useUpdateHeroBannerMutation, useGetHeroBannersQuery } from "@/types/graphql";
 
-export function HeroBannerCreateView() {
+export function HeroBannerEditView({ bannerId }: { bannerId: string }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-	const createBannerMutation = useCreateHeroBannerMutation();
-	const { data } = useGetHeroBannersQuery();
-	const banners = data?.heroBanners || [];
+	const updateBannerMutation = useUpdateHeroBannerMutation();
+	const { data, isLoading } = useGetHeroBannersQuery();
+	
+	const banner = data?.heroBanners.find((b) => b.id === bannerId);
 
 	const [title, setTitle] = React.useState("");
 	const [subtitle, setSubtitle] = React.useState("");
-	const [ctaLabel, setCtaLabel] = React.useState("Shop Collection");
-	const [ctaHref, setCtaHref] = React.useState("/shop");
+	const [ctaLabel, setCtaLabel] = React.useState("");
+	const [ctaHref, setCtaHref] = React.useState("");
 	const [image, setImage] = React.useState("");
 	const [isUploading, setIsUploading] = React.useState(false);
+
+	React.useEffect(() => {
+		if (banner) {
+			setTitle(banner.title || "");
+			setSubtitle(banner.subtitle || "");
+			setCtaLabel(banner.ctaLabel || "");
+			setCtaHref(banner.ctaHref || "");
+			setImage(banner.image || "");
+		}
+	}, [banner]);
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -51,29 +62,33 @@ export function HeroBannerCreateView() {
 		}
 	};
 
-	const handleAdd = async (e: React.MouseEvent) => {
+	const handleSave = async (e: React.MouseEvent) => {
 		e.preventDefault();
 		if (!title) return;
 
 		try {
-			await createBannerMutation.mutateAsync({
+			await updateBannerMutation.mutateAsync({
+				id: bannerId,
 				input: {
 					title,
-					subtitle: subtitle || "Special featured banner on Rewaya storefront.",
+					subtitle,
 					ctaLabel,
 					ctaHref,
 					image,
-					sortOrder: banners.length + 1,
-					enabled: true,
+					sortOrder: banner?.sortOrder || 1,
+					enabled: banner?.enabled !== false,
 				},
 			});
 			queryClient.invalidateQueries({ queryKey: ["GetHeroBanners"] });
 			router.push("/admin/cms/banners");
 			router.refresh();
 		} catch (error) {
-			console.error("Failed to create banner:", error);
+			console.error("Failed to update banner:", error);
 		}
 	};
+
+	if (isLoading) return <div>Loading...</div>;
+	if (!banner) return <div>Banner not found</div>;
 
 	return (
 		<div className="space-y-6">
@@ -82,11 +97,11 @@ export function HeroBannerCreateView() {
 					<div className="flex items-center gap-2">
 						<ImageIcon className="h-5 w-5 text-primary" />
 						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
-							Add Hero Banner
+							Edit Hero Banner
 						</h1>
 					</div>
 					<p className="text-sm text-slate-500 mt-1">
-						Create a new promotional hero slide for the storefront homepage.
+						Update the promotional hero slide for the storefront homepage.
 					</p>
 				</div>
 				<Link href="/admin/cms/banners">
@@ -177,8 +192,8 @@ export function HeroBannerCreateView() {
 				</div>
 
 				<div className="pt-4 flex justify-end">
-					<Button type="button" onClick={handleAdd} className="gap-2 h-10 px-6">
-						<Save className="h-4 w-4" /> Save Banner Slide
+					<Button type="button" onClick={handleSave} className="gap-2 h-10 px-6">
+						<Save className="h-4 w-4" /> Update Banner Slide
 					</Button>
 				</div>
 			</div>

@@ -96,15 +96,36 @@ export function AddBundleToCartButton({
 					is_bundle: true,
 				});
 			})
-			.catch(() => {
-				const errorMsg = "Could not add bundle to cart. Please try again.";
-				setErrorMessage(errorMsg);
+			.catch((e: any) => {
+				const isAuthError = e instanceof Error && e.message === "require_auth";
+				const errorMsg = isAuthError 
+					? "Please login to add items to your bag." 
+					: "Could not add bundle to cart. Please try again.";
+				
+				setErrorMessage(isAuthError ? null : errorMsg);
 				setStatus("error");
-				toastManager.add({
-					title: "Error",
-					description: errorMsg,
-					type: "error",
-				});
+				
+				if (isAuthError) {
+					toastManager.add({
+						title: "Login Required",
+						description: errorMsg,
+						type: "info",
+						actionProps: {
+							children: "Login",
+							altText: "Navigate to Login",
+							onClick: () => {
+								window.location.href = "/login";
+							},
+						},
+					});
+				} else {
+					toastManager.add({
+						title: "Error",
+						description: errorMsg,
+						type: "error",
+					});
+				}
+				
 				dispatchCartUpdated();
 				setTimeout(() => {
 					setStatus("idle");

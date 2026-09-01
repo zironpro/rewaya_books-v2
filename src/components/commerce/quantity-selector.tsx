@@ -13,12 +13,14 @@ interface QuantitySelectorProps {
 	quantity: number;
 	onQuantityChange: (qty: number) => void;
 	disabled?: boolean;
+	max?: number;
 }
 
 export function QuantitySelector({
 	quantity,
 	onQuantityChange,
 	disabled,
+	max,
 }: QuantitySelectorProps) {
 	return (
 		<div className="rounded-sm border bg-accent/10 p-1">
@@ -26,6 +28,7 @@ export function QuantitySelector({
 				className="flex-row items-center gap-4"
 				defaultValue={quantity}
 				disabled={disabled}
+				max={max}
 				min={1}
 				onValueChange={(val) => onQuantityChange(val ?? 1)}
 			>

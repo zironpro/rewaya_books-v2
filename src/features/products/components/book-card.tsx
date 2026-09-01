@@ -34,6 +34,7 @@ export function BookCard({
 	badge,
 	defaultVariant,
 	availableForSale,
+	stock,
 }: BookProps & { coverImage?: string }) {
 	const productHref = `/product/${slug ?? id}`;
 	const finalImage =
@@ -59,10 +60,10 @@ export function BookCard({
 							"size-9 rounded-full backdrop-blur-sm",
 							"bg-card text-mauve-900 hover:bg-mauve-100"
 						)}
-						productId={productId}
+						productId={productId || id}
 					/>
 
-					<Dialog>
+					{/* <Dialog>
 						<DialogTrigger
 							render={
 								<Button
@@ -104,6 +105,7 @@ export function BookCard({
 										<div className="flex gap-4">
 											<AddToCartButton
 												availableForSale={availableForSale ?? true}
+												stock={stock}
 												className="flex-1"
 												disabled={!(productId || id)}
 												image={finalImage}
@@ -117,7 +119,7 @@ export function BookCard({
 											</AddToCartButton>
 											<WishlistToggleButton
 												className="size-11 shrink-0 border"
-												productId={productId}
+												productId={productId || id}
 												size="md"
 											/>
 										</div>
@@ -125,12 +127,13 @@ export function BookCard({
 								</div>
 							</div>
 						</DialogContent>
-					</Dialog>
+					</Dialog> */}
 				</div>
 
 				<div className="absolute right-0 bottom-0 left-0 z-20 translate-y-full bg-primary transition-transform duration-300 group-hover:translate-y-0">
 					<AddToCartButton
 						availableForSale={availableForSale ?? true}
+						stock={stock}
 						className="h-auto w-full rounded-none p-3 text-white hover:text-white md:p-4"
 						disabled={!(productId || id)}
 						image={finalImage}

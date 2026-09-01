@@ -34,6 +34,7 @@ interface ProductPurchasePanelProps {
 	quantity: number;
 	onQuantityChange: (qty: number) => void;
 	image?: string;
+	stock?: number;
 	className?: string;
 }
 
@@ -46,6 +47,7 @@ export function ProductPurchasePanel({
 	quantity,
 	onQuantityChange,
 	image,
+	stock,
 	className,
 }: ProductPurchasePanelProps) {
 	const router = useRouter();
@@ -86,6 +88,7 @@ export function ProductPurchasePanel({
 					disabled={!inStock}
 					onQuantityChange={onQuantityChange}
 					quantity={quantity}
+					max={stock}
 				/>
 			</div>
 
@@ -101,6 +104,7 @@ export function ProductPurchasePanel({
 						quantity={quantity}
 						price={price}
 						image={image}
+						stock={stock}
 						size="lg"
 						variant="secondary"
 					>
@@ -117,6 +121,7 @@ export function ProductPurchasePanel({
 						productName={title}
 						productVariant={productVariant}
 						quantity={quantity}
+						stock={stock}
 						size="lg"
 						trackEventName="buy_now"
 						variant="outline"

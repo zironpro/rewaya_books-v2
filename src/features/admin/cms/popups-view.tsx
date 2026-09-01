@@ -14,9 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import {
-	useCreateHeroBannerMutation,
-	useDeleteHeroBannerMutation,
-	useGetHeroBannersQuery,
+	useGetPopupsQuery,
+	useCreatePopupMutation,
+	useDeletePopupMutation,
 } from "@/types/graphql";
 
 const initialBanners = [
@@ -50,20 +50,20 @@ const initialBanners = [
 	},
 ];
 
-export function HeroBannersView() {
-	const { data, isLoading, refetch } = useGetHeroBannersQuery();
-	const createBannerMutation = useCreateHeroBannerMutation();
-	const deleteBannerMutation = useDeleteHeroBannerMutation();
+export function PopupsView() {
+	const { data, isLoading, refetch } = useGetPopupsQuery();
+	const createPopupMutation = useCreatePopupMutation();
+	const deletePopupMutation = useDeletePopupMutation();
 
-	const banners = data?.heroBanners || [];
+	const popups = data?.popups || [];
 
 	const handleDelete = async (id: string) => {
-		if (confirm("Are you sure you want to delete this banner?")) {
+		if (confirm("Are you sure you want to delete this popup?")) {
 			try {
-				await deleteBannerMutation.mutateAsync({ id });
+				await deletePopupMutation.mutateAsync({ id });
 				refetch();
 			} catch (error) {
-				console.error("Failed to delete banner:", error);
+				console.error("Failed to delete popup:", error);
 			}
 		}
 	};
@@ -76,39 +76,38 @@ export function HeroBannersView() {
 					<div className="flex items-center gap-2">
 						<ImageIcon className="h-5 w-5 text-primary" />
 						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
-							Hero Banners Carousel Manager
+							Popup Messages Manager
 						</h1>
 					</div>
 					<p className="mt-1 text-slate-500 text-sm">
-						Manage storefront homepage hero carousel slides (`HomeBanners`
-						collection), CTAs, and ordering.
+						Manage global welcome popups for the storefront.
 					</p>
 				</div>
 
-				<Link href="/admin/cms/banners/new">
+				<Link href="/admin/cms/popups/new">
 					<Button className="h-10 gap-2 px-4 font-semibold text-sm">
 						<Plus className="h-4 w-4" />
-						Add Banner Slide
+						Add Popup
 					</Button>
 				</Link>
 			</div>
 
 			{/* Banners Carousel List */}
 			<div className="space-y-4">
-				{banners.map((bnr) => (
+				{popups.map((popup) => (
 					<div
 						className="flex flex-col justify-between space-y-3 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-primary/40 dark:border-slate-800 dark:bg-slate-900"
-						key={bnr.id}
+						key={popup.id}
 					>
 						<div className="flex items-center justify-between">
 							<Badge className="text-[10px]" variant="default">
-								Slide #{bnr.sortOrder}
+								Delay: {popup.delaySeconds || 5}s
 							</Badge>
 							<div className="flex items-center gap-2">
 								<span className="font-semibold text-primary text-sm">
-									{bnr.id}
+									{popup.id}
 								</span>
-								<Link href={`/admin/cms/banners/${bnr.id}`}>
+								<Link href={`/admin/cms/popups/${popup.id}`}>
 									<Button
 										className="h-6 w-6 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
 										size="icon"
@@ -130,9 +129,9 @@ export function HeroBannersView() {
 
 						<div>
 							<h3 className="font-extrabold text-slate-900 text-xl dark:text-white">
-								{bnr.title}
+								{popup.title}
 							</h3>
-							<p className="mt-1 text-slate-500 text-sm">{bnr.subtitle}</p>
+							<p className="mt-1 text-slate-500 text-sm">{popup.description}</p>
 						</div>
 
 						<div className="flex items-center justify-between border-slate-100 border-t pt-3 text-sm dark:border-slate-800">
@@ -142,10 +141,10 @@ export function HeroBannersView() {
 									className="gap-1 font-semibold text-[11px]"
 									variant="outline"
 								>
-									{bnr.ctaLabel} <ArrowUpRight className="h-3 w-3" />
+									{popup.ctaLabel} <ArrowUpRight className="h-3 w-3" />
 								</Badge>
 								<span className="font-mono text-[11px] text-slate-400">
-									{bnr.ctaHref}
+									{popup.ctaHref}
 								</span>
 							</div>
 						</div>

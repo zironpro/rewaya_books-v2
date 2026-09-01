@@ -18,7 +18,6 @@ import {
 	type CartSummary,
 	isItemUnavailable,
 	type LineItem,
-	readCartSnapshot,
 } from "@/features/cart/cart-sdk";
 import { CartEmpty } from "@/features/cart/components/cart-empty";
 import { CartLineItem } from "@/features/cart/components/cart-line-item";

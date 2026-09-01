@@ -20,6 +20,7 @@ interface AddToCartButtonProps {
 	quantity?: number;
 	price?: number;
 	image?: string;
+	stock?: number;
 	disabled?: boolean;
 	className?: string;
 	size?: "default" | "sm" | "lg" | "icon";
@@ -38,6 +39,7 @@ export function AddToCartButton({
 	quantity = 1,
 	price,
 	image,
+	stock,
 	disabled,
 	className,
 	size = "lg",
@@ -52,7 +54,7 @@ export function AddToCartButton({
 		"idle"
 	);
 
-	const inStock = availableForSale !== false;
+	const inStock = stock !== undefined ? stock > 0 : availableForSale !== false;
 	const canAdd = Boolean(productId) && inStock;
 	const outOfStock = Boolean(productId) && !inStock;
 
@@ -70,6 +72,7 @@ export function AddToCartButton({
 			quantity,
 			price,
 			image,
+			stock,
 			catalogAppId,
 			availableForSale,
 		})
@@ -97,14 +100,31 @@ export function AddToCartButton({
 					quantity,
 				});
 			})
-			.catch((e) => {
+			.catch((e: any) => {
 				console.error("[cart] add to cart failed:", e);
 				setStatus("error");
-				toastManager.add({
-					title: "Error",
-					description: "Could not add to cart.",
-					type: "error",
-				});
+				
+				if (e instanceof Error && e.message === "require_auth") {
+					toastManager.add({
+						title: "Login Required",
+						description: "Please login to add items to your bag.",
+						type: "info",
+						actionProps: {
+							children: "Login",
+							altText: "Navigate to Login",
+							onClick: () => {
+								window.location.href = "/login";
+							},
+						},
+					});
+				} else {
+					toastManager.add({
+						title: "Error",
+						description: e instanceof Error ? e.message : "Could not add to cart.",
+						type: "error",
+					});
+				}
+				
 				dispatchCartUpdated();
 				setTimeout(() => setStatus("idle"), 2500);
 			});

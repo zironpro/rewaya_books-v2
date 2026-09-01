@@ -10,6 +10,9 @@ import {
 	useState,
 } from "react";
 
+import { useSession } from "next-auth/react";
+import { fetchWishlist, syncWishlist } from "./wishlist-actions";
+
 type WishlistContextValue = {
 	productIds: string[];
 	count: number;
@@ -21,20 +24,6 @@ type WishlistContextValue = {
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
-function getLocalWishlist(): string[] {
-	if (typeof window === "undefined") return [];
-	try {
-		return JSON.parse(localStorage.getItem("rewaya-wishlist") || "[]");
-	} catch {
-		return [];
-	}
-}
-
-function setLocalWishlist(ids: string[]) {
-	if (typeof window === "undefined") return;
-	localStorage.setItem("rewaya-wishlist", JSON.stringify(ids));
-}
-
 function dispatchWishlistUpdated() {
 	if (typeof window !== "undefined") {
 		window.dispatchEvent(new CustomEvent("wishlist-updated"));
@@ -42,17 +31,32 @@ function dispatchWishlistUpdated() {
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+	const { data: session, status } = useSession();
 	const [productIds, setProductIds] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
-		setProductIds(getLocalWishlist());
-		setIsLoading(false);
-	}, []);
-
 	const refresh = useCallback(async () => {
-		setProductIds(getLocalWishlist());
-	}, []);
+		if (status === "loading") return;
+		setIsLoading(true);
+		try {
+			if (session?.user) {
+				const serverWishlist = await fetchWishlist();
+				setProductIds(serverWishlist);
+			} else {
+				setProductIds([]);
+			}
+		} catch (e) {
+			console.error("Wishlist refresh error", e);
+		} finally {
+			setIsLoading(false);
+		}
+	}, [session?.user, status]);
+
+	useEffect(() => {
+		if (status !== "loading") {
+			refresh();
+		}
+	}, [refresh, status]);
 
 	useEffect(() => {
 		const onUpdate = () => refresh();
@@ -62,18 +66,31 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
 	const toggle = useCallback(async (productId: string) => {
 		if (!productId) return;
+		if (!session?.user) {
+			throw new Error("require_auth");
+		}
 
-		setProductIds((prev) => {
-			const isCurrentlyWishlisted = prev.includes(productId);
-			const nextIds = isCurrentlyWishlisted
-				? prev.filter((id) => id !== productId)
-				: [...prev, productId];
+		const isCurrentlyWishlisted = productIds.includes(productId);
+		const nextIds = isCurrentlyWishlisted
+			? productIds.filter((id) => id !== productId)
+			: [...productIds, productId];
 
-			setLocalWishlist(nextIds);
+		// Optimistic update
+		setProductIds(nextIds);
+		
+		try {
+			await syncWishlist(nextIds);
 			dispatchWishlistUpdated();
-			return nextIds;
-		});
-	}, []);
+		} catch (e: any) {
+			// Rollback on error
+			setProductIds(productIds);
+			if (e.message === "require_auth") {
+				throw e;
+			}
+			console.error("Failed to sync wishlist", e);
+			throw new Error("Failed to sync wishlist");
+		}
+	}, [session?.user, productIds]);
 
 	const value = useMemo<WishlistContextValue>(
 		() => ({

@@ -13,7 +13,11 @@ import { BookCard } from "@/features/products/components/book-card";
 import { useWishlist } from "@/features/wishlist/wishlist-provider";
 import { type BookProps, getBookReactKey } from "@/lib/store";
 
+import { fetchWishlistProducts } from "./wishlist-actions";
+import { useSession } from "next-auth/react";
+
 export const WishlistView = () => {
+	const { data: session } = useSession();
 	const { productIds, isLoading: wishlistLoading } = useWishlist();
 	const [books, setBooks] = useState<BookProps[]>([]);
 	const [productsLoading, setProductsLoading] = useState(false);
@@ -24,14 +28,24 @@ export const WishlistView = () => {
 			return;
 		}
 
+		let isMounted = true;
 		setProductsLoading(true);
-		// Dummy load since backend is removed
-		setBooks([]);
-		setProductsLoading(false);
+		fetchWishlistProducts(productIds)
+			.then((res) => {
+				if (isMounted) setBooks(res);
+			})
+			.catch(console.error)
+			.finally(() => {
+				if (isMounted) setProductsLoading(false);
+			});
+
+		return () => {
+			isMounted = false;
+		};
 	}, [productIds]);
 
 	const loading = wishlistLoading || productsLoading;
-	const isLoggedIn = false;
+	const isLoggedIn = !!session?.user;
 
 	return (
 		<main className="grow pt-4 pb-28 md:pb-16">

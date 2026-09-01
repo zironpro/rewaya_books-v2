@@ -86,6 +86,57 @@ export const DELETE_HERO_BANNER = gql`
   }
 `;
 
+export const UPDATE_HERO_BANNER = gql`
+  mutation UpdateHeroBanner($id: ID!, $input: HeroBannerInput!) {
+    updateHeroBanner(id: $id, input: $input) {
+      id
+      title
+      subtitle
+      ctaLabel
+      ctaHref
+      sortOrder
+      enabled
+      image
+    }
+  }
+`;
+
+export const CREATE_POPUP = gql`
+  mutation CreatePopup($input: PopupInput!) {
+    createPopup(input: $input) {
+      id
+      title
+      description
+      image
+      ctaLabel
+      ctaHref
+      delaySeconds
+      enabled
+    }
+  }
+`;
+
+export const UPDATE_POPUP = gql`
+  mutation UpdatePopup($id: ID!, $input: PopupInput!) {
+    updatePopup(id: $id, input: $input) {
+      id
+      title
+      description
+      image
+      ctaLabel
+      ctaHref
+      delaySeconds
+      enabled
+    }
+  }
+`;
+
+export const DELETE_POPUP = gql`
+  mutation DeletePopup($id: ID!) {
+    deletePopup(id: $id)
+  }
+`;
+
 export const CREATE_HOMEPAGE_SECTION = gql`
   mutation CreateHomepageSection($input: HomepageSectionInput!) {
     createHomepageSection(input: $input) {

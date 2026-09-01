@@ -125,6 +125,7 @@ export const ProductDetailView = ({
 								quantity={quantity}
 								title={product.title}
 								image={product.image}
+								stock={product.stock}
 							/>
 						</div>
 					</div>

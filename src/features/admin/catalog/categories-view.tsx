@@ -259,9 +259,17 @@ export function CategoriesView() {
 						key={cat.id}
 					>
 						<div className="flex items-center gap-3">
-							<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 font-bold text-primary text-sm dark:bg-primary/20">
-								{cat.sort}
-							</div>
+							{cat.image ? (
+								<img
+									src={cat.image}
+									alt={cat.name}
+									className="h-9 w-9 shrink-0 rounded-lg object-cover border border-slate-200 dark:border-slate-800"
+								/>
+							) : (
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+									<Layers className="h-5 w-5" />
+								</div>
+							)}
 							<div>
 								<div className="font-bold text-base text-slate-900 dark:text-white">
 									{cat.name}

@@ -13,6 +13,7 @@ import { TaxConfig } from "@/lib/db/models/TaxConfig";
 import { User } from "@/lib/db/models/User";
 import { Coupon } from "@/lib/db/models/Coupon";
 import { Notification } from "@/lib/db/models/Notification";
+import { Popup } from "@/lib/db/models/Popup";
 import connectToDatabase from "@/lib/db/mongodb";
 
 // Define the GraphQL schema
@@ -125,6 +126,20 @@ const typeDefs = gql`
     ctaHref: String
     sortOrder: Int
     enabled: Boolean
+    image: String
+    createdAt: String
+    updatedAt: String
+  }
+
+  type Popup {
+    id: ID!
+    title: String!
+    description: String
+    image: String
+    ctaLabel: String
+    ctaHref: String
+    delaySeconds: Int
+    enabled: Boolean
     createdAt: String
     updatedAt: String
   }
@@ -201,6 +216,7 @@ const typeDefs = gql`
     coupons: [Coupon!]!
     coupon(id: ID!): Coupon
     validateCoupon(code: String!, cartTotal: Float!): Coupon
+    popups: [Popup!]!
   }
 
   input ProductInput {
@@ -262,6 +278,7 @@ const typeDefs = gql`
     ctaHref: String
     sortOrder: Int
     enabled: Boolean
+    image: String
   }
 
   input CategoryInput {
@@ -319,6 +336,7 @@ const typeDefs = gql`
     ctaHref: String
     sortOrder: Int
     enabled: Boolean
+    image: String
   }
 
   input HomepageSectionInput {
@@ -329,6 +347,16 @@ const typeDefs = gql`
     limit: Int
     badge: String
     sortOrder: Int
+    enabled: Boolean
+  }
+
+  input PopupInput {
+    title: String!
+    description: String
+    image: String
+    ctaLabel: String
+    ctaHref: String
+    delaySeconds: Int
     enabled: Boolean
   }
 
@@ -344,6 +372,7 @@ const typeDefs = gql`
     deleteBundle(id: ID!): Boolean!
     
     createHeroBanner(input: HeroBannerInput!): HeroBanner!
+    updateHeroBanner(id: ID!, input: HeroBannerInput!): HeroBanner!
     deleteHeroBanner(id: ID!): Boolean!
     
     createHomepageSection(input: HomepageSectionInput!): HomepageSection!
@@ -364,6 +393,10 @@ const typeDefs = gql`
     createCoupon(input: CouponInput!): Coupon!
     updateCoupon(id: ID!, input: CouponInput!): Coupon!
     deleteCoupon(id: ID!): Boolean!
+
+    createPopup(input: PopupInput!): Popup!
+    updatePopup(id: ID!, input: PopupInput!): Popup!
+    deletePopup(id: ID!): Boolean!
   }
 `;
 
@@ -444,6 +477,10 @@ const resolvers = {
 			
 			return coupon;
 		},
+		popups: async () => {
+			await connectToDatabase();
+			return await Popup.find({}).sort({ createdAt: -1 });
+		},
 	},
 	OrderItem: {
 		product: async (parent: any) => {
@@ -465,6 +502,9 @@ const resolvers = {
 				throw new Error("Invalid status");
 			}
 			
+			const existingOrder = await Order.findById(id);
+			if (!existingOrder) throw new Error("Order not found");
+
 			const updateData: any = { status };
 			if (status === "DELIVERED") {
 				updateData.isPaid = true;
@@ -473,8 +513,17 @@ const resolvers = {
 			const order = await Order.findByIdAndUpdate(id, updateData, { new: true });
 			if (!order) throw new Error("Order not found");
 
-			// Trigger Cancelled Notification
-			if (status === "CANCELLED") {
+			// Trigger Cancelled Notification and restore stock
+			if (status === "CANCELLED" && existingOrder.status !== "CANCELLED") {
+				// Restore stock
+				for (const item of order.items) {
+					if (item.productId) {
+						await Product.findByIdAndUpdate(item.productId, {
+							$inc: { stock: item.quantity }
+						});
+					}
+				}
+
 				await Notification.create({
 					title: "Order Cancelled",
 					message: `Order #${order._id.toString().slice(-6).toUpperCase()} was cancelled.`,
@@ -580,6 +629,11 @@ const resolvers = {
 			await banner.save();
 			return banner;
 		},
+		updateHeroBanner: async (_: any, { id, input }: { id: string, input: any }) => {
+			await connectToDatabase();
+			const updated = await HeroBanner.findByIdAndUpdate(id, input, { new: true });
+			return updated;
+		},
 		deleteHeroBanner: async (_: any, { id }: { id: string }) => {
 			await connectToDatabase();
 			const res = await HeroBanner.findByIdAndDelete(id);
@@ -680,6 +734,22 @@ const resolvers = {
 		deleteCoupon: async (_: any, { id }: { id: string }) => {
 			await connectToDatabase();
 			const res = await Coupon.findByIdAndDelete(id);
+			return !!res;
+		},
+		createPopup: async (_: any, { input }: { input: any }) => {
+			await connectToDatabase();
+			const popup = new Popup(input);
+			await popup.save();
+			return popup;
+		},
+		updatePopup: async (_: any, { id, input }: { id: string, input: any }) => {
+			await connectToDatabase();
+			const updated = await Popup.findByIdAndUpdate(id, input, { new: true });
+			return updated;
+		},
+		deletePopup: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const res = await Popup.findByIdAndDelete(id);
 			return !!res;
 		},
 	},

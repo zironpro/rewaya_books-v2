@@ -8,6 +8,7 @@ const HeroBannerSchema = new mongoose.Schema(
     ctaHref: { type: String },
     sortOrder: { type: Number, default: 0 },
     enabled: { type: Boolean, default: true },
+    image: { type: String },
   },
   {
     timestamps: true,

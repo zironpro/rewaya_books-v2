@@ -13,7 +13,7 @@ export async function generateAndUploadInvoice(
 	order: any
 ): Promise<{ url: string; invoiceNumber: string }> {
 	return new Promise((resolve, reject) => {
-		const doc = new PDFDocument({ margin: 50 });
+		const doc = new PDFDocument({ margin: 50, size: "A4" });
 
 		const orderIdStr = order._id ? order._id.toString() : order.id?.toString() || "UNKNOWN";
 		const invoiceNumber = `INV-${orderIdStr.slice(-6).toUpperCase()}-${Date.now().toString().slice(-4)}`;
@@ -35,126 +35,167 @@ export async function generateAndUploadInvoice(
 			}
 		);
 
-		// Pipe the PDF document directly to Cloudinary
 		doc.pipe(uploadStream);
 
 		// --- BUILD PDF CONTENT ---
+		const startY = 50;
 
-		// Header
-		doc.fontSize(24).font("Helvetica-Bold").text("INVOICE", { align: "right" });
-		doc.moveDown(0.5);
-
-		// Company Info (Left) & Invoice Info (Right)
-		const startY = doc.y;
-
+		// Logo
 		try {
 			const logoPath = path.join(process.cwd(), "public", "rewaya-logo.svg");
 			const svgContent = fs.readFileSync(logoPath, "utf8");
-			SVGtoPDF(doc, svgContent, 50, startY - 10, { width: 120 });
+			SVGtoPDF(doc, svgContent, 50, startY, { width: 120 });
 		} catch (e) {
 			console.error("Failed to load SVG logo:", e);
-			doc.fontSize(16).font("Helvetica-Bold").text("Rewaya Books", 50, startY);
+			doc.fillColor("#000000").fontSize(18).font("Helvetica-Bold").text("REWAYA BOOKS", 50, startY + 10);
 		}
 
-		doc.fontSize(10).font("Helvetica").text("Ajman Jurf 2, Shahba Complex Block A Shop No. 6,", 50, startY + 25);
-		doc.text("Opposite Habitat School", 50, startY + 40);
-		doc.text("Ajman, United Arab Emirates", 50, startY + 55);
-		doc.text("Email: accounts@alrewaya.com", 50, startY + 70);
+		// Invoice Title & Date
+		doc.fillColor("#000000").fontSize(28).font("Helvetica-Bold").text("INVOICE", 350, startY, { width: 195, align: "right" });
+		doc.fontSize(9).font("Helvetica-Bold").text(`DATE. ${new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" }).replace(/\//g, ".")}`, 350, startY + 30, { width: 195, align: "right" });
 
-		doc.text(`Invoice Number: ${invoiceNumber}`, 350, startY, { width: 200, align: "right" });
-		doc.text(`Order ID: ${orderIdStr}`, 350, startY + 15, { width: 200, align: "right" });
-		doc.text(`Date: ${new Date().toLocaleDateString()}`, 350, startY + 30, { width: 200, align: "right" });
-		
-		// Move cursor below the absolute positioned text
-		doc.y = startY + 110;
+		// Gray Box for Addresses
+		const boxY = startY + 70;
+		doc.rect(50, boxY, 495, 140).fill("#F4F4F4");
 
-		// Bill To
-		doc.fontSize(12).font("Helvetica-Bold").text("Bill To:", 50, doc.y);
-		doc.fontSize(10).font("Helvetica");
+		doc.fillColor("#000000").fontSize(9).font("Helvetica-Bold");
+		doc.text("INVOICE TO", 70, boxY + 20);
+		doc.text("SHIP TO", 300, boxY + 20);
+
+		let name = "Customer";
+		let addressText = "";
+		let phone = "";
+
 		if (order.shippingAddress) {
-			doc.text(`${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`);
-			doc.text(`${order.shippingAddress.addressLine1}`);
-			if (order.shippingAddress.addressLine2) {
-				doc.text(`${order.shippingAddress.addressLine2}`);
-			}
-			doc.text(`${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.postalCode}`);
-			doc.text(`${order.shippingAddress.country}`);
-			if (order.shippingAddress.phone) {
-				doc.text(`Phone: ${order.shippingAddress.phone}`);
-			}
+			name = `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`.toUpperCase();
+			addressText = `${order.shippingAddress.addressLine1}\n`;
+			if (order.shippingAddress.addressLine2) addressText += `${order.shippingAddress.addressLine2}\n`;
+			addressText += `${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.postalCode}\n`;
+			addressText += `${order.shippingAddress.country}`;
+			if (order.shippingAddress.phone) phone = order.shippingAddress.phone;
 		}
-		doc.text(`Email: ${order.email}`);
-		doc.moveDown(2);
+
+		doc.font("Helvetica-Bold").fontSize(10).text(name, 70, boxY + 40);
+		doc.font("Helvetica").fillColor("#666666").fontSize(9).text(addressText, 70, boxY + 55, { width: 200, lineGap: 2 });
+		if (phone) doc.text(phone, 70, doc.y + 5);
+
+		doc.fillColor("#000000").font("Helvetica-Bold").fontSize(10).text(name, 300, boxY + 40);
+		doc.font("Helvetica").fillColor("#666666").fontSize(9).text(addressText, 300, boxY + 55, { width: 200, lineGap: 2 });
+		if (phone) doc.text(phone, 300, doc.y + 5);
+
+		// Date & Invoice No Row
+		let currentY = boxY + 160;
+		doc.fillColor("#666666").font("Helvetica").fontSize(9);
+		const formattedDate = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" }).toUpperCase();
+		doc.text(`DATE: ${formattedDate}`, 50, currentY);
+		
+		doc.fillColor("#000000").font("Helvetica-Bold").text(`INVOICE NO: ${invoiceNumber}`, 350, currentY, { width: 195, align: "right" });
 
 		// Table Header
-		doc.font("Helvetica-Bold");
-		doc.text("Item", 50, doc.y);
-		doc.text("Qty", 350, doc.y, { width: 50, align: "center" });
-		doc.text("Price", 400, doc.y, { width: 60, align: "right" });
-		doc.text("Total", 470, doc.y, { width: 70, align: "right" });
-		
-		doc.moveDown(0.5);
-		doc.moveTo(50, doc.y).lineTo(540, doc.y).stroke();
-		doc.moveDown(0.5);
+		currentY += 20;
+		doc.moveTo(50, currentY).lineTo(545, currentY).lineWidth(1).strokeColor("#000000").stroke();
+		currentY += 10;
+
+		doc.font("Helvetica-Bold").fontSize(8);
+		doc.text("NO", 50, currentY);
+		doc.text("ITEM DESCRIPTION", 80, currentY);
+		doc.text("PRICE", 330, currentY, { width: 60, align: "right" });
+		doc.text("QUANTITY", 400, currentY, { width: 60, align: "center" });
+		doc.text("TOTAL", 475, currentY, { width: 70, align: "right" });
+
+		currentY += 15;
+		doc.moveTo(50, currentY).lineTo(545, currentY).lineWidth(0.5).strokeColor("#DDDDDD").stroke();
+		currentY += 15;
 
 		// Table Rows
-		doc.font("Helvetica");
-		let y = doc.y;
-		order.items.forEach((item: any) => {
-			doc.text(item.title, 50, y, { width: 290 });
-			doc.text(item.quantity.toString(), 350, y, { width: 50, align: "center" });
-			doc.text(`AED ${item.price.toFixed(2)}`, 400, y, { width: 60, align: "right" });
-			doc.text(`AED ${(item.price * item.quantity).toFixed(2)}`, 470, y, { width: 70, align: "right" });
-			y += 20;
+		doc.font("Helvetica").fillColor("#666666").fontSize(9);
+		order.items.forEach((item: any, index: number) => {
+			doc.text(`${index + 1}.`, 50, currentY);
+			doc.text(item.title, 80, currentY, { width: 230 });
+			
+			const titleHeight = doc.heightOfString(item.title, { width: 230 });
+			
+			doc.text(`AED ${item.price.toFixed(2)}`, 330, currentY, { width: 60, align: "right" });
+			doc.text(item.quantity.toString(), 400, currentY, { width: 60, align: "center" });
+			doc.text(`AED ${(item.price * item.quantity).toFixed(2)}`, 475, currentY, { width: 70, align: "right" });
+			
+			currentY += Math.max(titleHeight, 15) + 10;
+			doc.moveTo(50, currentY).lineTo(545, currentY).lineWidth(0.5).strokeColor("#EEEEEE").stroke();
+			currentY += 15;
 		});
 
-		doc.y = y;
-		doc.moveDown(1);
-		doc.moveTo(350, doc.y).lineTo(540, doc.y).stroke();
-		doc.moveDown(1);
-
-		// Totals
-		const summaryX = 350;
-		const summaryW = 190;
-		let summaryY = doc.y;
-
+		// Totals and Due
+		let preSummaryY = currentY;
+		const summaryX = 330;
+		const summaryW = 215;
 		const subtotal = order.total - (order.shippingCost || 0) - (order.taxAmount || 0) + (order.discountAmount || 0);
-		doc.text("Subtotal:", summaryX, summaryY);
-		doc.text(`AED ${subtotal.toFixed(2)}`, summaryX, summaryY, { width: summaryW, align: "right" });
-		summaryY += 15;
+
+		// Right side (Totals)
+		doc.fillColor("#000000").font("Helvetica-Bold").fontSize(9);
+		doc.text("SUBTOTAL:", summaryX, currentY);
+		doc.font("Helvetica").text(`AED ${subtotal.toFixed(2)}`, summaryX + 70, currentY, { width: summaryW - 70, align: "right" });
+		currentY += 15;
 
 		if (order.discountAmount) {
-			doc.text(`Discount:`, summaryX, summaryY);
-			doc.text(`-AED ${order.discountAmount.toFixed(2)}`, summaryX, summaryY, { width: summaryW, align: "right" });
-			summaryY += 15;
+			doc.font("Helvetica-Bold").text("DISCOUNT:", summaryX, currentY);
+			doc.font("Helvetica").text(`-AED ${order.discountAmount.toFixed(2)}`, summaryX + 70, currentY, { width: summaryW - 70, align: "right" });
+			currentY += 15;
 		}
 
 		if (order.shippingCost !== undefined && order.shippingCost !== null) {
-			const shippingMethod = order.shippingMethod === "express" ? "Express Shipping" : "Standard Shipping";
-			doc.text(`${shippingMethod}:`, summaryX, summaryY);
-			doc.text(`AED ${order.shippingCost.toFixed(2)}`, summaryX, summaryY, { width: summaryW, align: "right" });
-			summaryY += 15;
+			doc.font("Helvetica-Bold").text("SHIPPING:", summaryX, currentY);
+			doc.font("Helvetica").text(`AED ${order.shippingCost.toFixed(2)}`, summaryX + 70, currentY, { width: summaryW - 70, align: "right" });
+			currentY += 15;
 		}
 		
 		if (order.taxAmount) {
-			doc.text(`Tax:`, summaryX, summaryY);
-			doc.text(`AED ${order.taxAmount.toFixed(2)}`, summaryX, summaryY, { width: summaryW, align: "right" });
-			summaryY += 15;
+			doc.font("Helvetica-Bold").text("TAX:", summaryX, currentY);
+			doc.font("Helvetica").text(`AED ${order.taxAmount.toFixed(2)}`, summaryX + 70, currentY, { width: summaryW - 70, align: "right" });
+			currentY += 15;
 		}
 
-		doc.moveDown(0.5);
-		summaryY += 5;
-		doc.moveTo(350, summaryY).lineTo(540, summaryY).stroke();
-		summaryY += 10;
+		currentY += 5;
+		doc.moveTo(summaryX, currentY).lineTo(545, currentY).lineWidth(0.5).strokeColor("#CCCCCC").stroke();
+		currentY += 10;
 
 		doc.font("Helvetica-Bold");
-		doc.text("Total:", summaryX, summaryY);
-		doc.text(`AED ${order.total.toFixed(2)}`, summaryX, summaryY, { width: summaryW, align: "right" });
+		doc.text("GRAND TOTAL:", summaryX, currentY);
+		doc.text(`AED ${order.total.toFixed(2)}`, summaryX + 80, currentY, { width: summaryW - 80, align: "right" });
+
+		// Left side (Total Due)
+		doc.fillColor("#000000").font("Helvetica-Bold").fontSize(10).text("TOTAL", 50, preSummaryY);
+		doc.rect(50, preSummaryY + 15, 180, 45).fill("#FAFAFA");
+		doc.fillColor("#000000").font("Helvetica").fontSize(18).text(`AED ${order.total.toFixed(2)}`, 65, preSummaryY + 28);
+
+		// Bottom Section
+		currentY = Math.max(currentY + 40, preSummaryY + 90);
+
+		doc.fontSize(10).font("Helvetica-Bold").text("Payment Info:", 50, currentY);
+		doc.font("Helvetica").fillColor("#666666").fontSize(9);
+		
+		let paymentInfoText = `Method: ${order.paymentMethod === "stripe" ? "Credit Card (Stripe)" : "Cash on Delivery"}\n`;
+		if (order.isPaid) {
+			paymentInfoText += `Status: Paid\n`;
+		}
+		if (order.stripeTransactionId) {
+			paymentInfoText += `Transaction ID: ${order.stripeTransactionId}`;
+		}
+		doc.text(paymentInfoText, 50, currentY + 15, { width: 250, lineGap: 3 });
+
+		// Authorization
+		doc.fillColor("#000000").font("Helvetica-Bold").fontSize(10).text("AUTHORIZATION", 350, currentY);
+		doc.font("Helvetica").fillColor("#666666").fontSize(9);
+		doc.text("This is a computer generated invoice.", 350, currentY + 15);
+		doc.text("No physical signature is required.", 350, currentY + 28);
 
 		// Footer
-		doc.fontSize(10).font("Helvetica").text("Thank you for your business!", 50, 700, { align: "center" });
+		doc.fillColor("#000000").font("Helvetica-Bold").fontSize(10).text("Questions?", 50, 740);
+		doc.font("Helvetica").fillColor("#666666").fontSize(9);
+		doc.text("Email us at accounts@alrewaya.com", 50, 755);
+		
+		doc.fillColor("#999999").fontSize(8);
+		doc.text("Rewaya Books • Ajman Jurf 2, Shahba Complex Block A Shop No. 6, Opposite Habitat School • Ajman, UAE", 50, 780);
 
-		// Finalize PDF file
 		doc.end();
 	});
 }

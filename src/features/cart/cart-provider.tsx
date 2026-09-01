@@ -17,8 +17,6 @@ import { toastManager } from "@/components/ui/toast";
 import { fetchCart, syncCart, addItem as serverAddItem, clearCart as serverClearCart } from "@/features/cart/cart-actions";
 import {
 	type CartSnapshot,
-	readCartSnapshot,
-	writeCartSnapshot,
 } from "@/features/cart/cart-sdk";
 
 interface CartContextValue {
@@ -37,16 +35,9 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
 	const { data: session, status } = useSession();
-	const [snapshot, setSnapshot] = useState<CartSnapshot | null>(() =>
-		readCartSnapshot() || { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } }
-	);
+	const [snapshot, setSnapshot] = useState<CartSnapshot | null>({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
-
-	const saveToLocal = (newSnapshot: CartSnapshot) => {
-		writeCartSnapshot(newSnapshot);
-		setSnapshot(newSnapshot);
-	};
 
 	const refresh = useCallback(async () => {
 		if (status === "loading") return;
@@ -54,20 +45,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 		setError(null);
 		try {
 			if (session?.user) {
-				const localCart = readCartSnapshot();
-				// Sync local cart to db if local cart has items
-				let serverCart;
-				if (localCart && localCart.lineItems.length > 0) {
-					serverCart = await syncCart(localCart.lineItems);
-					// clear local after sync to prevent infinite syncs? For now we just keep them same.
-					saveToLocal(serverCart);
-				} else {
-					serverCart = await fetchCart();
-					if (serverCart) saveToLocal(serverCart);
-				}
+				const serverCart = await fetchCart();
+				if (serverCart) setSnapshot(serverCart);
 			} else {
-				// Guest mode
-				setSnapshot(readCartSnapshot() || { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+				setSnapshot({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
 			}
 		} catch (e) {
 			console.error("Cart refresh error", e);
@@ -80,9 +61,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 		const onUpdate = (event: Event) => {
 			const detail = (event as CustomEvent<{ cart?: unknown }>).detail;
 			if (detail?.cart) {
-				saveToLocal(detail.cart as CartSnapshot);
+				setSnapshot(detail.cart as CartSnapshot);
 			} else {
-				setSnapshot(readCartSnapshot() || { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+				setSnapshot({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
 			}
 		};
 
@@ -112,61 +93,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	};
 
 	const addItem = useCallback(async (item: any) => {
-		if (session?.user) {
-			const res = await serverAddItem(null, item);
-			if (res.cart) {
-				saveToLocal(res.cart);
-			}
-		} else {
-			// Local storage
-			const current = readCartSnapshot() || { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } };
-			const idToUse = item.catalogItemId || item.productId;
-			const existing = current.lineItems.find(i => i._id === idToUse || i.productId === idToUse);
-			let newItems = [...current.lineItems];
-			if (existing) {
-				existing.quantity = (existing.quantity || 1) + (item.quantity || 1);
-			} else {
-				newItems.push({
-					_id: idToUse,
-					productId: idToUse,
-					quantity: item.quantity || 1,
-					price: {
-						amount: (item.price || 0).toString(),
-						formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`
-					},
-					title: item.title || item.bundleSlug || "Product",
-					image: item.image,
-					isBundle: item.isBundle || false,
-					bundleSlug: item.bundleSlug,
-					lineItemPrice: { 
-						amount: ((item.price || 0) * (item.quantity || 1)).toString(),
-						formattedConvertedAmount: `AED ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
-					},
-					productName: { translated: item.title || item.bundleSlug }
-				});
-			}
-			const newCart = updateCartTotals(newItems);
-			saveToLocal(newCart);
-			dispatchCartUpdated(newCart);
+		if (!session?.user) {
+			throw new Error("require_auth");
+		}
+		const res = await serverAddItem(null, item);
+		if (res.error) {
+			throw new Error(res.error);
+		}
+		if (res.cart) {
+			setSnapshot(res.cart);
 		}
 	}, [session?.user]);
 
 	const removeItem = useCallback(async (lineId: string) => {
-		// ... to do server sync if needed ...
-		const current = readCartSnapshot() || { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } };
-		const newItems = current.lineItems.filter(i => i._id !== lineId && i.productId !== lineId);
-		const newCart = updateCartTotals(newItems);
-		saveToLocal(newCart);
-		dispatchCartUpdated(newCart);
-		
-		if (session?.user) {
-			await syncCart(newItems);
-		}
-	}, [session?.user]);
+		if (!session?.user) return;
+		const currentItems = snapshot?.lineItems || [];
+		const newItems = currentItems.filter(i => i._id !== lineId && i.productId !== lineId);
+		setSnapshot(updateCartTotals(newItems));
+		await syncCart(newItems);
+	}, [session?.user, snapshot]);
 
 	const updateQuantity = useCallback(async (lineId: string, quantity: number) => {
-		const current = readCartSnapshot() || { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } };
-		const newItems = [...current.lineItems];
+		if (!session?.user) return;
+		const currentItems = snapshot?.lineItems || [];
+		const newItems = [...currentItems];
 		const item = newItems.find(i => i._id === lineId || i.productId === lineId);
 		if (item) {
 			item.quantity = quantity;
@@ -175,23 +125,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 				amount: (itemPrice * quantity).toString(),
 				formattedConvertedAmount: `AED ${(itemPrice * quantity).toFixed(2)}`
 			};
-			const newCart = updateCartTotals(newItems);
-			saveToLocal(newCart);
-			dispatchCartUpdated(newCart);
-			
-			if (session?.user) {
-				await syncCart(newItems);
-			}
+			setSnapshot(updateCartTotals(newItems));
+			await syncCart(newItems);
 		}
-	}, [session?.user]);
+	}, [session?.user, snapshot]);
 
 	const clearCartAction = useCallback(async () => {
-		const newCart = { lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } };
-		saveToLocal(newCart);
-		dispatchCartUpdated(newCart);
-		if (session?.user) {
-			await serverClearCart();
-		}
+		if (!session?.user) return;
+		setSnapshot({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+		await serverClearCart();
 	}, [session?.user]);
 
 	const count = useMemo(

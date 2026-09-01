@@ -122,13 +122,12 @@ export function CartLineItem({
 						</Badge>
 					)}
 					<Button
-						className="mt-1 w-fit text-xs"
+						className="mt-1 h-auto p-0 text-xs text-muted-foreground hover:bg-transparent hover:text-destructive"
 						onClick={() => lineId && onRemove(lineId)}
-						size="xs"
-						type="button"
-						variant="destructive"
+						size="sm"
+						variant="ghost"
 					>
-						<Trash2 size={12} />
+						<Trash2 className="mr-1" size={14} />
 						Remove
 					</Button>
 				</div>
@@ -156,7 +155,7 @@ export function CartLineItem({
 			</div>
 
 			<div className="text-right">
-				<span className="font-bold text-lg text-primary">
+				<span className="font-semibold text-base text-foreground">
 					{item.lineItemPrice?.formattedConvertedAmount ??
 						item.price?.formattedConvertedAmount ??
 						"—"}

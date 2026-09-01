@@ -169,6 +169,23 @@ export const GET_HERO_BANNERS = gql`
       ctaHref
       sortOrder
       enabled
+      image
+      createdAt
+    }
+  }
+`;
+
+export const GET_POPUPS = gql`
+  query GetPopups {
+    popups {
+      id
+      title
+      description
+      image
+      ctaLabel
+      ctaHref
+      delaySeconds
+      enabled
       createdAt
     }
   }

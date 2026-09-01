@@ -4,6 +4,7 @@ import {
 	GetBundlesDocument,
 	GetCategoriesDocument,
 	GetProductsDocument,
+	GetHeroBannersDocument,
 } from "@/types/graphql";
 
 export const dynamic = "force-dynamic";
@@ -12,16 +13,19 @@ export default async function Home() {
 	let products: any[] = [];
 	let bundles: any[] = [];
 	let categories: any[] = [];
+	let banners: any[] = [];
 
 	try {
-		const [productsRes, bundlesRes, categoriesRes] = await Promise.all([
+		const [productsRes, bundlesRes, categoriesRes, bannersRes] = await Promise.all([
 			graphqlClient.request(GetProductsDocument),
 			graphqlClient.request(GetBundlesDocument),
 			graphqlClient.request(GetCategoriesDocument),
+			graphqlClient.request(GetHeroBannersDocument),
 		]);
 		products = productsRes.products || [];
 		bundles = bundlesRes.bundles || [];
 		categories = categoriesRes.categories || [];
+		banners = (bannersRes.heroBanners || []).filter((b: any) => b.enabled !== false).sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
 	} catch (e) {
 		console.error("Failed to fetch homepage data", e);
 	}
@@ -29,13 +33,12 @@ export default async function Home() {
 	const sections = [
 		{
 			sectionKey: "new-arrivals",
-			title: "New Arrivals",
-			subtitle: "Fresh off the press",
+			title: "Top Picks",
+			subtitle: "Our best selection",
 			href: "/shop",
 			books: products.slice(0, 8),
 		},
 	];
-	const banners: any[] = [];
 
 	// Filter and sort active categories
 	const activeCategories = categories

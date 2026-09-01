@@ -72,7 +72,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 			books = books.filter(
 				(b) =>
 					b.title.toLowerCase().includes(query) ||
-					(b.author && b.author.toLowerCase().includes(query))
+					(b.author && b.author.toLowerCase().includes(query)) ||
+					(b.isbn && b.isbn.toLowerCase() === query)
 			);
 		}
 

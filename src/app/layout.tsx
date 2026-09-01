@@ -49,7 +49,7 @@ export default function RootLayout({
 							<WishlistProvider>
 								<MetaPixelProvider>
 									<TooltipProvider delay={0}>
-										<ToastProvider>{children}</ToastProvider>
+										<ToastProvider position="top-center">{children}</ToastProvider>
 									</TooltipProvider>
 								</MetaPixelProvider>
 							</WishlistProvider>

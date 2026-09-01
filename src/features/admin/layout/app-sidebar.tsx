@@ -7,9 +7,11 @@ import { usePathname } from "next/navigation";
 
 import {
 	BookOpen,
+	Image,
 	Layers,
 	LayoutDashboard,
 	LogOut,
+	MessageSquare,
 	Package,
 	Percent,
 	ShoppingBag,
@@ -86,25 +88,29 @@ const navItems = [
 			},
 		],
 	},
-	/*
 	{
 		title: "Storefront CMS",
 		items: [
-			{
-				title: "Homepage Sections",
-				url: `${ADMIN_URL}/cms/sections`,
-				icon: Sliders,
-				badge: null,
-			},
+			// {
+			// 	title: "Homepage Sections",
+			// 	url: `${ADMIN_URL}/cms/sections`,
+			// 	icon: Sliders,
+			// 	badge: null,
+			// },
 			{
 				title: "Hero Banners",
 				url: `${ADMIN_URL}/cms/banners`,
 				icon: Image,
 				badge: null,
 			},
+			{
+				title: "Popup Messages",
+				url: `${ADMIN_URL}/cms/popups`,
+				icon: MessageSquare,
+				badge: null,
+			},
 		],
 	},
-	*/
 	{
 		title: "Sales & Customers",
 		items: [

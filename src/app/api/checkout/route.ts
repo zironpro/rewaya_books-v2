@@ -173,6 +173,16 @@ export async function POST(request: Request) {
 
 			await newOrder.save();
 			
+			// Reduce stock
+			const { Product } = await import("@/lib/db/models/Product");
+			for (const item of items) {
+				if (item.productId) {
+					await Product.findByIdAndUpdate(item.productId, {
+						$inc: { stock: -item.quantity },
+					});
+				}
+			}
+			
 			// Generate Invoice
 			try {
 				const { generateAndUploadInvoice } = await import("@/lib/invoice");

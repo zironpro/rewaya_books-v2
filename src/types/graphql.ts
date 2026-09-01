@@ -119,6 +119,7 @@ export type HeroBanner = {
   ctaLabel?: Maybe<Scalars['String']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
+  image?: Maybe<Scalars['String']['output']>;
   sortOrder?: Maybe<Scalars['Int']['output']>;
   subtitle?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
@@ -129,6 +130,7 @@ export type HeroBannerInput = {
   ctaHref?: InputMaybe<Scalars['String']['input']>;
   ctaLabel?: InputMaybe<Scalars['String']['input']>;
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  image?: InputMaybe<Scalars['String']['input']>;
   sortOrder?: InputMaybe<Scalars['Int']['input']>;
   subtitle?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
@@ -168,6 +170,7 @@ export type Mutation = {
   createCoupon: Coupon;
   createHeroBanner: HeroBanner;
   createHomepageSection: HomepageSection;
+  createPopup: Popup;
   createProduct: Product;
   createShippingConfig: ShippingConfig;
   createTaxConfig: TaxConfig;
@@ -176,13 +179,16 @@ export type Mutation = {
   deleteCoupon: Scalars['Boolean']['output'];
   deleteHeroBanner: Scalars['Boolean']['output'];
   deleteHomepageSection: Scalars['Boolean']['output'];
+  deletePopup: Scalars['Boolean']['output'];
   deleteProduct: Scalars['Boolean']['output'];
   deleteShippingConfig: Scalars['Boolean']['output'];
   deleteTaxConfig: Scalars['Boolean']['output'];
   updateBundle: Bundle;
   updateCategory: Category;
   updateCoupon: Coupon;
+  updateHeroBanner: HeroBanner;
   updateOrderStatus: Order;
+  updatePopup: Popup;
   updateProduct: Product;
   updateShippingConfig: ShippingConfig;
   updateTaxConfig: TaxConfig;
@@ -216,6 +222,11 @@ export type MutationCreateHeroBannerArgs = {
 
 export type MutationCreateHomepageSectionArgs = {
   input: HomepageSectionInput;
+};
+
+
+export type MutationCreatePopupArgs = {
+  input: PopupInput;
 };
 
 
@@ -259,6 +270,11 @@ export type MutationDeleteHomepageSectionArgs = {
 };
 
 
+export type MutationDeletePopupArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationDeleteProductArgs = {
   id: Scalars['ID']['input'];
 };
@@ -292,9 +308,21 @@ export type MutationUpdateCouponArgs = {
 };
 
 
+export type MutationUpdateHeroBannerArgs = {
+  id: Scalars['ID']['input'];
+  input: HeroBannerInput;
+};
+
+
 export type MutationUpdateOrderStatusArgs = {
   id: Scalars['ID']['input'];
   status: Scalars['String']['input'];
+};
+
+
+export type MutationUpdatePopupArgs = {
+  id: Scalars['ID']['input'];
+  input: PopupInput;
 };
 
 
@@ -352,6 +380,30 @@ export type OrderItemInput = {
   price: Scalars['Float']['input'];
   productId?: InputMaybe<Scalars['ID']['input']>;
   quantity: Scalars['Int']['input'];
+  title: Scalars['String']['input'];
+};
+
+export type Popup = {
+  __typename?: 'Popup';
+  createdAt?: Maybe<Scalars['String']['output']>;
+  ctaHref?: Maybe<Scalars['String']['output']>;
+  ctaLabel?: Maybe<Scalars['String']['output']>;
+  delaySeconds?: Maybe<Scalars['Int']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+  id: Scalars['ID']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+  updatedAt?: Maybe<Scalars['String']['output']>;
+};
+
+export type PopupInput = {
+  ctaHref?: InputMaybe<Scalars['String']['input']>;
+  ctaLabel?: InputMaybe<Scalars['String']['input']>;
+  delaySeconds?: InputMaybe<Scalars['Int']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  image?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
 };
 
@@ -413,6 +465,7 @@ export type Query = {
   homepageSections: Array<HomepageSection>;
   orderById?: Maybe<Order>;
   orders: Array<Order>;
+  popups: Array<Popup>;
   productBySlug?: Maybe<Product>;
   products: Array<Product>;
   shippingConfigs: Array<ShippingConfig>;
@@ -541,6 +594,7 @@ export type User = {
 
 
 
+
 export type CreateProductMutationVariables = Exact<{
   input: ProductInput;
 }>;
@@ -598,6 +652,36 @@ export type DeleteHeroBannerMutationVariables = Exact<{
 
 
 export type DeleteHeroBannerMutation = { deleteHeroBanner: boolean };
+
+export type UpdateHeroBannerMutationVariables = Exact<{
+  id: string | number;
+  input: HeroBannerInput;
+}>;
+
+
+export type UpdateHeroBannerMutation = { updateHeroBanner: { id: string, title: string, subtitle: string | null, ctaLabel: string | null, ctaHref: string | null, sortOrder: number | null, enabled: boolean | null, image: string | null } };
+
+export type CreatePopupMutationVariables = Exact<{
+  input: PopupInput;
+}>;
+
+
+export type CreatePopupMutation = { createPopup: { id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null } };
+
+export type UpdatePopupMutationVariables = Exact<{
+  id: string | number;
+  input: PopupInput;
+}>;
+
+
+export type UpdatePopupMutation = { updatePopup: { id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null } };
+
+export type DeletePopupMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type DeletePopupMutation = { deletePopup: boolean };
 
 export type CreateHomepageSectionMutationVariables = Exact<{
   input: HomepageSectionInput;
@@ -726,7 +810,12 @@ export type GetOrdersQuery = { orders: Array<{ id: string, email: string, status
 export type GetHeroBannersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetHeroBannersQuery = { heroBanners: Array<{ id: string, title: string, subtitle: string | null, ctaLabel: string | null, ctaHref: string | null, sortOrder: number | null, enabled: boolean | null, createdAt: string | null }> };
+export type GetHeroBannersQuery = { heroBanners: Array<{ id: string, title: string, subtitle: string | null, ctaLabel: string | null, ctaHref: string | null, sortOrder: number | null, enabled: boolean | null, image: string | null, createdAt: string | null }> };
+
+export type GetPopupsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPopupsQuery = { popups: Array<{ id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null, createdAt: string | null }> };
 
 export type GetHomepageSectionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -990,6 +1079,109 @@ export const useDeleteHeroBannerMutation = <
       {
     mutationKey: ['DeleteHeroBanner'],
     mutationFn: (variables?: DeleteHeroBannerMutationVariables) => customFetcher<DeleteHeroBannerMutation, DeleteHeroBannerMutationVariables>(DeleteHeroBannerDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const UpdateHeroBannerDocument = new TypedDocumentString(`
+    mutation UpdateHeroBanner($id: ID!, $input: HeroBannerInput!) {
+  updateHeroBanner(id: $id, input: $input) {
+    id
+    title
+    subtitle
+    ctaLabel
+    ctaHref
+    sortOrder
+    enabled
+    image
+  }
+}
+    `);
+
+export const useUpdateHeroBannerMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateHeroBannerMutation, TError, UpdateHeroBannerMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateHeroBannerMutation, TError, UpdateHeroBannerMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateHeroBanner'],
+    mutationFn: (variables?: UpdateHeroBannerMutationVariables) => customFetcher<UpdateHeroBannerMutation, UpdateHeroBannerMutationVariables>(UpdateHeroBannerDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const CreatePopupDocument = new TypedDocumentString(`
+    mutation CreatePopup($input: PopupInput!) {
+  createPopup(input: $input) {
+    id
+    title
+    description
+    image
+    ctaLabel
+    ctaHref
+    delaySeconds
+    enabled
+  }
+}
+    `);
+
+export const useCreatePopupMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<CreatePopupMutation, TError, CreatePopupMutationVariables, TContext>) => {
+    
+    return useMutation<CreatePopupMutation, TError, CreatePopupMutationVariables, TContext>(
+      {
+    mutationKey: ['CreatePopup'],
+    mutationFn: (variables?: CreatePopupMutationVariables) => customFetcher<CreatePopupMutation, CreatePopupMutationVariables>(CreatePopupDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const UpdatePopupDocument = new TypedDocumentString(`
+    mutation UpdatePopup($id: ID!, $input: PopupInput!) {
+  updatePopup(id: $id, input: $input) {
+    id
+    title
+    description
+    image
+    ctaLabel
+    ctaHref
+    delaySeconds
+    enabled
+  }
+}
+    `);
+
+export const useUpdatePopupMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdatePopupMutation, TError, UpdatePopupMutationVariables, TContext>) => {
+    
+    return useMutation<UpdatePopupMutation, TError, UpdatePopupMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdatePopup'],
+    mutationFn: (variables?: UpdatePopupMutationVariables) => customFetcher<UpdatePopupMutation, UpdatePopupMutationVariables>(UpdatePopupDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const DeletePopupDocument = new TypedDocumentString(`
+    mutation DeletePopup($id: ID!) {
+  deletePopup(id: $id)
+}
+    `);
+
+export const useDeletePopupMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<DeletePopupMutation, TError, DeletePopupMutationVariables, TContext>) => {
+    
+    return useMutation<DeletePopupMutation, TError, DeletePopupMutationVariables, TContext>(
+      {
+    mutationKey: ['DeletePopup'],
+    mutationFn: (variables?: DeletePopupMutationVariables) => customFetcher<DeletePopupMutation, DeletePopupMutationVariables>(DeletePopupDocument, variables)(),
     ...options
   }
     )};
@@ -1553,6 +1745,7 @@ export const GetHeroBannersDocument = new TypedDocumentString(`
     ctaHref
     sortOrder
     enabled
+    image
     createdAt
   }
 }
@@ -1570,6 +1763,38 @@ export const useGetHeroBannersQuery = <
       {
     queryKey: variables === undefined ? ['GetHeroBanners'] : ['GetHeroBanners', variables],
     queryFn: customFetcher<GetHeroBannersQuery, GetHeroBannersQueryVariables>(GetHeroBannersDocument, variables),
+    ...options
+  }
+    )};
+
+export const GetPopupsDocument = new TypedDocumentString(`
+    query GetPopups {
+  popups {
+    id
+    title
+    description
+    image
+    ctaLabel
+    ctaHref
+    delaySeconds
+    enabled
+    createdAt
+  }
+}
+    `);
+
+export const useGetPopupsQuery = <
+      TData = GetPopupsQuery,
+      TError = unknown
+    >(
+      variables?: GetPopupsQueryVariables,
+      options?: Omit<UseQueryOptions<GetPopupsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetPopupsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetPopupsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetPopups'] : ['GetPopups', variables],
+    queryFn: customFetcher<GetPopupsQuery, GetPopupsQueryVariables>(GetPopupsDocument, variables),
     ...options
   }
     )};

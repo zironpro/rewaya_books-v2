@@ -76,7 +76,7 @@ function Toasts({
 		<Toast.Portal data-slot="toast-portal" {...portalProps}>
 			<Toast.Viewport
 				className={cn(
-					"fixed z-60 mx-auto flex w-[calc(100%-var(--toast-inset)*2)] max-w-90 [--toast-inset:--spacing(4)] sm:[--toast-inset:--spacing(8)]",
+					"fixed z-60 mx-auto flex w-[calc(100%-var(--toast-inset)*2)] max-w-md [--toast-inset:--spacing(4)] sm:[--toast-inset:--spacing(8)]",
 					// Vertical positioning
 					"data-[position*=top]:top-(--toast-inset)",
 					"data-[position*=bottom]:bottom-(--toast-inset)",
@@ -98,6 +98,14 @@ function Toasts({
 						<Toast.Root
 							className={cn(
 								"absolute z-[calc(9999-var(--toast-index))] h-(--toast-calc-height) w-full select-none rounded-lg border bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(1%*max(0,var(--toast-index,0))))] not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 [transition:transform_.5s_cubic-bezier(.22,1,.36,1),opacity_.5s,height_.15s,background-color_.5s] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-expanded:bg-popover dark:bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(6%*max(0,var(--toast-index,0))))] dark:data-expanded:bg-popover dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+								toast.type === "error" &&
+									"border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950",
+								toast.type === "success" &&
+									"border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950",
+								toast.type === "warning" &&
+									"border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950",
+								toast.type === "info" &&
+									"border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950",
 								// Base positioning using data-position
 								"data-[position*=right]:right-0 data-[position*=right]:left-auto",
 								"data-[position*=left]:right-auto data-[position*=left]:left-0",
@@ -168,7 +176,10 @@ function Toasts({
 								</div>
 								{toast.actionProps && (
 									<Toast.Action
-										className={buttonVariants({ size: "xs" })}
+										className={buttonVariants({
+											size: "default",
+											variant: "default",
+										})}
 										data-slot="toast-action"
 									>
 										{toast.actionProps.children}
@@ -219,6 +230,14 @@ function AnchoredToasts({
 							<Toast.Root
 								className={cn(
 									"relative text-balance border bg-popover not-dark:bg-clip-padding text-popover-foreground text-xs transition-[scale,opacity] before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:scale-98 data-starting-style:scale-98 data-ending-style:opacity-0 data-starting-style:opacity-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+									toast.type === "error" &&
+										"border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950",
+									toast.type === "success" &&
+										"border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950",
+									toast.type === "warning" &&
+										"border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950",
+									toast.type === "info" &&
+										"border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950",
 									tooltipStyle
 										? "rounded-md shadow-md/5 before:rounded-[calc(var(--radius-md)-1px)]"
 										: "rounded-lg shadow-lg/5 before:rounded-[calc(var(--radius-lg)-1px)]",
@@ -257,7 +276,10 @@ function AnchoredToasts({
 										</div>
 										{toast.actionProps && (
 											<Toast.Action
-												className={buttonVariants({ size: "xs" })}
+												className={buttonVariants({
+													size: "default",
+													variant: "default",
+												})}
 												data-slot="toast-action"
 											>
 												{toast.actionProps.children}

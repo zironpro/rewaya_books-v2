@@ -87,6 +87,7 @@ export default async function ProductDetailPage({
 		category: detail.categoryName,
 		productId: detail.id,
 		availableForSale: detail.stock > 0,
+		stock: detail.stock,
 		details: [
 			detail.author && { label: "Author", value: detail.author },
 			detail.format && { label: "Format", value: detail.format },

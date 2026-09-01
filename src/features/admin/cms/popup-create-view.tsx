@@ -8,19 +8,20 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateHeroBannerMutation, useGetHeroBannersQuery } from "@/types/graphql";
+import { useCreatePopupMutation, useGetPopupsQuery } from "@/types/graphql";
 
-export function HeroBannerCreateView() {
+export function PopupCreateView() {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-	const createBannerMutation = useCreateHeroBannerMutation();
-	const { data } = useGetHeroBannersQuery();
-	const banners = data?.heroBanners || [];
+	const createPopupMutation = useCreatePopupMutation();
+	const { data } = useGetPopupsQuery();
+	const popups = data?.popups || [];
 
 	const [title, setTitle] = React.useState("");
-	const [subtitle, setSubtitle] = React.useState("");
-	const [ctaLabel, setCtaLabel] = React.useState("Shop Collection");
+	const [description, setDescription] = React.useState("");
+	const [ctaLabel, setCtaLabel] = React.useState("Shop Now");
 	const [ctaHref, setCtaHref] = React.useState("/shop");
+	const [delaySeconds, setDelaySeconds] = React.useState("5");
 	const [image, setImage] = React.useState("");
 	const [isUploading, setIsUploading] = React.useState(false);
 
@@ -56,22 +57,22 @@ export function HeroBannerCreateView() {
 		if (!title) return;
 
 		try {
-			await createBannerMutation.mutateAsync({
+			await createPopupMutation.mutateAsync({
 				input: {
 					title,
-					subtitle: subtitle || "Special featured banner on Rewaya storefront.",
+					description: description || "Welcome to our store!",
 					ctaLabel,
 					ctaHref,
 					image,
-					sortOrder: banners.length + 1,
+					delaySeconds: parseInt(delaySeconds) || 5,
 					enabled: true,
 				},
 			});
-			queryClient.invalidateQueries({ queryKey: ["GetHeroBanners"] });
-			router.push("/admin/cms/banners");
+			queryClient.invalidateQueries({ queryKey: ["GetPopups"] });
+			router.push("/admin/cms/popups");
 			router.refresh();
 		} catch (error) {
-			console.error("Failed to create banner:", error);
+			console.error("Failed to create popup:", error);
 		}
 	};
 
@@ -81,17 +82,17 @@ export function HeroBannerCreateView() {
 				<div>
 					<div className="flex items-center gap-2">
 						<ImageIcon className="h-5 w-5 text-primary" />
-						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
-							Add Hero Banner
+						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
+							Add Popup Message
 						</h1>
 					</div>
-					<p className="text-sm text-slate-500 mt-1">
-						Create a new promotional hero slide for the storefront homepage.
+					<p className="mt-1 text-slate-500 text-sm">
+						Create a new welcome popup for the storefront.
 					</p>
 				</div>
-				<Link href="/admin/cms/banners">
+				<Link href="/admin/cms/popups">
 					<Button className="h-10 gap-2 px-4 text-sm" variant="outline">
-						<ArrowLeft className="h-4 w-4" /> Back to Banners
+						<ArrowLeft className="h-4 w-4" /> Back to Popups
 					</Button>
 				</Link>
 			</div>
@@ -99,11 +100,11 @@ export function HeroBannerCreateView() {
 			<div className="max-w-2xl space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
 				<div className="space-y-1">
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
-						Banner Headline *
+						Popup Headline *
 					</label>
 					<Input
 						required
-						placeholder="e.g. Summer Reading Festival 2026"
+						placeholder="e.g. Welcome to our Store!"
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
 						className="h-10 text-sm"
@@ -112,12 +113,25 @@ export function HeroBannerCreateView() {
 
 				<div className="space-y-1">
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
-						Subheadline / Description
+						Description
 					</label>
 					<Input
-						placeholder="e.g. Up to 40% off selected bestsellers."
-						value={subtitle}
-						onChange={(e) => setSubtitle(e.target.value)}
+						placeholder="e.g. Get 10% off your first order."
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
+						className="h-10 text-sm"
+					/>
+				</div>
+
+				<div className="space-y-1">
+					<label className="font-semibold text-slate-700 dark:text-slate-300">
+						Delay Seconds
+					</label>
+					<Input
+						type="number"
+						placeholder="5"
+						value={delaySeconds}
+						onChange={(e) => setDelaySeconds(e.target.value)}
 						className="h-10 text-sm"
 					/>
 				</div>
@@ -147,7 +161,7 @@ export function HeroBannerCreateView() {
 
 				<div className="space-y-2">
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
-						Banner Image
+						Popup Image (Optional)
 					</label>
 					<div className="relative flex h-48 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">
 						<input
@@ -176,9 +190,9 @@ export function HeroBannerCreateView() {
 					</div>
 				</div>
 
-				<div className="pt-4 flex justify-end">
-					<Button type="button" onClick={handleAdd} className="gap-2 h-10 px-6">
-						<Save className="h-4 w-4" /> Save Banner Slide
+				<div className="flex justify-end pt-4">
+					<Button className="h-10 gap-2 px-6" onClick={handleAdd} type="button">
+						<Save className="h-4 w-4" /> Save Popup
 					</Button>
 				</div>
 			</div>

@@ -20,6 +20,7 @@ export interface BookProps {
 	variants?: ProductVariant[];
 	defaultVariant?: ProductVariant;
 	availableForSale?: boolean;
+	stock?: number;
 }
 
 /** Stable, unique React list key — avoids collisions between productId and numeric id. */

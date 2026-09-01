@@ -50,7 +50,20 @@ export function WishlistToggleButton({
 				title: willBeWishlisted ? "Added to wishlist" : "Removed from wishlist",
 				type: "success",
 			});
-		} catch {
+		} catch (e: any) {
+			if (e instanceof Error && e.message === "require_auth") {
+				toastManager.add({
+					title: "Login Required",
+					description: "Please login to add items to your wishlist.",
+					type: "info",
+					actionProps: {
+						children: "Login",
+						href: "/login",
+					},
+				});
+				return;
+			}
+			
 			toastManager.add({
 				title: "Error",
 				description: "Failed to update wishlist",
@@ -73,7 +86,7 @@ export function WishlistToggleButton({
 				<Heart
 					className={cn(
 						"transition-all",
-
+						wishlisted && "fill-red-500 text-red-500",
 						iconClassName
 					)}
 					size={iconSizes[size]}
@@ -84,11 +97,7 @@ export function WishlistToggleButton({
 
 	return (
 		<Button
-			className={cn(
-				wishlisted &&
-					"bg-primary text-white hover:bg-primary/90 hover:text-white",
-				className
-			)}
+			className={cn(className)}
 			disabled={disabled}
 			onClick={handleClick}
 			size="icon"
@@ -103,7 +112,7 @@ export function WishlistToggleButton({
 			variant="ghost"
 		>
 			<Heart
-				className={cn(wishlisted && "fill-current", iconClassName)}
+				className={cn(wishlisted && "fill-red-500 text-red-500", iconClassName)}
 				size={iconSizes[size]}
 				strokeWidth={1.5}
 			/>

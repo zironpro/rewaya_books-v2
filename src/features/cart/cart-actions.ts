@@ -30,9 +30,15 @@ export async function fetchCart(): Promise<any | null> {
 		discountNames: [] 
 	};
 	
+	const { Product } = await import("@/lib/db/models/Product");
+	const productIds = cart.lineItems.map((item: any) => item.productId).filter(Boolean);
+	const products = await Product.find({ _id: { $in: productIds } }).select("stock").lean();
+	const stockMap = new Map(products.map((p: any) => [p._id.toString(), p.stock]));
+	
 	// Map items to match expected CartSnapshot format
 	cart.lineItems = cart.lineItems.map((item: any) => ({
 		...item,
+		availability: { quantityAvailable: stockMap.get(item.productId?.toString()) ?? 99 },
 		price: {
 			amount: (item.price || 0).toString(),
 			formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`
@@ -78,9 +84,15 @@ export async function syncCart(localCartLineItems: any[]) {
 		discountNames: [] 
 	};
 	
+	const { Product } = await import("@/lib/db/models/Product");
+	const productIds = leanCart.lineItems.map((item: any) => item.productId).filter(Boolean);
+	const products = await Product.find({ _id: { $in: productIds } }).select("stock").lean();
+	const stockMap = new Map(products.map((p: any) => [p._id.toString(), p.stock]));
+
 	// Map items to match expected CartSnapshot format
 	leanCart.lineItems = leanCart.lineItems.map((item: any) => ({
 		...item,
+		availability: { quantityAvailable: stockMap.get(item.productId?.toString()) ?? 99 },
 		price: {
 			amount: (item.price || 0).toString(),
 			formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`
@@ -111,21 +123,34 @@ export async function addItem(_prevState: unknown, item: any): Promise<CartActio
 	let cart = await Cart.findOne({ userId });
 	if (!cart) cart = new Cart({ userId, lineItems: [] });
 
+	const { Product } = await import("@/lib/db/models/Product");
+	const product = await Product.findById(item.productId).select("stock").lean();
+	const maxStock = product?.stock ?? 0;
+
 	const existing = cart.lineItems.find((i: any) => i.productId === item.productId);
 	if (existing) {
+		const currentQty = existing.quantity || 1;
+		const addQty = item.quantity || 1;
+		if (currentQty + addQty > maxStock) {
+			return { error: `Cannot add more than ${maxStock} to cart.` };
+		}
 		await Cart.findOneAndUpdate(
 			{ userId, "lineItems.productId": item.productId },
-			{ $inc: { "lineItems.$.quantity": item.quantity || 1 } }
+			{ $inc: { "lineItems.$.quantity": addQty } }
 		);
 		cart = await Cart.findOne({ userId });
 	} else {
+		const addQty = item.quantity || 1;
+		if (addQty > maxStock) {
+			return { error: `Cannot add more than ${maxStock} to cart.` };
+		}
 		await Cart.findOneAndUpdate(
 			{ userId },
 			{ 
 				$push: { 
 					lineItems: {
 						productId: item.productId,
-						quantity: item.quantity || 1,
+						quantity: addQty,
 						price: item.price || 0,
 						title: item.title || "Product " + item.productId,
 						image: item.image,
@@ -139,7 +164,8 @@ export async function addItem(_prevState: unknown, item: any): Promise<CartActio
 		cart = await Cart.findOne({ userId });
 	}
 
-	return { error: null, cart: JSON.parse(JSON.stringify(cart)) };
+	const formattedCart = await fetchCart();
+	return { error: null, cart: formattedCart };
 }
 
 export async function clearCart() {

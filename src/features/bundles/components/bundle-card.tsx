@@ -48,16 +48,14 @@ export function BundleCard({
 				/>
 
 				<div className="absolute top-4 right-4 z-10 flex flex-col gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-					{bundleProductId || storeProductIds?.[0] ? (
-						<WishlistToggleButton
-							className="size-9 rounded-full bg-white/80 backdrop-blur-sm"
-							iconClassName="text-stone-900"
-							productId={bundleProductId || storeProductIds?.[0]!}
-							size="sm"
-						/>
-					) : null}
+					<WishlistToggleButton
+						className="size-9 rounded-full bg-white/80 backdrop-blur-sm"
+						iconClassName="text-stone-900"
+						productId={bundleProductId || storeProductIds?.[0] || id}
+						size="sm"
+					/>
 
-					<Dialog>
+					{/* <Dialog>
 						<DialogTrigger
 							render={
 								<Button
@@ -82,7 +80,7 @@ export function BundleCard({
 							storeProductIds={storeProductIds}
 							title={title}
 						/>
-					</Dialog>
+					</Dialog> */}
 				</div>
 
 				<div className="absolute right-0 bottom-0 left-0 z-10 translate-y-full bg-primary transition-transform duration-300 group-hover:translate-y-0">
