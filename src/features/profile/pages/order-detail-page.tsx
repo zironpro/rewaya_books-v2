@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { RequestRefundDialog } from "../components/request-refund-dialog";
 
 export function OrderDetailPage({ order }: { order: any }) {
 	const router = useRouter();
@@ -67,14 +68,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 					</p>
 				</div>
 				<div className="ml-auto flex gap-3">
-					<Button
-						asChild
-						variant="outline"
-					>
-						<Link href="/contact">
-							<RefreshCcw className="mr-2 h-4 w-4" /> Return / Refund
-						</Link>
-					</Button>
+					<RequestRefundDialog orderId={order._id || order.id} isDelivered={order.status === "DELIVERED" || true} />
 					{order.invoiceUrl ? (
 						<Button
 							asChild

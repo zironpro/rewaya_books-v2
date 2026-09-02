@@ -277,3 +277,34 @@ export const UPDATE_ORDER_STATUS = gql`
     }
   }
 `;
+
+export const CREATE_REFUND_REQUEST = gql`
+  mutation CreateRefundRequest($input: RefundRequestInput!) {
+    createRefundRequest(input: $input) {
+      id
+      orderId
+      reason
+      status
+    }
+  }
+`;
+
+export const UPDATE_REFUND_REQUEST_STATUS = gql`
+  mutation UpdateRefundRequestStatus($id: ID!, $status: String!, $adminNotes: String) {
+    updateRefundRequestStatus(id: $id, status: $status, adminNotes: $adminNotes) {
+      id
+      status
+      adminNotes
+    }
+  }
+`;
+
+export const PROCESS_STRIPE_REFUND = gql`
+  mutation ProcessStripeRefund($id: ID!) {
+    processStripeRefund(id: $id) {
+      id
+      status
+      stripeRefundId
+    }
+  }
+`;

@@ -14,7 +14,9 @@ import { User } from "@/lib/db/models/User";
 import { Coupon } from "@/lib/db/models/Coupon";
 import { Notification } from "@/lib/db/models/Notification";
 import { Popup } from "@/lib/db/models/Popup";
+import { RefundRequest } from "@/lib/db/models/RefundRequest";
 import connectToDatabase from "@/lib/db/mongodb";
+import { stripe } from "@/lib/stripe";
 
 // Define the GraphQL schema
 const typeDefs = gql`
@@ -144,6 +146,19 @@ const typeDefs = gql`
     updatedAt: String
   }
 
+  type RefundRequest {
+    id: ID!
+    orderId: ID!
+    userId: ID
+    reason: String!
+    status: String!
+    adminNotes: String
+    stripeRefundId: String
+    createdAt: String
+    updatedAt: String
+    order: Order
+  }
+
   type HomepageSection {
     id: ID!
     key: String!
@@ -217,6 +232,8 @@ const typeDefs = gql`
     coupon(id: ID!): Coupon
     validateCoupon(code: String!, cartTotal: Float!): Coupon
     popups: [Popup!]!
+    refundRequests: [RefundRequest!]!
+    refundRequest(id: ID!): RefundRequest
   }
 
   input ProductInput {
@@ -360,6 +377,11 @@ const typeDefs = gql`
     enabled: Boolean
   }
 
+  input RefundRequestInput {
+    orderId: ID!
+    reason: String!
+  }
+
   type Mutation {
     updateOrderStatus(id: ID!, status: String!): Order!
     createProduct(input: ProductInput!): Product!
@@ -397,6 +419,10 @@ const typeDefs = gql`
     createPopup(input: PopupInput!): Popup!
     updatePopup(id: ID!, input: PopupInput!): Popup!
     deletePopup(id: ID!): Boolean!
+
+    createRefundRequest(input: RefundRequestInput!): RefundRequest!
+    updateRefundRequestStatus(id: ID!, status: String!, adminNotes: String): RefundRequest!
+    processStripeRefund(id: ID!): RefundRequest!
   }
 `;
 
@@ -481,6 +507,14 @@ const resolvers = {
 			await connectToDatabase();
 			return await Popup.find({}).sort({ createdAt: -1 });
 		},
+		refundRequests: async () => {
+			await connectToDatabase();
+			return await RefundRequest.find({}).sort({ createdAt: -1 });
+		},
+		refundRequest: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			return await RefundRequest.findById(id);
+		},
 	},
 	OrderItem: {
 		product: async (parent: any) => {
@@ -492,6 +526,13 @@ const resolvers = {
 			if (!parent.bundleId) return null;
 			await connectToDatabase();
 			return await Bundle.findById(parent.bundleId).populate("books");
+		}
+	},
+	RefundRequest: {
+		order: async (parent: any) => {
+			if (!parent.orderId) return null;
+			await connectToDatabase();
+			return await Order.findById(parent.orderId);
 		}
 	},
 	Mutation: {
@@ -751,6 +792,67 @@ const resolvers = {
 			await connectToDatabase();
 			const res = await Popup.findByIdAndDelete(id);
 			return !!res;
+		},
+		createRefundRequest: async (_: any, { input }: { input: any }, context: any) => {
+			await connectToDatabase();
+			const existing = await RefundRequest.findOne({ orderId: input.orderId });
+			if (existing) {
+				throw new Error("A refund request for this order already exists.");
+			}
+			const request = new RefundRequest({
+				orderId: input.orderId,
+				reason: input.reason,
+			});
+			await request.save();
+			return request;
+		},
+		updateRefundRequestStatus: async (_: any, { id, status, adminNotes }: { id: string, status: string, adminNotes?: string }) => {
+			await connectToDatabase();
+			const request = await RefundRequest.findById(id);
+			if (!request) throw new Error("Refund request not found");
+			
+			request.status = status;
+			if (adminNotes !== undefined) request.adminNotes = adminNotes;
+			
+			await request.save();
+
+			// When a refund is confirmed (e.g. manual/COD), also cancel the linked order
+			if (status === "REFUNDED" && request.orderId) {
+				await Order.findByIdAndUpdate(request.orderId, { status: "CANCELLED" });
+			}
+
+			return request;
+		},
+		processStripeRefund: async (_: any, { id }: { id: string }) => {
+			await connectToDatabase();
+			const request = await RefundRequest.findById(id);
+			if (!request) throw new Error("Refund request not found");
+			if (request.status === "REFUNDED") throw new Error("Already refunded");
+			if (request.status !== "ACCEPTED") throw new Error("Refund request must be ACCEPTED first");
+			
+			const order = await Order.findById(request.orderId);
+			if (!order) throw new Error("Order not found");
+			if (order.paymentMethod !== "Stripe") throw new Error("Not a Stripe order. Refund manually.");
+			if (!order.stripeTransactionId) throw new Error("No Stripe Transaction ID found for this order.");
+			if (request.stripeRefundId) throw new Error("Stripe refund already initiated.");
+
+			try {
+				const refund = await stripe.refunds.create({
+					payment_intent: order.stripeTransactionId,
+				});
+
+				request.stripeRefundId = refund.id;
+				request.status = "REFUNDED";
+				await request.save();
+
+				order.status = "CANCELLED";
+				await order.save();
+
+				return request;
+			} catch (error: any) {
+				console.error("Stripe Refund Error:", error);
+				throw new Error(error.message || "Failed to process Stripe refund");
+			}
 		},
 	},
 };

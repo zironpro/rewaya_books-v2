@@ -125,6 +125,19 @@
     updatedAt: String
   }
 
+  type RefundRequest {
+    id: ID!
+    orderId: ID!
+    userId: ID
+    reason: String!
+    status: String!
+    adminNotes: String
+    stripeRefundId: String
+    createdAt: String
+    updatedAt: String
+    order: Order
+  }
+
   type HomepageSection {
     id: ID!
     key: String!
@@ -198,6 +211,8 @@
     coupon(id: ID!): Coupon
     validateCoupon(code: String!, cartTotal: Float!): Coupon
     popups: [Popup!]!
+    refundRequests: [RefundRequest!]!
+    refundRequest(id: ID!): RefundRequest
   }
 
   input ProductInput {
@@ -341,6 +356,11 @@
     enabled: Boolean
   }
 
+  input RefundRequestInput {
+    orderId: ID!
+    reason: String!
+  }
+
   type Mutation {
     updateOrderStatus(id: ID!, status: String!): Order!
     createProduct(input: ProductInput!): Product!
@@ -378,4 +398,8 @@
     createPopup(input: PopupInput!): Popup!
     updatePopup(id: ID!, input: PopupInput!): Popup!
     deletePopup(id: ID!): Boolean!
+
+    createRefundRequest(input: RefundRequestInput!): RefundRequest!
+    updateRefundRequestStatus(id: ID!, status: String!, adminNotes: String): RefundRequest!
+    processStripeRefund(id: ID!): RefundRequest!
   }

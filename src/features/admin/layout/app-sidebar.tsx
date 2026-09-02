@@ -19,6 +19,7 @@ import {
 	TrendingUp,
 	Truck,
 	Users,
+	RefreshCcw,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -119,6 +120,12 @@ const navItems = [
 				url: `${ADMIN_URL}/orders`,
 				icon: ShoppingBag,
 				badge: "1,420",
+			},
+			{
+				title: "Refund Requests",
+				url: `${ADMIN_URL}/refunds`,
+				icon: RefreshCcw,
+				badge: null,
 			},
 			{
 				title: "Customers Directory",

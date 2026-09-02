@@ -1,7 +1,8 @@
+import { GlobalPopup } from "@/components/global-popup";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { GlobalPopup } from "@/components/global-popup";
+
 import { graphqlClient } from "@/lib/graphql-client";
 import { GetPopupsDocument } from "@/types/graphql";
 

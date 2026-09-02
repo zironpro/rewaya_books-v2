@@ -391,3 +391,54 @@ export const DELETE_COUPON = gql`
     deleteCoupon(id: $id)
   }
 `;
+
+export const GET_REFUND_REQUESTS = gql`
+  query GetRefundRequests {
+    refundRequests {
+      id
+      orderId
+      userId
+      reason
+      status
+      adminNotes
+      stripeRefundId
+      createdAt
+      updatedAt
+      order {
+        id
+        email
+        total
+        paymentMethod
+        status
+      }
+    }
+  }
+`;
+
+export const GET_REFUND_REQUEST = gql`
+  query GetRefundRequest($id: ID!) {
+    refundRequest(id: $id) {
+      id
+      orderId
+      userId
+      reason
+      status
+      adminNotes
+      stripeRefundId
+      createdAt
+      updatedAt
+      order {
+        id
+        email
+        total
+        paymentMethod
+        status
+        items {
+          title
+          price
+          quantity
+        }
+      }
+    }
+  }
+`;

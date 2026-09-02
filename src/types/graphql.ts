@@ -172,6 +172,7 @@ export type Mutation = {
   createHomepageSection: HomepageSection;
   createPopup: Popup;
   createProduct: Product;
+  createRefundRequest: RefundRequest;
   createShippingConfig: ShippingConfig;
   createTaxConfig: TaxConfig;
   deleteBundle: Scalars['Boolean']['output'];
@@ -183,6 +184,7 @@ export type Mutation = {
   deleteProduct: Scalars['Boolean']['output'];
   deleteShippingConfig: Scalars['Boolean']['output'];
   deleteTaxConfig: Scalars['Boolean']['output'];
+  processStripeRefund: RefundRequest;
   updateBundle: Bundle;
   updateCategory: Category;
   updateCoupon: Coupon;
@@ -190,6 +192,7 @@ export type Mutation = {
   updateOrderStatus: Order;
   updatePopup: Popup;
   updateProduct: Product;
+  updateRefundRequestStatus: RefundRequest;
   updateShippingConfig: ShippingConfig;
   updateTaxConfig: TaxConfig;
 };
@@ -232,6 +235,11 @@ export type MutationCreatePopupArgs = {
 
 export type MutationCreateProductArgs = {
   input: ProductInput;
+};
+
+
+export type MutationCreateRefundRequestArgs = {
+  input: RefundRequestInput;
 };
 
 
@@ -290,6 +298,11 @@ export type MutationDeleteTaxConfigArgs = {
 };
 
 
+export type MutationProcessStripeRefundArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdateBundleArgs = {
   id: Scalars['ID']['input'];
   input: BundleInput;
@@ -329,6 +342,13 @@ export type MutationUpdatePopupArgs = {
 export type MutationUpdateProductArgs = {
   id: Scalars['ID']['input'];
   input: ProductInput;
+};
+
+
+export type MutationUpdateRefundRequestStatusArgs = {
+  adminNotes?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  status: Scalars['String']['input'];
 };
 
 
@@ -468,6 +488,8 @@ export type Query = {
   popups: Array<Popup>;
   productBySlug?: Maybe<Product>;
   products: Array<Product>;
+  refundRequest?: Maybe<RefundRequest>;
+  refundRequests: Array<RefundRequest>;
   shippingConfigs: Array<ShippingConfig>;
   taxConfigs: Array<TaxConfig>;
   users: Array<User>;
@@ -495,9 +517,33 @@ export type QueryProductBySlugArgs = {
 };
 
 
+export type QueryRefundRequestArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type QueryValidateCouponArgs = {
   cartTotal: Scalars['Float']['input'];
   code: Scalars['String']['input'];
+};
+
+export type RefundRequest = {
+  __typename?: 'RefundRequest';
+  adminNotes?: Maybe<Scalars['String']['output']>;
+  createdAt?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  order?: Maybe<Order>;
+  orderId: Scalars['ID']['output'];
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  stripeRefundId?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['String']['output']>;
+  userId?: Maybe<Scalars['ID']['output']>;
+};
+
+export type RefundRequestInput = {
+  orderId: Scalars['ID']['input'];
+  reason: Scalars['String']['input'];
 };
 
 export type ShippingAddress = {
@@ -582,6 +628,7 @@ export type User = {
   region?: Maybe<Scalars['String']['output']>;
   role?: Maybe<Scalars['String']['output']>;
 };
+
 
 
 
@@ -771,6 +818,29 @@ export type UpdateOrderStatusMutationVariables = Exact<{
 
 export type UpdateOrderStatusMutation = { updateOrderStatus: { id: string, status: string } };
 
+export type CreateRefundRequestMutationVariables = Exact<{
+  input: RefundRequestInput;
+}>;
+
+
+export type CreateRefundRequestMutation = { createRefundRequest: { id: string, orderId: string, reason: string, status: string } };
+
+export type UpdateRefundRequestStatusMutationVariables = Exact<{
+  id: string | number;
+  status: string;
+  adminNotes?: string | null | undefined;
+}>;
+
+
+export type UpdateRefundRequestStatusMutation = { updateRefundRequestStatus: { id: string, status: string, adminNotes: string | null } };
+
+export type ProcessStripeRefundMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type ProcessStripeRefundMutation = { processStripeRefund: { id: string, status: string, stripeRefundId: string | null } };
+
 export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -890,6 +960,18 @@ export type DeleteCouponMutationVariables = Exact<{
 
 
 export type DeleteCouponMutation = { deleteCoupon: boolean };
+
+export type GetRefundRequestsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetRefundRequestsQuery = { refundRequests: Array<{ id: string, orderId: string, userId: string | null, reason: string, status: string, adminNotes: string | null, stripeRefundId: string | null, createdAt: string | null, updatedAt: string | null, order: { id: string, email: string, total: number, paymentMethod: string | null, status: string } | null }> };
+
+export type GetRefundRequestQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type GetRefundRequestQuery = { refundRequest: { id: string, orderId: string, userId: string | null, reason: string, status: string, adminNotes: string | null, stripeRefundId: string | null, createdAt: string | null, updatedAt: string | null, order: { id: string, email: string, total: number, paymentMethod: string | null, status: string, items: Array<{ title: string, price: number, quantity: number }> } | null } | null };
 
 
 
@@ -1479,6 +1561,76 @@ export const useUpdateOrderStatusMutation = <
       {
     mutationKey: ['UpdateOrderStatus'],
     mutationFn: (variables?: UpdateOrderStatusMutationVariables) => customFetcher<UpdateOrderStatusMutation, UpdateOrderStatusMutationVariables>(UpdateOrderStatusDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const CreateRefundRequestDocument = new TypedDocumentString(`
+    mutation CreateRefundRequest($input: RefundRequestInput!) {
+  createRefundRequest(input: $input) {
+    id
+    orderId
+    reason
+    status
+  }
+}
+    `);
+
+export const useCreateRefundRequestMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<CreateRefundRequestMutation, TError, CreateRefundRequestMutationVariables, TContext>) => {
+    
+    return useMutation<CreateRefundRequestMutation, TError, CreateRefundRequestMutationVariables, TContext>(
+      {
+    mutationKey: ['CreateRefundRequest'],
+    mutationFn: (variables?: CreateRefundRequestMutationVariables) => customFetcher<CreateRefundRequestMutation, CreateRefundRequestMutationVariables>(CreateRefundRequestDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const UpdateRefundRequestStatusDocument = new TypedDocumentString(`
+    mutation UpdateRefundRequestStatus($id: ID!, $status: String!, $adminNotes: String) {
+  updateRefundRequestStatus(id: $id, status: $status, adminNotes: $adminNotes) {
+    id
+    status
+    adminNotes
+  }
+}
+    `);
+
+export const useUpdateRefundRequestStatusMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateRefundRequestStatusMutation, TError, UpdateRefundRequestStatusMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateRefundRequestStatusMutation, TError, UpdateRefundRequestStatusMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateRefundRequestStatus'],
+    mutationFn: (variables?: UpdateRefundRequestStatusMutationVariables) => customFetcher<UpdateRefundRequestStatusMutation, UpdateRefundRequestStatusMutationVariables>(UpdateRefundRequestStatusDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const ProcessStripeRefundDocument = new TypedDocumentString(`
+    mutation ProcessStripeRefund($id: ID!) {
+  processStripeRefund(id: $id) {
+    id
+    status
+    stripeRefundId
+  }
+}
+    `);
+
+export const useProcessStripeRefundMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<ProcessStripeRefundMutation, TError, ProcessStripeRefundMutationVariables, TContext>) => {
+    
+    return useMutation<ProcessStripeRefundMutation, TError, ProcessStripeRefundMutationVariables, TContext>(
+      {
+    mutationKey: ['ProcessStripeRefund'],
+    mutationFn: (variables?: ProcessStripeRefundMutationVariables) => customFetcher<ProcessStripeRefundMutation, ProcessStripeRefundMutationVariables>(ProcessStripeRefundDocument, variables)(),
     ...options
   }
     )};
@@ -2179,6 +2331,89 @@ export const useDeleteCouponMutation = <
       {
     mutationKey: ['DeleteCoupon'],
     mutationFn: (variables?: DeleteCouponMutationVariables) => customFetcher<DeleteCouponMutation, DeleteCouponMutationVariables>(DeleteCouponDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const GetRefundRequestsDocument = new TypedDocumentString(`
+    query GetRefundRequests {
+  refundRequests {
+    id
+    orderId
+    userId
+    reason
+    status
+    adminNotes
+    stripeRefundId
+    createdAt
+    updatedAt
+    order {
+      id
+      email
+      total
+      paymentMethod
+      status
+    }
+  }
+}
+    `);
+
+export const useGetRefundRequestsQuery = <
+      TData = GetRefundRequestsQuery,
+      TError = unknown
+    >(
+      variables?: GetRefundRequestsQueryVariables,
+      options?: Omit<UseQueryOptions<GetRefundRequestsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetRefundRequestsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetRefundRequestsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetRefundRequests'] : ['GetRefundRequests', variables],
+    queryFn: customFetcher<GetRefundRequestsQuery, GetRefundRequestsQueryVariables>(GetRefundRequestsDocument, variables),
+    ...options
+  }
+    )};
+
+export const GetRefundRequestDocument = new TypedDocumentString(`
+    query GetRefundRequest($id: ID!) {
+  refundRequest(id: $id) {
+    id
+    orderId
+    userId
+    reason
+    status
+    adminNotes
+    stripeRefundId
+    createdAt
+    updatedAt
+    order {
+      id
+      email
+      total
+      paymentMethod
+      status
+      items {
+        title
+        price
+        quantity
+      }
+    }
+  }
+}
+    `);
+
+export const useGetRefundRequestQuery = <
+      TData = GetRefundRequestQuery,
+      TError = unknown
+    >(
+      variables: GetRefundRequestQueryVariables,
+      options?: Omit<UseQueryOptions<GetRefundRequestQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetRefundRequestQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetRefundRequestQuery, TError, TData>(
+      {
+    queryKey: ['GetRefundRequest', variables],
+    queryFn: customFetcher<GetRefundRequestQuery, GetRefundRequestQueryVariables>(GetRefundRequestDocument, variables),
     ...options
   }
     )};
