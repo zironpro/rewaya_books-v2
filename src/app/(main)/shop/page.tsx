@@ -47,7 +47,13 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 			if (matchedCategory) {
 				const orderedProductIds = matchedCategory.products?.map((p: any) => p.id) || [];
 				const productIdsInCategory = new Set(orderedProductIds);
-				books = books.filter(b => productIdsInCategory.has(b.id));
+				
+				books = books.filter(
+					b => productIdsInCategory.has(b.id) || 
+						 b.categorySlug?.toLowerCase() === catLower ||
+						 b.categoryId === matchedCategory.id ||
+						 b.categoryName?.toLowerCase() === catLower
+				);
 				
 				// Apply custom sort ONLY if no explicit sort is requested
 				if (!sort && orderedProductIds.length > 0) {

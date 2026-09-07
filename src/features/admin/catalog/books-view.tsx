@@ -161,33 +161,42 @@ export function BooksView() {
 									searchName.includes(c.name.toLowerCase())
 							) || categories[0];
 
-						await createProductMutation.mutateAsync({
-							input: {
-								title: row.title || "Untitled Book",
-								slug:
-									(row.title || "untitled-book")
-										.toLowerCase()
-										.replace(/[^a-z0-9]+/g, "-") +
-									"-" +
-									Date.now(),
-								author: row.author || "",
-								isbn: row.isbn || "",
-								categoryId: selectedCat?.id,
-								categorySlug: selectedCat?.slug,
-								categoryName: selectedCat?.name || categoryName,
-								price: priceNum,
-								originalPrice: priceNum * 1.2,
-								stock: stockNum,
-								language: row.language || "English",
-								ribbon: row.ribbon || "",
-								description: row.description || "",
-								publisher: row.publisher || "",
-								coverImage: row.coverImage || "",
-								sortOrder: row.sortOrder
-									? Number.parseInt(row.sortOrder)
-									: undefined,
-							} as any,
-						});
+						const productInput = {
+							title: row.title || "Untitled Book",
+							slug: row.slug ||
+								(row.title || "untitled-book")
+									.toLowerCase()
+									.replace(/[^a-z0-9]+/g, "-") +
+								"-" +
+								Date.now(),
+							author: row.author || "",
+							isbn: row.isbn || "",
+							categoryId: selectedCat?.id,
+							categorySlug: selectedCat?.slug,
+							categoryName: selectedCat?.name || categoryName,
+							price: priceNum,
+							originalPrice: priceNum * 1.2,
+							stock: stockNum,
+							language: row.language || "English",
+							ribbon: row.ribbon || "",
+							description: row.description || "",
+							publisher: row.publisher || "",
+							coverImage: row.coverImage || "",
+							sortOrder: row.sortOrder
+								? Number.parseInt(row.sortOrder)
+								: undefined,
+						} as any;
+
+						if (row.id) {
+							await updateProductMutation.mutateAsync({
+								id: row.id,
+								input: productInput,
+							});
+						} else {
+							await createProductMutation.mutateAsync({
+								input: productInput,
+							});
+						}
 						successCount++;
 					} catch (error) {
 						console.error("Failed to add book from CSV row", row, error);
@@ -213,6 +222,8 @@ export function BooksView() {
 
 	const handleExportBulk = () => {
 		const exportData = books.map((book: any) => ({
+			id: book.id || "",
+			slug: book.slug || "",
 			title: book.title || "",
 			author: book.author || "",
 			isbn: book.isbn || "",

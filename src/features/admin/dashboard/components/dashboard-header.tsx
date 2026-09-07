@@ -36,7 +36,7 @@ export function DashboardHeader() {
 				setNotifications(data.notifications);
 			}
 		} catch (error) {
-			console.error("Failed to fetch notifications", error);
+			// Silently ignore fetch errors during background polling (e.g. dev server restarts)
 		}
 	}, []);
 
