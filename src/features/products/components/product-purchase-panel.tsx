@@ -121,6 +121,8 @@ export function ProductPurchasePanel({
 						productName={title}
 						productVariant={productVariant}
 						quantity={quantity}
+						price={price}
+						image={image}
 						stock={stock}
 						size="lg"
 						trackEventName="buy_now"

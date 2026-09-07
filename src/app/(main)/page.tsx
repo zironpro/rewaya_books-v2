@@ -23,6 +23,10 @@ export default async function Home() {
 			graphqlClient.request(GetHeroBannersDocument),
 		]);
 		products = productsRes.products || [];
+		
+		// Hide out of stock products on frontend
+		products = products.filter((p: any) => p.stock > 0);
+		
 		bundles = bundlesRes.bundles || [];
 		categories = categoriesRes.categories || [];
 		banners = (bannersRes.heroBanners || []).filter((b: any) => b.enabled !== false).sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));

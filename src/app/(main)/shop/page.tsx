@@ -38,6 +38,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 			graphqlClient.request(GetCategoriesDocument),
 		]);
 		books = productsRes.products || [];
+		
+		// Hide out of stock products on frontend
+		books = books.filter((b: any) => b.stock > 0);
+		
 		categories = categoriesRes.categories || [];
 
 		if (category) {

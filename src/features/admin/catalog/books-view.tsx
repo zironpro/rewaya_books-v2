@@ -23,7 +23,6 @@ import Papa from "papaparse";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Dialog,
 	DialogContent,
@@ -32,6 +31,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import {
 	useCreateProductMutation,
@@ -153,7 +153,8 @@ export function BooksView() {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
 			if (importProgress.isUploading) {
 				e.preventDefault();
-				e.returnValue = "Import is in progress. Are you sure you want to leave? Products will not be completely imported.";
+				e.returnValue =
+					"Import is in progress. Are you sure you want to leave? Products will not be completely imported.";
 			}
 		};
 		window.addEventListener("beforeunload", handleBeforeUnload);
@@ -204,12 +205,13 @@ export function BooksView() {
 
 						const productInput = {
 							title: row.title || "Untitled Book",
-							slug: row.slug ||
+							slug:
+								row.slug ||
 								(row.title || "untitled-book")
 									.toLowerCase()
 									.replace(/[^a-z0-9]+/g, "-") +
-								"-" +
-								Date.now(),
+									"-" +
+									Date.now(),
 							author: row.author || "",
 							isbn: row.isbn || "",
 							categoryId: selectedCat?.id,
@@ -242,7 +244,9 @@ export function BooksView() {
 						}
 					} catch (error) {
 						console.error("Failed to add book from CSV row", row, error);
-						errorList.push(row.title || `Row ${i + 1} (ISBN: ${row.isbn || "N/A"})`);
+						errorList.push(
+							row.title || `Row ${i + 1} (ISBN: ${row.isbn || "N/A"})`
+						);
 					}
 
 					if (i % 5 === 0) {
@@ -851,18 +855,25 @@ export function BooksView() {
 
 			{/* Bulk Import Progress/Summary Dialog */}
 			<Dialog
-				open={importProgress.isOpen}
 				onOpenChange={(isOpen) => {
 					// Prevent closing by clicking outside if uploading is in progress
 					if (!importProgress.isUploading && !isOpen) {
 						setImportProgress((prev) => ({ ...prev, isOpen: false }));
 					}
 				}}
+				open={importProgress.isOpen}
 			>
-				<DialogContent className="sm:max-w-md" onInteractOutside={(e) => { if (importProgress.isUploading) e.preventDefault(); }}>
+				<DialogContent
+					className="sm:max-w-md"
+					onInteractOutside={(e) => {
+						if (importProgress.isUploading) e.preventDefault();
+					}}
+				>
 					<DialogHeader>
 						<DialogTitle>
-							{importProgress.isUploading ? "Importing Catalog..." : "Import Complete!"}
+							{importProgress.isUploading
+								? "Importing Catalog..."
+								: "Import Complete!"}
 						</DialogTitle>
 						<DialogDescription>
 							{importProgress.isUploading
@@ -874,27 +885,41 @@ export function BooksView() {
 					<div className="py-4">
 						{importProgress.isUploading ? (
 							<div className="space-y-4 text-center">
-								<div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden dark:bg-slate-800">
+								<div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
 									<div
 										className="h-full bg-primary transition-all duration-300"
-										style={{ width: `${(importProgress.processed / importProgress.total) * 100}%` }}
+										style={{
+											width: `${(importProgress.processed / importProgress.total) * 100}%`,
+										}}
 									/>
 								</div>
 								<p className="font-medium text-slate-700 text-sm dark:text-slate-300">
-									Processing row {importProgress.processed} of {importProgress.total} (
-									{Math.round((importProgress.processed / importProgress.total) * 100)}%)
+									Processing row {importProgress.processed} of{" "}
+									{importProgress.total} (
+									{Math.round(
+										(importProgress.processed / importProgress.total) * 100
+									)}
+									%)
 								</p>
 							</div>
 						) : (
 							<div className="space-y-4">
 								<div className="grid grid-cols-2 gap-3 text-center">
 									<div className="rounded-lg bg-emerald-50 p-3 dark:bg-emerald-500/10">
-										<p className="font-bold text-emerald-600 text-2xl dark:text-emerald-400">{importProgress.added}</p>
-										<p className="font-medium text-emerald-800 text-xs dark:text-emerald-300">New Books Added</p>
+										<p className="font-bold text-2xl text-emerald-600 dark:text-emerald-400">
+											{importProgress.added}
+										</p>
+										<p className="font-medium text-emerald-800 text-xs dark:text-emerald-300">
+											New Books Added
+										</p>
 									</div>
 									<div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-500/10">
-										<p className="font-bold text-blue-600 text-2xl dark:text-blue-400">{importProgress.updated}</p>
-										<p className="font-medium text-blue-800 text-xs dark:text-blue-300">Books Updated</p>
+										<p className="font-bold text-2xl text-blue-600 dark:text-blue-400">
+											{importProgress.updated}
+										</p>
+										<p className="font-medium text-blue-800 text-xs dark:text-blue-300">
+											Books Updated
+										</p>
 									</div>
 								</div>
 
@@ -903,7 +928,7 @@ export function BooksView() {
 										<p className="font-semibold text-red-800 text-sm dark:text-red-400">
 											Errors ({importProgress.errors.length})
 										</p>
-										<ul className="mt-2 max-h-32 overflow-y-auto pl-4 text-red-700 text-xs list-disc dark:text-red-300">
+										<ul className="mt-2 max-h-32 list-disc overflow-y-auto pl-4 text-red-700 text-xs dark:text-red-300">
 											{importProgress.errors.map((err, idx) => (
 												<li key={idx}>{err}</li>
 											))}
@@ -916,7 +941,11 @@ export function BooksView() {
 
 					{!importProgress.isUploading && (
 						<DialogFooter>
-							<Button onClick={() => setImportProgress((prev) => ({ ...prev, isOpen: false }))}>
+							<Button
+								onClick={() =>
+									setImportProgress((prev) => ({ ...prev, isOpen: false }))
+								}
+							>
 								Close
 							</Button>
 						</DialogFooter>
