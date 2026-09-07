@@ -435,7 +435,7 @@ const resolvers = {
 	Query: {
 		products: async () => {
 			await connectToDatabase();
-			return await Product.find({}).sort({ sortOrder: 1 });
+			return await Product.find({}).sort({ sortOrder: 1, createdAt: -1 });
 		},
 		productBySlug: async (_: any, { slug }: { slug: string }) => {
 			await connectToDatabase();
@@ -459,11 +459,11 @@ const resolvers = {
 		},
 		heroBanners: async () => {
 			await connectToDatabase();
-			return await HeroBanner.find({}).sort({ sortOrder: 1 });
+			return await HeroBanner.find({}).sort({ sortOrder: 1, createdAt: -1 });
 		},
 		homepageSections: async () => {
 			await connectToDatabase();
-			return await HomepageSection.find({}).sort({ sortOrder: 1 });
+			return await HomepageSection.find({}).sort({ sortOrder: 1, createdAt: -1 });
 		},
 		users: async () => {
 			await connectToDatabase();
@@ -582,6 +582,12 @@ const resolvers = {
 		createProduct: async (_: any, { input }: { input: any }) => {
 			await connectToDatabase();
 			console.log("CREATE PRODUCT INPUT:", input);
+			
+			if (input.sortOrder === undefined || input.sortOrder === null) {
+				const maxProduct = await Product.findOne().sort({ sortOrder: -1 });
+				input.sortOrder = maxProduct ? (maxProduct.sortOrder || 0) + 1 : 1;
+			}
+			
 			const product = new Product(input);
 			await product.save();
 			

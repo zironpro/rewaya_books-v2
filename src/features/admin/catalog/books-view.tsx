@@ -1,39 +1,37 @@
 "use client";
 
 import * as React from "react";
+
 import Link from "next/link";
+
 import {
-	useGetProductsQuery,
-	useCreateProductMutation,
-	useDeleteProductMutation,
-	useUpdateProductMutation,
-	useGetCategoriesQuery,
-} from "@/types/graphql";
-import {
+	ArrowDownToLine,
+	ArrowUpToLine,
 	BookOpen,
 	Check,
-	CheckCircle,
-	Edit,
-	Filter,
+	Download,
+	Eye,
 	GripVertical,
-	Image as ImageIcon,
 	Plus,
 	Save,
 	Search,
 	SlidersHorizontal,
-	Star,
 	Trash2,
-	Eye,
 	Upload,
-	ArrowUpToLine,
-	ArrowDownToLine,
 } from "lucide-react";
 import Papa from "papaparse";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
+
+import {
+	useCreateProductMutation,
+	useDeleteProductMutation,
+	useGetCategoriesQuery,
+	useGetProductsQuery,
+	useUpdateProductMutation,
+} from "@/types/graphql";
 
 const initialBooks = [
 	{
@@ -114,7 +112,7 @@ export function BooksView() {
 	const createProductMutation = useCreateProductMutation();
 	const deleteProductMutation = useDeleteProductMutation();
 	const updateProductMutation = useUpdateProductMutation();
-	
+
 	const books = data?.products || [];
 	const categories = categoriesData?.categories || [];
 
@@ -148,21 +146,30 @@ export function BooksView() {
 
 				for (const row of rows) {
 					try {
-						const priceNum = parseFloat(row.price) || 0;
-						const stockNum = parseInt(row.stock) || 0;
-						const categoryName = row.categoryName ? row.categoryName.trim() : "Fiction";
+						const priceNum = Number.parseFloat(row.price) || 0;
+						const stockNum = Number.parseInt(row.stock) || 0;
+						const categoryName = row.categoryName
+							? row.categoryName.trim()
+							: "Fiction";
 						const searchName = categoryName.toLowerCase();
-						const selectedCat = categories.find((c: any) => 
-							c.name.toLowerCase() === searchName ||
-							c.slug.toLowerCase() === searchName ||
-							c.name.toLowerCase().includes(searchName) ||
-							searchName.includes(c.name.toLowerCase())
-						) || categories[0];
+						const selectedCat =
+							categories.find(
+								(c: any) =>
+									c.name.toLowerCase() === searchName ||
+									c.slug.toLowerCase() === searchName ||
+									c.name.toLowerCase().includes(searchName) ||
+									searchName.includes(c.name.toLowerCase())
+							) || categories[0];
 
 						await createProductMutation.mutateAsync({
 							input: {
 								title: row.title || "Untitled Book",
-								slug: (row.title || "untitled-book").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now(),
+								slug:
+									(row.title || "untitled-book")
+										.toLowerCase()
+										.replace(/[^a-z0-9]+/g, "-") +
+									"-" +
+									Date.now(),
 								author: row.author || "",
 								isbn: row.isbn || "",
 								categoryId: selectedCat?.id,
@@ -176,7 +183,10 @@ export function BooksView() {
 								description: row.description || "",
 								publisher: row.publisher || "",
 								coverImage: row.coverImage || "",
-							} as any
+								sortOrder: row.sortOrder
+									? Number.parseInt(row.sortOrder)
+									: undefined,
+							} as any,
 						});
 						successCount++;
 					} catch (error) {
@@ -185,7 +195,9 @@ export function BooksView() {
 					}
 				}
 
-				alert(`Bulk upload complete! Successfully added ${successCount} books. ${errorCount > 0 ? `Failed to add ${errorCount} books.` : ""}`);
+				alert(
+					`Bulk upload complete! Successfully added ${successCount} books. ${errorCount > 0 ? `Failed to add ${errorCount} books.` : ""}`
+				);
 				setIsUploadingBulk(false);
 				if (fileInputRef.current) fileInputRef.current.value = "";
 				refetch();
@@ -195,8 +207,37 @@ export function BooksView() {
 				alert("Error parsing CSV file.");
 				setIsUploadingBulk(false);
 				if (fileInputRef.current) fileInputRef.current.value = "";
-			}
+			},
 		});
+	};
+
+	const handleExportBulk = () => {
+		const exportData = books.map((book: any) => ({
+			title: book.title || "",
+			author: book.author || "",
+			isbn: book.isbn || "",
+			categoryName: book.categoryName || "",
+			price: book.price || 0,
+			stock: book.stock || 0,
+			language: book.language || "English",
+			ribbon: book.ribbon || "",
+			description: book.description || "",
+			publisher: book.publisher || "",
+			coverImage: book.coverImage || "",
+			sortOrder: book.sortOrder || 0,
+		}));
+		const csv = Papa.unparse(exportData);
+		const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.setAttribute(
+			"download",
+			`books_export_${new Date().toISOString().split("T")[0]}.csv`
+		);
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
 	};
 
 	React.useEffect(() => {
@@ -204,9 +245,11 @@ export function BooksView() {
 			setOrderedBooks([...books]);
 		} else if (books.length > 0 && books.length !== orderedBooks.length) {
 			// Update orderedBooks if new books were added/deleted
-			const existingIds = new Set(orderedBooks.map(b => b.id));
-			const newBooks = books.filter(b => !existingIds.has(b.id));
-			const activeBooks = orderedBooks.filter(ob => books.some(b => b.id === ob.id));
+			const existingIds = new Set(orderedBooks.map((b) => b.id));
+			const newBooks = books.filter((b) => !existingIds.has(b.id));
+			const activeBooks = orderedBooks.filter((ob) =>
+				books.some((b) => b.id === ob.id)
+			);
 			setOrderedBooks([...activeBooks, ...newBooks]);
 		}
 	}, [books]);
@@ -228,7 +271,10 @@ export function BooksView() {
 	const [editCoverImage, setEditCoverImage] = React.useState("");
 	const [isUploading, setIsUploading] = React.useState(false);
 
-	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
+	const handleImageUpload = async (
+		e: React.ChangeEvent<HTMLInputElement>,
+		isEdit: boolean
+	) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
@@ -262,7 +308,11 @@ export function BooksView() {
 		setEditTitle(book.title || "");
 		setEditAuthor(book.author || "");
 		setEditIsbn(book.isbn || "");
-		setEditCategory(book.categoryId || categories.find((c: any) => c.name === book.categoryName)?.id || "");
+		setEditCategory(
+			book.categoryId ||
+				categories.find((c: any) => c.name === book.categoryName)?.id ||
+				""
+		);
 		setEditPrice(book.price ? book.price.toString() : "0");
 		setEditStock(book.stock ? book.stock.toString() : "0");
 		setEditLanguage(book.language || "English");
@@ -300,7 +350,7 @@ export function BooksView() {
 		setIsSaved(true);
 		try {
 			await Promise.all(
-				orderedBooks.map((book, index) => 
+				orderedBooks.map((book, index) =>
 					updateProductMutation.mutateAsync({
 						id: book.id,
 						input: {
@@ -308,7 +358,7 @@ export function BooksView() {
 							slug: book.slug,
 							price: book.price,
 							sortOrder: index,
-						} as any
+						} as any,
 					})
 				)
 			);
@@ -361,8 +411,8 @@ export function BooksView() {
 		e.preventDefault();
 		if (!editingBook || !editTitle) return;
 
-		const priceNum = parseFloat(editPrice) || 0;
-		const stockNum = parseInt(editStock) || 0;
+		const priceNum = Number.parseFloat(editPrice) || 0;
+		const stockNum = Number.parseInt(editStock) || 0;
 		const selectedCat = categories.find((c: any) => c.id === editCategory);
 
 		try {
@@ -370,7 +420,10 @@ export function BooksView() {
 				id: editingBook.id,
 				input: {
 					title: editTitle,
-					slug: editTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now(),
+					slug:
+						editTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-") +
+						"-" +
+						Date.now(),
 					author: editAuthor,
 					isbn: editIsbn,
 					categoryId: selectedCat?.id,
@@ -384,7 +437,7 @@ export function BooksView() {
 					description: editDescription,
 					publisher: editPublisher,
 					coverImage: editCoverImage,
-				}
+				},
 			});
 			setEditingBook(null);
 			refetch();
@@ -396,15 +449,15 @@ export function BooksView() {
 	return (
 		<div className="space-y-6">
 			{/* Header Banner */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
 				<div>
 					<div className="flex items-center gap-2">
 						<BookOpen className="h-5 w-5 text-primary" />
-						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
+						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
 							Books Catalog & Drag-and-Drop Reordering
 						</h1>
 					</div>
-					<p className="text-sm text-slate-500 mt-1">
+					<p className="mt-1 text-slate-500 text-sm">
 						Drag and move book rows to arrange storefront display order, manage
 						ISBNs, and update AED prices.
 					</p>
@@ -412,10 +465,10 @@ export function BooksView() {
 
 				<div className="flex items-center gap-2 self-start sm:self-auto">
 					<Button
+						className="h-10 gap-1.5 border-emerald-500/40 text-emerald-700 text-sm hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
 						onClick={handleSaveOrder}
-						variant="outline"
 						size="sm"
-						className="gap-1.5 text-sm h-10 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+						variant="outline"
 					>
 						{isSaved ? (
 							<Check className="h-4 w-4" />
@@ -426,25 +479,35 @@ export function BooksView() {
 					</Button>
 
 					<input
-						type="file"
 						accept=".csv"
-						ref={fileInputRef}
 						className="hidden"
 						onChange={handleBulkUpload}
+						ref={fileInputRef}
+						type="file"
 					/>
 					<Button
-						variant="outline"
-						size="sm"
-						className="gap-2 font-semibold text-sm h-10 px-4"
+						className="h-10 gap-2 px-4 font-semibold text-sm"
 						disabled={isUploadingBulk}
 						onClick={() => fileInputRef.current?.click()}
+						size="sm"
+						variant="outline"
 					>
 						<Upload className="h-4 w-4" />
 						{isUploadingBulk ? "Uploading..." : "Bulk Upload CSV"}
 					</Button>
 
+					<Button
+						className="h-10 gap-2 px-4 font-semibold text-sm"
+						onClick={handleExportBulk}
+						size="sm"
+						variant="outline"
+					>
+						<Download className="h-4 w-4" />
+						Export CSV
+					</Button>
+
 					<Link href="/admin/catalog/books/new">
-						<Button className="gap-2 font-semibold text-sm h-10 px-4">
+						<Button className="h-10 gap-2 px-4 font-semibold text-sm">
 							<Plus className="h-4 w-4" />
 							Add New Book
 						</Button>
@@ -453,22 +516,22 @@ export function BooksView() {
 			</div>
 
 			{/* Filter, Search, and Sort Mode Controls */}
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-lg border border-slate-200/80 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col items-center justify-between gap-3 rounded-lg border border-slate-200/80 bg-white p-3 shadow-xs sm:flex-row dark:border-slate-800 dark:bg-slate-900">
 				<div className="relative w-full sm:w-80">
-					<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+					<Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-400" />
 					<Input
+						className="h-9 border-none bg-slate-50 pl-8 text-sm shadow-none dark:bg-slate-800"
+						onChange={(e) => setSearchQuery(e.target.value)}
 						placeholder="Search by title, author, ISBN..."
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="h-9 pl-8 text-sm bg-slate-50 dark:bg-slate-800 border-none shadow-none"
 					/>
 				</div>
 
-				<div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+				<div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
 					<select
-						value={selectedCategory}
-						onChange={(e) => setSelectedCategory(e.target.value)}
 						className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm dark:border-slate-800 dark:bg-slate-800 dark:text-white"
+						onChange={(e) => setSelectedCategory(e.target.value)}
+						value={selectedCategory}
 					>
 						<option value="All">All Categories</option>
 						{categories.map((cat: any) => (
@@ -478,12 +541,12 @@ export function BooksView() {
 						))}
 					</select>
 
-					<div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
-						<SlidersHorizontal className="h-3.5 w-3.5 text-slate-400 ml-1 shrink-0" />
+					<div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
+						<SlidersHorizontal className="ml-1 h-3.5 w-3.5 shrink-0 text-slate-400" />
 						<select
-							value={sortBy}
+							className="h-7 bg-transparent px-2 font-semibold text-slate-800 text-sm focus:outline-none dark:text-slate-200"
 							onChange={(e) => setSortBy(e.target.value)}
-							className="h-7 bg-transparent px-2 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
+							value={sortBy}
 						>
 							<option value="custom">Custom Order (Drag Enabled)</option>
 							<option value="price-asc">Price: Low to High</option>
@@ -495,13 +558,10 @@ export function BooksView() {
 				</div>
 			</div>
 
-
-
-
 			{/* Book Catalog Table with Drag & Drop */}
-			<div className="rounded-lg border border-slate-200/80 bg-white p-4 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-				<div className="text-[11px] text-slate-500 mb-3 flex items-center gap-1">
-					<GripVertical className="h-4 w-4 text-primary animate-pulse" />
+			<div className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+				<div className="mb-3 flex items-center gap-1 text-[11px] text-slate-500">
+					<GripVertical className="h-4 w-4 animate-pulse text-primary" />
 					<span>
 						Click & drag any row handle to reorder storefront display sequence.
 					</span>
@@ -509,168 +569,180 @@ export function BooksView() {
 
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
-						<thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800">
+						<thead className="border-slate-200 border-b text-slate-500 dark:border-slate-800">
 							<tr>
-								<th className="py-3 px-3 font-semibold">Name</th>
-								<th className="py-3 px-3 font-semibold">ISBN</th>
-								<th className="py-3 px-3 font-semibold">Price (AED)</th>
-								<th className="py-3 px-3 font-semibold">Status</th>
-								<th className="py-3 px-3 font-semibold text-right">Actions</th>
+								<th className="px-3 py-3 font-semibold">Name</th>
+								<th className="px-3 py-3 font-semibold">ISBN</th>
+								<th className="px-3 py-3 font-semibold">Price (AED)</th>
+								<th className="px-3 py-3 font-semibold">Status</th>
+								<th className="px-3 py-3 text-right font-semibold">Actions</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-							{processedBooks.slice((page - 1) * itemsPerPage, page * itemsPerPage).map((book, pIndex) => {
-								const index = (page - 1) * itemsPerPage + pIndex;
-								const isDragging = draggedIndex === index;
-								const isDragOver =
-									dragOverIndex === index && draggedIndex !== index;
+							{processedBooks
+								.slice((page - 1) * itemsPerPage, page * itemsPerPage)
+								.map((book, pIndex) => {
+									const index = (page - 1) * itemsPerPage + pIndex;
+									const isDragging = draggedIndex === index;
+									const isDragOver =
+										dragOverIndex === index && draggedIndex !== index;
 
-								return (
-									<tr
-										key={book.id}
-										draggable={sortBy === "custom"}
-										onDragStart={(e) => {
-											setDraggedIndex(index);
-											e.dataTransfer.setData("text/plain", index.toString());
-											e.dataTransfer.effectAllowed = "move";
-										}}
-										onDragOver={(e) => {
-											e.preventDefault();
-											setDragOverIndex(index);
-											e.dataTransfer.dropEffect = "move";
-										}}
-										onDragLeave={() => {
-											if (dragOverIndex === index) setDragOverIndex(null);
-										}}
-										onDrop={(e) => {
-											e.preventDefault();
-											if (draggedIndex !== null) {
-												reorderList(draggedIndex, index);
-											}
-											setDraggedIndex(null);
-											setDragOverIndex(null);
-										}}
-										onDragEnd={() => {
-											setDraggedIndex(null);
-											setDragOverIndex(null);
-										}}
-										className={`transition-all ${
-											isDragging
-												? "opacity-30 border-2 border-dashed border-primary bg-primary/5"
-												: isDragOver
-													? "border-t-2 border-primary bg-primary/10 shadow-md"
-													: "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-										}`}
-									>
-										<td className="py-3 px-3">
-											<div className="font-semibold text-slate-900 dark:text-white">
-												{book.title}
-											</div>
-											<div className="text-[11px] text-slate-500">
-												{book.author}
-											</div>
-										</td>
-										<td className="py-3 px-3">
-											<div className="font-semibold text-slate-900 dark:text-white">
-												{book.isbn || "N/A"}
-											</div>
-										</td>
-										<td className="py-3 px-3">
-											<div className="font-bold text-slate-900 dark:text-white">
-												AED {book.price.toFixed(2)}
-											</div>
-											<div className="text-[10px] text-slate-400 line-through">
-												AED {book.originalPrice?.toFixed(2) || "N/A"}
-											</div>
-										</td>
+									return (
+										<tr
+											className={`transition-all ${
+												isDragging
+													? "border-2 border-primary border-dashed bg-primary/5 opacity-30"
+													: isDragOver
+														? "border-primary border-t-2 bg-primary/10 shadow-md"
+														: "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+											}`}
+											draggable={sortBy === "custom"}
+											key={book.id}
+											onDragEnd={() => {
+												setDraggedIndex(null);
+												setDragOverIndex(null);
+											}}
+											onDragLeave={() => {
+												if (dragOverIndex === index) setDragOverIndex(null);
+											}}
+											onDragOver={(e) => {
+												e.preventDefault();
+												setDragOverIndex(index);
+												e.dataTransfer.dropEffect = "move";
+											}}
+											onDragStart={(e) => {
+												setDraggedIndex(index);
+												e.dataTransfer.setData("text/plain", index.toString());
+												e.dataTransfer.effectAllowed = "move";
+											}}
+											onDrop={(e) => {
+												e.preventDefault();
+												if (draggedIndex !== null) {
+													reorderList(draggedIndex, index);
+												}
+												setDraggedIndex(null);
+												setDragOverIndex(null);
+											}}
+										>
+											<td className="px-3 py-3">
+												<div className="font-semibold text-slate-900 dark:text-white">
+													{book.title}
+												</div>
+												<div className="text-[11px] text-slate-500">
+													{book.author}
+												</div>
+											</td>
+											<td className="px-3 py-3">
+												<div className="font-semibold text-slate-900 dark:text-white">
+													{book.isbn || "N/A"}
+												</div>
+											</td>
+											<td className="px-3 py-3">
+												<div className="font-bold text-slate-900 dark:text-white">
+													AED {book.price.toFixed(2)}
+												</div>
+												<div className="text-[10px] text-slate-400 line-through">
+													AED {book.originalPrice?.toFixed(2) || "N/A"}
+												</div>
+											</td>
 
-										<td className="py-3 px-3">
-											{(() => {
-												const stockCount = book.stock || 0;
-												const isOutOfStock = stockCount === 0;
-												const isLowStock = stockCount > 0 && stockCount <= 20;
-												const badgeVariant = isOutOfStock ? "destructive" : isLowStock ? "secondary" : "success";
-												const badgeText = isOutOfStock ? "Out of Stock" : isLowStock ? "Low Stock" : "In Stock";
-												return (
-													<Badge
-														variant={badgeVariant}
-														className="px-2 py-0 text-[10px]"
+											<td className="px-3 py-3">
+												{(() => {
+													const stockCount = book.stock || 0;
+													const isOutOfStock = stockCount === 0;
+													const isLowStock = stockCount > 0 && stockCount <= 20;
+													const badgeVariant = isOutOfStock
+														? "destructive"
+														: isLowStock
+															? "secondary"
+															: "success";
+													const badgeText = isOutOfStock
+														? "Out of Stock"
+														: isLowStock
+															? "Low Stock"
+															: "In Stock";
+													return (
+														<Badge
+															className="px-2 py-0 text-[10px]"
+															variant={badgeVariant}
+														>
+															{badgeText}
+														</Badge>
+													);
+												})()}
+											</td>
+											<td className="px-3 py-3 text-right">
+												<div className="flex items-center justify-end gap-1">
+													{sortBy === "custom" && (
+														<>
+															<Button
+																className="text-slate-500 hover:bg-primary/10 hover:text-primary"
+																onClick={() => moveToTop(index)}
+																size="sm"
+																title="Move to Top"
+																variant="ghost"
+															>
+																<ArrowUpToLine className="h-4 w-4" />
+															</Button>
+															<Button
+																className="text-slate-500 hover:bg-primary/10 hover:text-primary"
+																onClick={() => moveToBottom(index)}
+																size="sm"
+																title="Move to Bottom"
+																variant="ghost"
+															>
+																<ArrowDownToLine className="h-4 w-4" />
+															</Button>
+														</>
+													)}
+
+													<Button
+														asChild
+														className="text-slate-500 hover:bg-primary/10 hover:text-primary"
+														size="sm"
+														title="View Full Details"
+														variant="ghost"
 													>
-														{badgeText}
-													</Badge>
-												);
-											})()}
-										</td>
-										<td className="py-3 px-3 text-right">
-											<div className="flex items-center justify-end gap-1">
-												{sortBy === "custom" && (
-													<>
-														<Button
-															variant="ghost"
-															size="sm"
-															className="text-slate-500 hover:text-primary hover:bg-primary/10"
-															onClick={() => moveToTop(index)}
-															title="Move to Top"
-														>
-															<ArrowUpToLine className="h-4 w-4" />
-														</Button>
-														<Button
-															variant="ghost"
-															size="sm"
-															className="text-slate-500 hover:text-primary hover:bg-primary/10"
-															onClick={() => moveToBottom(index)}
-															title="Move to Bottom"
-														>
-															<ArrowDownToLine className="h-4 w-4" />
-														</Button>
-													</>
-												)}
+														<Link href={`/admin/catalog/${book.slug}`}>
+															<Eye className="h-4 w-4" />
+														</Link>
+													</Button>
 
-												<Button
-													asChild
-													variant="ghost"
-													size="sm"
-													className="text-slate-500 hover:text-primary hover:bg-primary/10"
-													title="View Full Details"
-												>
-													<Link href={`/admin/catalog/${book.slug}`}>
-														<Eye className="h-4 w-4" />
-													</Link>
-												</Button>
-
-												<Button
-													variant="ghost"
-													size="sm"
-													className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-													onClick={() => handleDeleteBook(book.id)}
-													disabled={deleteProductMutation.isPending}
-												>
-													<Trash2 className="h-4 w-4" />
-												</Button>
-											</div>
-										</td>
-									</tr>
-								);
-							})}
+													<Button
+														className="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+														disabled={deleteProductMutation.isPending}
+														onClick={() => handleDeleteBook(book.id)}
+														size="sm"
+														variant="ghost"
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</td>
+										</tr>
+									);
+								})}
 						</tbody>
 					</table>
-					
+
 					{/* Pagination Controls */}
 					{processedBooks.length > 0 && (
-						<div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-800">
+						<div className="mt-4 flex items-center justify-between border-slate-200 border-t pt-4 dark:border-slate-800">
 							<div className="flex items-center gap-4">
-								<div className="text-sm text-slate-500">
-									Showing {(page - 1) * itemsPerPage + 1} to {Math.min(page * itemsPerPage, processedBooks.length)} of {processedBooks.length} books
+								<div className="text-slate-500 text-sm">
+									Showing {(page - 1) * itemsPerPage + 1} to{" "}
+									{Math.min(page * itemsPerPage, processedBooks.length)} of{" "}
+									{processedBooks.length} books
 								</div>
-								<div className="flex items-center gap-2 text-sm text-slate-500">
+								<div className="flex items-center gap-2 text-slate-500 text-sm">
 									<span>Show:</span>
 									<select
-										value={itemsPerPage}
+										className="h-8 rounded-md border border-slate-200 bg-transparent px-2 text-sm dark:border-slate-800 dark:bg-transparent"
 										onChange={(e) => {
 											setItemsPerPage(Number(e.target.value));
 											setPage(1);
 										}}
-										className="h-8 rounded-md border border-slate-200 bg-transparent px-2 text-sm dark:border-slate-800 dark:bg-transparent"
+										value={itemsPerPage}
 									>
 										<option value={50}>50</option>
 										<option value={100}>100</option>
@@ -680,18 +752,27 @@ export function BooksView() {
 							</div>
 							<div className="flex gap-2">
 								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setPage(p => Math.max(1, p - 1))}
 									disabled={page === 1}
+									onClick={() => setPage((p) => Math.max(1, p - 1))}
+									size="sm"
+									variant="outline"
 								>
 									Previous
 								</Button>
 								<Button
-									variant="outline"
+									disabled={
+										page >= Math.ceil(processedBooks.length / itemsPerPage)
+									}
+									onClick={() =>
+										setPage((p) =>
+											Math.min(
+												Math.ceil(processedBooks.length / itemsPerPage),
+												p + 1
+											)
+										)
+									}
 									size="sm"
-									onClick={() => setPage(p => Math.min(Math.ceil(processedBooks.length / itemsPerPage), p + 1))}
-									disabled={page >= Math.ceil(processedBooks.length / itemsPerPage)}
+									variant="outline"
 								>
 									Next
 								</Button>

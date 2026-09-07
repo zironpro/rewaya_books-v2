@@ -21,6 +21,7 @@ export const GET_PRODUCTS = gql`
       format
       ribbon
       publisher
+      sortOrder
     }
   }
 `;
