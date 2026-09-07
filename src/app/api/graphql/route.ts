@@ -142,6 +142,8 @@ const typeDefs = gql`
     ctaHref: String
     delaySeconds: Int
     enabled: Boolean
+    expiresAt: String
+    countdownText: String
     createdAt: String
     updatedAt: String
   }
@@ -375,6 +377,8 @@ const typeDefs = gql`
     ctaHref: String
     delaySeconds: Int
     enabled: Boolean
+    expiresAt: String
+    countdownText: String
   }
 
   input RefundRequestInput {

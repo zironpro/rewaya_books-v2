@@ -15,7 +15,11 @@ export default async function MainLayout({
 	let popup = null;
 	try {
 		const res = await graphqlClient.request(GetPopupsDocument);
-		popup = res.popups?.find((p) => p.enabled) || null;
+		const now = new Date();
+		popup = res.popups?.find((p) =>
+			p.enabled &&
+			(!p.expiresAt || new Date(Number(p.expiresAt)) > now)
+		) || null;
 	} catch (error) {
 		console.error("Failed to fetch popups:", error);
 	}

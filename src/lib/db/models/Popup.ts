@@ -9,6 +9,8 @@ const PopupSchema = new mongoose.Schema(
 		image: { type: String },
 		delaySeconds: { type: Number, default: 5 },
 		enabled: { type: Boolean, default: true },
+		expiresAt: { type: Date },
+		countdownText: { type: String },
 	},
 	{ timestamps: true }
 );

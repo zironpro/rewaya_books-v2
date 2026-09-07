@@ -405,12 +405,14 @@ export type OrderItemInput = {
 
 export type Popup = {
   __typename?: 'Popup';
+  countdownText?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['String']['output']>;
   ctaHref?: Maybe<Scalars['String']['output']>;
   ctaLabel?: Maybe<Scalars['String']['output']>;
   delaySeconds?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
+  expiresAt?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   image?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
@@ -418,11 +420,13 @@ export type Popup = {
 };
 
 export type PopupInput = {
+  countdownText?: InputMaybe<Scalars['String']['input']>;
   ctaHref?: InputMaybe<Scalars['String']['input']>;
   ctaLabel?: InputMaybe<Scalars['String']['input']>;
   delaySeconds?: InputMaybe<Scalars['Int']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  expiresAt?: InputMaybe<Scalars['String']['input']>;
   image?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
 };
@@ -713,7 +717,7 @@ export type CreatePopupMutationVariables = Exact<{
 }>;
 
 
-export type CreatePopupMutation = { createPopup: { id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null } };
+export type CreatePopupMutation = { createPopup: { id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null, expiresAt: string | null, countdownText: string | null } };
 
 export type UpdatePopupMutationVariables = Exact<{
   id: string | number;
@@ -721,7 +725,7 @@ export type UpdatePopupMutationVariables = Exact<{
 }>;
 
 
-export type UpdatePopupMutation = { updatePopup: { id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null } };
+export type UpdatePopupMutation = { updatePopup: { id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null, expiresAt: string | null, countdownText: string | null } };
 
 export type DeletePopupMutationVariables = Exact<{
   id: string | number;
@@ -885,7 +889,7 @@ export type GetHeroBannersQuery = { heroBanners: Array<{ id: string, title: stri
 export type GetPopupsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetPopupsQuery = { popups: Array<{ id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null, createdAt: string | null }> };
+export type GetPopupsQuery = { popups: Array<{ id: string, title: string, description: string | null, image: string | null, ctaLabel: string | null, ctaHref: string | null, delaySeconds: number | null, enabled: boolean | null, expiresAt: string | null, countdownText: string | null, createdAt: string | null }> };
 
 export type GetHomepageSectionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1204,6 +1208,8 @@ export const CreatePopupDocument = new TypedDocumentString(`
     ctaHref
     delaySeconds
     enabled
+    expiresAt
+    countdownText
   }
 }
     `);
@@ -1232,6 +1238,8 @@ export const UpdatePopupDocument = new TypedDocumentString(`
     ctaHref
     delaySeconds
     enabled
+    expiresAt
+    countdownText
   }
 }
     `);
@@ -1930,6 +1938,8 @@ export const GetPopupsDocument = new TypedDocumentString(`
     ctaHref
     delaySeconds
     enabled
+    expiresAt
+    countdownText
     createdAt
   }
 }

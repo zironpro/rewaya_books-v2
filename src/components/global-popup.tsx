@@ -18,6 +18,8 @@ interface PopupData {
 	ctaLabel?: string | null;
 	ctaHref?: string | null;
 	delaySeconds?: number | null;
+	expiresAt?: string | null;
+	countdownText?: string | null;
 }
 
 export function GlobalPopup({ popup }: { popup: PopupData }) {
@@ -25,17 +27,21 @@ export function GlobalPopup({ popup }: { popup: PopupData }) {
 
 	useEffect(() => {
 		if (!popup) return;
-		
-		const hasSeen = localStorage.getItem("hasSeenPopup");
+
+		// Don't show if the popup has expired
+		if (popup.expiresAt && new Date(Number(popup.expiresAt)) < new Date()) return;
+
+		const hasSeen = sessionStorage.getItem("hasSeenPopup");
 		if (!hasSeen) {
 			const delay = (popup.delaySeconds || 5) * 1000;
 			const timer = setTimeout(() => {
 				setOpen(true);
-				localStorage.setItem("hasSeenPopup", "true");
+				sessionStorage.setItem("hasSeenPopup", "true");
 			}, delay);
 			return () => clearTimeout(timer);
 		}
 	}, [popup]);
+
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -49,6 +55,12 @@ export function GlobalPopup({ popup }: { popup: PopupData }) {
 					)}
 				</DialogHeader>
 				
+				{popup.countdownText && (
+					<div className="mt-3 flex items-center justify-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-4 py-1.5 text-amber-800 text-sm font-semibold dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+						{popup.countdownText}
+					</div>
+				)}
+
 				{popup.image && (
 					<div className="mt-4 flex justify-center">
 						<img src={popup.image} alt={popup.title} className="rounded-md max-h-64 object-contain" />

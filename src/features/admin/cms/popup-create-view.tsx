@@ -23,6 +23,8 @@ export function PopupCreateView() {
 	const [ctaHref, setCtaHref] = React.useState("/shop");
 	const [delaySeconds, setDelaySeconds] = React.useState("5");
 	const [image, setImage] = React.useState("");
+	const [expiresAt, setExpiresAt] = React.useState("");
+	const [countdownText, setCountdownText] = React.useState("");
 	const [isUploading, setIsUploading] = React.useState(false);
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +68,8 @@ export function PopupCreateView() {
 					image,
 					delaySeconds: parseInt(delaySeconds) || 5,
 					enabled: true,
+					expiresAt: expiresAt || null,
+					countdownText: countdownText || null,
 				},
 			});
 			queryClient.invalidateQueries({ queryKey: ["GetPopups"] });
@@ -125,6 +129,19 @@ export function PopupCreateView() {
 
 				<div className="space-y-1">
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
+						Days Left Text
+					</label>
+					<Input
+						placeholder="e.g. ⏳ Only 3 days left!"
+						value={countdownText}
+						onChange={(e) => setCountdownText(e.target.value)}
+						className="h-10 text-sm"
+					/>
+					<p className="text-xs text-slate-400">Shown as a highlighted badge in the popup. Leave blank to hide.</p>
+				</div>
+
+				<div className="space-y-1">
+					<label className="font-semibold text-slate-700 dark:text-slate-300">
 						Delay Seconds
 					</label>
 					<Input
@@ -134,6 +151,19 @@ export function PopupCreateView() {
 						onChange={(e) => setDelaySeconds(e.target.value)}
 						className="h-10 text-sm"
 					/>
+				</div>
+
+				<div className="space-y-1">
+					<label className="font-semibold text-slate-700 dark:text-slate-300">
+						Expiry Date (Optional)
+					</label>
+					<Input
+						type="date"
+						value={expiresAt}
+						onChange={(e) => setExpiresAt(e.target.value)}
+						className="h-10 text-sm"
+					/>
+					<p className="text-xs text-slate-400">Popup will stop showing after this date. Leave blank to show indefinitely.</p>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4">
