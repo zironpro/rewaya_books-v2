@@ -105,6 +105,7 @@ export async function POST(request: Request) {
 
 
 		let shippingCost = 0;
+		let codFee = 0;
 		const country = shippingAddress?.country || "UAE";
 		const shippingConfigs = await ShippingConfig.find({ status: "Active" }).lean();
 		if (shippingConfigs && shippingConfigs.length > 0) {
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
 				c.countries.includes("Worldwide")
 			);
 			if (matchedConfig) {
+				codFee = matchedConfig.codFee || 0;
 				let standardCost = matchedConfig.standardFee || 0;
 				if (matchedConfig.freeThreshold > 0 && cartTotal >= matchedConfig.freeThreshold) {
 					standardCost = 0;
@@ -143,7 +145,7 @@ export async function POST(request: Request) {
 
 		// Handle COD
 		if (paymentMethod === "cod") {
-			const total = cartTotal + shippingCost + taxCost;
+			const total = cartTotal + shippingCost + taxCost + codFee;
 
 			const newOrder = new Order({
 				userId: userId || undefined,

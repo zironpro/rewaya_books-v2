@@ -38,6 +38,12 @@ export const DELETE_PRODUCT = gql`
   }
 `;
 
+export const UPDATE_PRODUCTS_SORT_ORDER = gql`
+  mutation UpdateProductsSortOrder($updates: [ProductSortOrderInput!]!) {
+    updateProductsSortOrder(updates: $updates)
+  }
+`;
+
 export const CREATE_BUNDLE = gql`
   mutation CreateBundle($input: BundleInput!) {
     createBundle(input: $input) {
@@ -169,6 +175,7 @@ export const CREATE_SHIPPING_CONFIG = gql`
       expressFee
       freeThreshold
       deliveryTime
+      codFee
       status
     }
   }
@@ -190,6 +197,7 @@ export const UPDATE_SHIPPING_CONFIG = gql`
       expressFee
       freeThreshold
       deliveryTime
+      codFee
       status
     }
   }

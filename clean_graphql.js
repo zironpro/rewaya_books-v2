@@ -4,7 +4,7 @@ const lines = code.split('\n');
 
 const duplicates = [
     'BundleInput', 'CategoryInput', 'CheckoutInput', 'HeroBannerInput', 'HomepageSectionInput',
-    'OrderItemInput', 'ProductInput', 'ShippingAddressInput', 'ShippingConfigInput', 'TaxConfigInput', 'CouponInput', 'PopupInput', 'RefundRequestInput'
+    'OrderItemInput', 'ProductInput', 'ShippingAddressInput', 'ShippingConfigInput', 'TaxConfigInput', 'CouponInput', 'PopupInput', 'RefundRequestInput', 'ProductSortOrderInput'
 ];
 
 let newLines = [];

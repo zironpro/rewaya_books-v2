@@ -39,6 +39,7 @@ import {
 	useGetCategoriesQuery,
 	useGetProductsQuery,
 	useUpdateProductMutation,
+	useUpdateProductsSortOrderMutation,
 } from "@/types/graphql";
 
 const initialBooks = [
@@ -120,6 +121,7 @@ export function BooksView() {
 	const createProductMutation = useCreateProductMutation();
 	const deleteProductMutation = useDeleteProductMutation();
 	const updateProductMutation = useUpdateProductMutation();
+	const updateProductsSortOrderMutation = useUpdateProductsSortOrderMutation();
 
 	const books = data?.products || [];
 	const categories = categoriesData?.categories || [];
@@ -429,19 +431,11 @@ export function BooksView() {
 	const handleSaveOrder = async () => {
 		setIsSaved(true);
 		try {
-			await Promise.all(
-				orderedBooks.map((book, index) =>
-					updateProductMutation.mutateAsync({
-						id: book.id,
-						input: {
-							title: book.title,
-							slug: book.slug,
-							price: book.price,
-							sortOrder: index,
-						} as any,
-					})
-				)
-			);
+			const updates = orderedBooks.map((book, index) => ({
+				id: book.id,
+				sortOrder: index,
+			}));
+			await updateProductsSortOrderMutation.mutateAsync({ updates });
 			refetch();
 		} catch (error) {
 			console.error("Failed to save order", error);

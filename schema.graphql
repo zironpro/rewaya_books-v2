@@ -72,6 +72,7 @@
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
+    codFee: Float
     status: String
   }
 
@@ -245,6 +246,7 @@
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
+    codFee: Float
     status: String
   }
 
@@ -361,11 +363,17 @@
     reason: String!
   }
 
+  input ProductSortOrderInput {
+    id: ID!
+    sortOrder: Int!
+  }
+
   type Mutation {
     updateOrderStatus(id: ID!, status: String!): Order!
     createProduct(input: ProductInput!): Product!
     updateProduct(id: ID!, input: ProductInput!): Product!
     deleteProduct(id: ID!): Boolean!
+    updateProductsSortOrder(updates: [ProductSortOrderInput!]!): Boolean!
     checkout(input: CheckoutInput!): Order!
     
     createBundle(input: BundleInput!): Bundle!

@@ -10,6 +10,7 @@ const ShippingConfigSchema = new mongoose.Schema(
     freeThreshold: { type: Number, required: true },
     deliveryTime: { type: String, required: true },
     expressDeliveryTime: { type: String },
+    codFee: { type: Number, default: 0 },
     status: { type: String, default: "Active" },
   },
   {

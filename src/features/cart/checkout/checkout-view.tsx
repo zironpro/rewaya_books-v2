@@ -108,7 +108,8 @@ export function CheckoutView({ cart, user }: { cart: any, user?: any }) {
 		}
 	}
 
-	const orderTotal = cartTotal + shippingCost + taxCost;
+	const codFee = (paymentMethod === "cod" && matchedConfig?.codFee) ? matchedConfig.codFee : 0;
+	const orderTotal = cartTotal + shippingCost + taxCost + codFee;
 
 	const handleApplyCoupon = async () => {
 		if (!couponCode) return;
@@ -411,6 +412,9 @@ export function CheckoutView({ cart, user }: { cart: any, user?: any }) {
 								<div>
 									<div className="font-bold text-slate-900 dark:text-white">Cash on Delivery</div>
 									<div className="text-sm text-slate-500">Pay when your order arrives</div>
+									{matchedConfig?.codFee > 0 && (
+										<div className="text-sm font-semibold text-primary mt-1">+ AED {matchedConfig.codFee.toFixed(2)} COD Fee</div>
+									)}
 								</div>
 							</label>
 						</div>
@@ -489,6 +493,12 @@ export function CheckoutView({ cart, user }: { cart: any, user?: any }) {
 								<div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
 									<span>{taxName}</span>
 									<span className="font-medium">AED {taxCost.toFixed(2)}</span>
+								</div>
+							)}
+							{codFee > 0 && (
+								<div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+									<span>Cash on Delivery Fee</span>
+									<span className="font-medium">AED {codFee.toFixed(2)}</span>
 								</div>
 							)}
 							

@@ -93,6 +93,7 @@ const typeDefs = gql`
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
+    codFee: Float
     status: String
   }
 
@@ -268,6 +269,7 @@ const typeDefs = gql`
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
+    codFee: Float
     status: String
   }
 
@@ -386,11 +388,17 @@ const typeDefs = gql`
     reason: String!
   }
 
+  input ProductSortOrderInput {
+    id: ID!
+    sortOrder: Int!
+  }
+
   type Mutation {
     updateOrderStatus(id: ID!, status: String!): Order!
     createProduct(input: ProductInput!): Product!
     updateProduct(id: ID!, input: ProductInput!): Product!
     deleteProduct(id: ID!): Boolean!
+    updateProductsSortOrder(updates: [ProductSortOrderInput!]!): Boolean!
     checkout(input: CheckoutInput!): Order!
     
     createBundle(input: BundleInput!): Bundle!
@@ -435,11 +443,11 @@ const resolvers = {
 	Query: {
 		products: async () => {
 			await connectToDatabase();
-			return await Product.find({}).sort({ sortOrder: 1, createdAt: -1 });
+			return await Product.find({}).sort({ sortOrder: 1, createdAt: -1 }).lean();
 		},
 		productBySlug: async (_: any, { slug }: { slug: string }) => {
 			await connectToDatabase();
-			return await Product.findOne({ slug });
+			return await Product.findOne({ slug }).lean();
 		},
 		bundles: async () => {
 			await connectToDatabase();
@@ -479,7 +487,14 @@ const resolvers = {
 		},
 		categories: async () => {
 			await connectToDatabase();
-			return await Category.find({}).populate("products").sort({ sort: 1 });
+			return await Category.find({})
+				.populate({
+					path: "products",
+					select: "id title coverImage slug",
+					options: { lean: true }
+				})
+				.sort({ sort: 1 })
+				.lean();
 		},
 		coupons: async () => {
 			await connectToDatabase();
@@ -519,6 +534,12 @@ const resolvers = {
 			await connectToDatabase();
 			return await RefundRequest.findById(id);
 		},
+	},
+	Product: {
+		id: (parent: any) => parent.id || (parent._id ? parent._id.toString() : null),
+	},
+	Category: {
+		id: (parent: any) => parent.id || (parent._id ? parent._id.toString() : null),
 	},
 	OrderItem: {
 		product: async (parent: any) => {
@@ -660,6 +681,20 @@ const resolvers = {
 			}
 			
 			return await Product.findByIdAndUpdate(id, input, { new: true });
+		},
+		updateProductsSortOrder: async (_: any, { updates }: { updates: { id: string, sortOrder: number }[] }) => {
+			await connectToDatabase();
+			if (!updates || updates.length === 0) return true;
+
+			const bulkOps = updates.map((update) => ({
+				updateOne: {
+					filter: { _id: update.id },
+					update: { $set: { sortOrder: update.sortOrder } },
+				},
+			}));
+
+			await Product.bulkWrite(bulkOps);
+			return true;
 		},
 		deleteProduct: async (_: any, { id }: { id: string }) => {
 			await connectToDatabase();

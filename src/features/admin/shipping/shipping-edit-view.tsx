@@ -42,6 +42,7 @@ export function ShippingEditView({ shippingId }: { shippingId: string }) {
 	const [freeThreshold, setFreeThreshold] = React.useState("300");
 	const [deliveryTime, setDeliveryTime] = React.useState("2 - 3 Days");
 	const [expressDeliveryTime, setExpressDeliveryTime] = React.useState("1 - 2 Days");
+	const [codFee, setCodFee] = React.useState("15");
 	const [selectedCountries, setSelectedCountries] = React.useState<string[]>([]);
 	const [isInitialized, setIsInitialized] = React.useState(false);
 
@@ -59,6 +60,7 @@ export function ShippingEditView({ shippingId }: { shippingId: string }) {
 				setFreeThreshold(zone.freeThreshold.toString());
 				setDeliveryTime(zone.deliveryTime);
 				setExpressDeliveryTime(zone.expressDeliveryTime || "1 - 2 Days");
+				setCodFee((zone.codFee || 0).toString());
 				setSelectedCountries(zone.countries);
 				setIsInitialized(true);
 			}
@@ -87,6 +89,7 @@ export function ShippingEditView({ shippingId }: { shippingId: string }) {
 				freeThreshold: parseFloat(freeThreshold) || 0,
 				deliveryTime,
 				expressDeliveryTime,
+				codFee: parseFloat(codFee) || 0,
 				status: "Active",
 			};
 
@@ -198,16 +201,30 @@ export function ShippingEditView({ shippingId }: { shippingId: string }) {
 						</div>
 					</div>
 
-					<div className="space-y-2">
-						<label className="font-semibold text-slate-700 dark:text-slate-300">
-							Standard Delivery Time
-						</label>
-						<Input
-							placeholder="e.g. 2 - 4 Business Days"
-							value={deliveryTime}
-							onChange={(e) => setDeliveryTime(e.target.value)}
-							className="h-10 text-sm"
-						/>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<label className="font-semibold text-slate-700 dark:text-slate-300">
+								Standard Delivery Time
+							</label>
+							<Input
+								placeholder="e.g. 2 - 4 Business Days"
+								value={deliveryTime}
+								onChange={(e) => setDeliveryTime(e.target.value)}
+								className="h-10 text-sm"
+							/>
+						</div>
+						<div className="space-y-2">
+							<label className="font-semibold text-slate-700 dark:text-slate-300">
+								COD Fee (AED)
+							</label>
+							<Input
+								type="number"
+								placeholder="e.g. 15"
+								value={codFee}
+								onChange={(e) => setCodFee(e.target.value)}
+								className="h-10 text-sm"
+							/>
+						</div>
 					</div>
 
 					<div className="pt-4 border-t border-slate-100 dark:border-slate-800">
