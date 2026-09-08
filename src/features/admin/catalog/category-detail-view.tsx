@@ -1,24 +1,21 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import { useParams, useRouter } from "next/navigation";
-
 import { useQueryClient } from "@tanstack/react-query";
 import {
-	ArrowDown,
-	ArrowLeft,
-	ArrowUp,
-	CheckCircle,
-	Image as ImageIcon,
-	Layers,
-	Save,
+	ChevronRight,
+	MoreHorizontal,
+	Move,
+	UploadCloud,
 	X,
+	Search
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import {
 	useGetCategoriesQuery,
@@ -40,7 +37,6 @@ export function CategoryDetailView() {
 	const category = categories.find((c: any) => c.slug === slug);
 	const allProducts = productsData?.products || [];
 
-	const [isEditing, setIsEditing] = useState(false);
 	const [editName, setEditName] = useState("");
 	const [editSlug, setEditSlug] = useState("");
 	const [editStatus, setEditStatus] = useState("");
@@ -55,17 +51,25 @@ export function CategoryDetailView() {
 	const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
 	useEffect(() => {
-		if (category && !isEditing) {
-			setEditName(category.name);
-			setEditSlug(category.slug);
-			setEditStatus(category.status);
-			setEditSort(category.sort);
+		if (category) {
+			setEditName(category.name || "");
+			setEditSlug(category.slug || "");
+			setEditStatus(category.status || "");
+			setEditSort(category.sort || 0);
 			setSelectedProducts(category.products?.map((p: any) => p.id) || []);
 			setEditImage(category.image || "");
 		}
-	}, [category, isEditing]);
+	}, [category]);
 
-	if (!category) {
+	if (!category && !isLoading) {
+		return (
+			<div className="flex h-64 items-center justify-center">
+				<div className="text-slate-500">Category not found...</div>
+			</div>
+		);
+	}
+
+	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<div className="text-slate-500">Loading category details...</div>
@@ -92,8 +96,8 @@ export function CategoryDetailView() {
 				},
 			});
 			queryClient.invalidateQueries({ queryKey: ["GetCategories"] });
-			setIsEditing(false);
 			refetch();
+			alert("Category updated successfully.");
 		} catch (error) {
 			console.error("Failed to update category:", error);
 			alert("Failed to update category.");
@@ -128,466 +132,325 @@ export function CategoryDetailView() {
 	};
 
 	return (
-		<div className="space-y-6">
-			{/* Page Header */}
-			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-				<div className="flex items-center gap-4">
-					<Button
-						onClick={() => router.push("/admin/catalog/categories")}
-						size="icon"
-						variant="ghost"
-					>
-						<ArrowLeft className="h-5 w-5" />
-					</Button>
-					<div>
-						<h1 className="flex items-center gap-2 font-bold text-2xl text-slate-900 dark:text-white">
-							{isEditing ? "Edit Category" : category.name}
-							{!isEditing && (
-								<Badge
-									className="ml-2 font-semibold"
-									variant={
-										category.status === "Active" ? "success" : "secondary"
-									}
-								>
-									{category.status === "Active" && (
-										<CheckCircle className="mr-1 h-3 w-3" />
-									)}{" "}
-									{category.status}
-								</Badge>
-							)}
-						</h1>
-						{!isEditing && (
-							<p className="mt-1 flex items-center gap-1.5 text-slate-500 text-sm">
-								<Layers className="h-4 w-4" /> Slug: /{category.slug}
-							</p>
-						)}
-					</div>
-				</div>
+		<div className="min-h-screen bg-slate-50">
+			{/* Hero Background */}
+			<div className="relative h-[300px] w-full overflow-hidden bg-slate-800">
+				{editImage ? (
+					<>
+						<img
+							src={editImage}
+							alt=""
+							className="absolute inset-0 h-full w-full object-cover blur-3xl opacity-50 scale-110"
+						/>
+						<div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
+					</>
+				) : (
+					<div className="absolute inset-0 bg-gradient-to-tr from-orange-500/80 to-pink-500/80" />
+				)}
 
-				<div className="flex items-center gap-2 self-start sm:self-auto">
-					{isEditing ? (
-						<>
+				<div className="relative z-10 mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+					{/* Header Actions */}
+					<div className="flex items-start justify-between">
+						<div>
+							<div className="flex items-center text-sm text-white/80 font-medium">
+								<button 
+                                    type="button"
+									onClick={() => router.push("/admin/catalog/categories")}
+									className="hover:text-white transition-colors"
+								>
+									Categories
+								</button>
+								<ChevronRight className="mx-1 h-4 w-4" />
+								<span className="text-white">{category.name}</span>
+							</div>
+							<h1 className="mt-4 text-4xl font-bold text-white tracking-tight">
+								{category.name}
+							</h1>
+						</div>
+
+						<div className="flex items-center gap-3">
 							<Button
-								className="gap-2"
-								onClick={() => setIsEditing(false)}
 								variant="outline"
+								size="icon"
+								className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20"
 							>
-								<X className="h-4 w-4" /> Cancel
+								<MoreHorizontal className="h-5 w-5" />
 							</Button>
-							<Button className="gap-2" onClick={handleSave}>
-								<Save className="h-4 w-4" /> Save Changes
+							<Button
+								variant="outline"
+								onClick={() => router.push("/admin/catalog/categories")}
+								className="rounded-full bg-transparent border-white/30 text-white hover:bg-white/10 hover:text-white"
+							>
+								Cancel
 							</Button>
-						</>
-					) : (
-						<Button className="gap-2" onClick={() => setIsEditing(true)}>
-							Edit Category
-						</Button>
-					)}
+							<Button
+								onClick={handleSave}
+								className="rounded-full bg-white text-blue-600 hover:bg-white/90 shadow-lg"
+							>
+								Save
+							</Button>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-				{/* Main Details */}
-				<div className="space-y-6 lg:col-span-2">
-					<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-						<h2 className="mb-4 font-bold text-lg text-slate-900 dark:text-white">
-							Category Information
-						</h2>
-						{isEditing ? (
-							<div className="space-y-4">
-								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-									<div className="space-y-1">
-										<label className="font-semibold text-slate-700 text-sm dark:text-slate-300">
-											Name
-										</label>
-										<Input
-											onChange={(e) => setEditName(e.target.value)}
-											value={editName}
-										/>
-									</div>
-									<div className="space-y-1">
-										<label className="font-semibold text-slate-700 text-sm dark:text-slate-300">
-											URL Slug
-										</label>
-										<Input
-											onChange={(e) => setEditSlug(e.target.value)}
-											value={editSlug}
-										/>
-									</div>
-								</div>
-
-								<div className="space-y-1">
-									<label className="font-semibold text-slate-700 text-sm dark:text-slate-300">
-										Description
-									</label>
-									<textarea
-										className="min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-										placeholder="Optional description for the category..."
-									/>
-								</div>
-							</div>
-						) : (
-							<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-								<div>
-									<div className="text-slate-500 text-sm">Category Name</div>
-									<div className="mt-1 font-medium text-slate-900 dark:text-white">
-										{category.name}
-									</div>
-								</div>
-								<div>
-									<div className="text-slate-500 text-sm">URL Slug</div>
-									<div className="mt-1 font-medium text-slate-900 dark:text-white">
-										/{category.slug}
-									</div>
-								</div>
-								<div>
-									<div className="text-slate-500 text-sm">Products Count</div>
-									<div className="mt-1 font-medium text-slate-900 dark:text-white">
-										{category.count} items
-									</div>
-								</div>
-							</div>
-						)}
-					</div>
-
-					{/* Products List */}
-					<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-						<h2 className="mb-4 font-bold text-lg text-slate-900 dark:text-white">
-							Products in Category
-						</h2>
-						{isEditing ? (
-							<div className="space-y-6">
-								<div>
-									<div className="mb-2 font-semibold text-slate-700 text-sm dark:text-slate-300">
-										Selected Products (Drag or use arrows to reorder)
-									</div>
-									<div className="max-h-64 space-y-2 overflow-y-auto rounded-md border border-slate-200 p-2 dark:border-slate-800">
-										{selectedProducts.map((productId, index) => {
-											const p = allProducts.find(
-												(p: any) => p.id === productId
-											);
-											if (!p) return null;
-
-											const isDragging = draggedIndex === index;
-											const isDragOver =
-												dragOverIndex === index && draggedIndex !== index;
-
-											return (
-												<div
-													className={`flex cursor-move items-center gap-3 rounded-md border p-2 transition-all ${
-														isDragging
-															? "border-primary border-dashed bg-primary/5 opacity-30"
-															: isDragOver
-																? "border-x-transparent border-t-2 border-t-primary border-b-transparent bg-primary/10 shadow-md"
-																: "border-slate-100 bg-slate-50 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-800"
-													}`}
-													draggable
-													key={p.id}
-													onDragEnd={() => {
-														setDraggedIndex(null);
-														setDragOverIndex(null);
-													}}
-													onDragLeave={() => {
-														if (dragOverIndex === index) setDragOverIndex(null);
-													}}
-													onDragOver={(e) => {
-														e.preventDefault();
-														setDragOverIndex(index);
-														e.dataTransfer.dropEffect = "move";
-													}}
-													onDragStart={(e) => {
-														setDraggedIndex(index);
-														e.dataTransfer.setData(
-															"text/plain",
-															index.toString()
-														);
-														e.dataTransfer.effectAllowed = "move";
-													}}
-													onDrop={(e) => {
-														e.preventDefault();
-														if (draggedIndex !== null) {
-															const newArr = [...selectedProducts];
-															const [removed] = newArr.splice(draggedIndex, 1);
-															newArr.splice(index, 0, removed);
-															setSelectedProducts(newArr);
-														}
-														setDraggedIndex(null);
-														setDragOverIndex(null);
-													}}
-												>
-													<div className="mr-2 flex flex-col gap-1">
-														<button
-															className="text-slate-400 hover:text-primary disabled:opacity-30"
-															disabled={index === 0}
-															onClick={() => {
-																if (index > 0) {
-																	const newArr = [...selectedProducts];
-																	[newArr[index - 1], newArr[index]] = [
-																		newArr[index],
-																		newArr[index - 1],
-																	];
-																	setSelectedProducts(newArr);
-																}
-															}}
-															type="button"
-														>
-															<ArrowUp className="h-4 w-4" />
-														</button>
-														<button
-															className="text-slate-400 hover:text-primary disabled:opacity-30"
-															disabled={index === selectedProducts.length - 1}
-															onClick={() => {
-																if (index < selectedProducts.length - 1) {
-																	const newArr = [...selectedProducts];
-																	[newArr[index + 1], newArr[index]] = [
-																		newArr[index],
-																		newArr[index + 1],
-																	];
-																	setSelectedProducts(newArr);
-																}
-															}}
-															type="button"
-														>
-															<ArrowDown className="h-4 w-4" />
-														</button>
-													</div>
-													{p.coverImage && (
-														<img
-															alt={p.title}
-															className="pointer-events-none h-10 w-8 rounded object-cover shadow-sm"
-															src={p.coverImage}
-														/>
-													)}
-													<span className="pointer-events-none flex-1 truncate font-medium text-sm">
-														{p.title}
-													</span>
-													<button
-														className="z-10 font-medium text-red-500 text-sm hover:text-red-700"
-														onClick={() =>
-															setSelectedProducts(
-																selectedProducts.filter((id) => id !== p.id)
-															)
-														}
-														type="button"
+			{/* Main Content Layout */}
+			<div className="relative z-20 mx-auto max-w-7xl px-4 -mt-32 pb-24 sm:px-6 lg:px-8">
+				<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+					
+					{/* Left Panel: Products */}
+					<div className="lg:col-span-2">
+						<div className="rounded-xl bg-white shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+							<div className="flex items-center justify-between border-b border-slate-100 p-6">
+								<h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+									Products in category
+									<span className="text-slate-400 font-normal">{selectedProducts.length}</span>
+								</h2>
+								<Dialog>
+									<DialogTrigger asChild>
+										<Button variant="ghost" className="text-blue-500 font-medium hover:text-blue-600 hover:bg-blue-50">
+											+ Add Products
+										</Button>
+									</DialogTrigger>
+									<DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+										<DialogHeader>
+											<DialogTitle>Add Products to Category</DialogTitle>
+										</DialogHeader>
+										<div className="relative mt-2">
+											<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+											<Input 
+												className="pl-9" 
+												placeholder="Search products..." 
+												value={productSearch}
+												onChange={(e) => setProductSearch(e.target.value)}
+											/>
+										</div>
+										<div className="flex-1 overflow-y-auto mt-4 pr-2 space-y-2">
+											{allProducts
+												.filter((p: any) => !selectedProducts.includes(p.id))
+												.filter((p: any) =>
+													p.title.toLowerCase().includes(productSearch.toLowerCase())
+												)
+												.slice(0, 50)
+												.map((p: any) => (
+													<label
+														key={p.id}
+														className="flex cursor-pointer items-center gap-4 rounded-lg p-3 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
 													>
-														Remove
-													</button>
-												</div>
-											);
-										})}
-										{selectedProducts.length === 0 && (
-											<div className="py-2 text-center text-slate-500 text-sm">
-												No products selected.
-											</div>
-										)}
-									</div>
-								</div>
+														<input
+															type="checkbox"
+															checked={false}
+															onChange={(e) => {
+																if (e.target.checked) {
+																	setSelectedProducts([...selectedProducts, p.id]);
+																}
+															}}
+															className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+														/>
+														{p.coverImage ? (
+															<img
+																src={p.coverImage}
+																alt={p.title}
+																className="h-12 w-10 rounded object-cover shadow-sm"
+															/>
+														) : (
+															<div className="h-12 w-10 rounded bg-slate-100 flex items-center justify-center">
+																<ImageIcon className="h-4 w-4 text-slate-300" />
+															</div>
+														)}
+														<span className="font-medium text-slate-700">{p.title}</span>
+													</label>
+												))}
+										</div>
+									</DialogContent>
+								</Dialog>
+							</div>
 
-								<div>
-									<div className="mb-2 flex items-center justify-between font-semibold text-slate-700 text-sm dark:text-slate-300">
-										<span>Add Products</span>
-										<Input
-											className="h-8 w-1/2 text-xs"
-											onChange={(e) => setProductSearch(e.target.value)}
-											placeholder="Search by title..."
-											value={productSearch}
-										/>
-									</div>
-									<div className="max-h-48 space-y-2 overflow-y-auto rounded-md border border-slate-200 p-2 dark:border-slate-800">
-										{allProducts
-											.filter((p: any) => !selectedProducts.includes(p.id))
-											.filter((p: any) =>
-												p.title
-													.toLowerCase()
-													.includes(productSearch.toLowerCase())
-											)
-											.slice(0, 50)
-											.map((p: any) => (
-												<label
-													className="flex cursor-pointer items-center gap-3 rounded p-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
-													key={p.id}
+							<div className="p-6">
+								<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+									{selectedProducts.map((productId, index) => {
+										const p = allProducts.find((p: any) => p.id === productId);
+										if (!p) return null;
+
+										const isDragging = draggedIndex === index;
+										const isDragOver = dragOverIndex === index && draggedIndex !== index;
+
+										return (
+											<div
+												key={p.id}
+												draggable
+												onDragStart={(e) => {
+													setDraggedIndex(index);
+													e.dataTransfer.setData("text/plain", index.toString());
+													e.dataTransfer.effectAllowed = "move";
+												}}
+												onDragOver={(e) => {
+													e.preventDefault();
+													setDragOverIndex(index);
+													e.dataTransfer.dropEffect = "move";
+												}}
+												onDragLeave={() => {
+													if (dragOverIndex === index) setDragOverIndex(null);
+												}}
+												onDragEnd={() => {
+													setDraggedIndex(null);
+													setDragOverIndex(null);
+												}}
+												onDrop={(e) => {
+													e.preventDefault();
+													if (draggedIndex !== null) {
+														const newArr = [...selectedProducts];
+														const [removed] = newArr.splice(draggedIndex, 1);
+														newArr.splice(index, 0, removed);
+														setSelectedProducts(newArr);
+													}
+													setDraggedIndex(null);
+													setDragOverIndex(null);
+												}}
+												className={`group relative rounded-xl border bg-white overflow-hidden transition-all duration-200 cursor-grab active:cursor-grabbing ${
+													isDragging ? "opacity-30 scale-95" : ""
+												} ${
+													isDragOver ? "ring-2 ring-blue-500 ring-offset-2 scale-105" : "hover:shadow-md hover:-translate-y-1 border-slate-100"
+												}`}
+											>
+												{/* Index Badge */}
+												<div className="absolute top-2 left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-xs font-medium text-white backdrop-blur-md">
+													{index + 1}
+												</div>
+
+												{/* Delete Button */}
+												<button
+													type="button"
+													onClick={() =>
+														setSelectedProducts(
+															selectedProducts.filter((id) => id !== p.id)
+														)
+													}
+													className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-md transition-opacity hover:bg-red-500 group-hover:opacity-100"
 												>
-													<input
-														checked={false}
-														onChange={(e) => {
-															if (e.target.checked) {
-																setSelectedProducts([
-																	...selectedProducts,
-																	p.id,
-																]);
-															}
-														}}
-														type="checkbox"
-													/>
+													<X className="h-3 w-3" />
+												</button>
+
+												{/* Drag Handle Overlay */}
+												<div className="absolute inset-x-0 top-0 h-40 bg-black/20 opacity-0 transition-opacity flex items-center justify-center group-hover:opacity-100 z-0">
+													<Move className="h-8 w-8 text-white drop-shadow-md" />
+												</div>
+
+												<div className="aspect-[3/4] w-full bg-slate-100 relative">
 													{p.coverImage && (
 														<img
-															alt={p.title}
-															className="h-10 w-8 rounded object-cover shadow-sm"
 															src={p.coverImage}
+															alt={p.title}
+															className="h-full w-full object-cover"
 														/>
 													)}
-													<span className="truncate font-medium">
+												</div>
+												<div className="p-3">
+													<h3 className="line-clamp-2 text-sm font-medium text-slate-800 leading-snug">
 														{p.title}
-													</span>
-												</label>
-											))}
-										{allProducts
-											.filter((p: any) => !selectedProducts.includes(p.id))
-											.filter((p: any) =>
-												p.title
-													.toLowerCase()
-													.includes(productSearch.toLowerCase())
-											).length === 0 && (
-											<div className="py-2 text-center text-slate-500 text-sm">
-												No unselected products found.
-											</div>
-										)}
-									</div>
-								</div>
-							</div>
-						) : (
-							<div className="max-h-64 space-y-3 overflow-y-auto pr-2">
-								{category.products?.map((cp: any) => {
-									const p =
-										allProducts.find((ap: any) => ap.id === cp.id) || cp;
-									return (
-										<div
-											className="flex items-center gap-3 rounded-md border border-slate-100 p-2 dark:border-slate-800"
-											key={p.id}
-										>
-											{p.coverImage && (
-												<img
-													alt={p.title}
-													className="h-12 w-8 rounded object-cover shadow-sm"
-													src={p.coverImage}
-												/>
-											)}
-											<div>
-												<div className="font-semibold text-slate-900 text-sm dark:text-white">
-													{p.title}
-												</div>
-												<div className="text-slate-500 text-xs">
-													{p.author || "Unknown"}
+													</h3>
 												</div>
 											</div>
-										</div>
-									);
-								})}
-								{(!category.products || category.products.length === 0) && (
-									<div className="py-4 text-center text-slate-500 text-sm">
-										No products in this category yet.
-									</div>
-								)}
-							</div>
-						)}
-					</div>
-				</div>
+										);
+									})}
 
-				{/* Sidebar */}
-				<div className="space-y-6">
-					<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-						<h2 className="mb-4 font-bold text-lg text-slate-900 dark:text-white">
-							Status & Sorting
-						</h2>
-						{isEditing ? (
-							<div className="space-y-4">
-								<div className="space-y-1">
-									<label className="font-semibold text-slate-700 text-sm dark:text-slate-300">
-										Status
-									</label>
-									<select
-										className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-										onChange={(e) => setEditStatus(e.target.value)}
-										value={editStatus}
-									>
-										<option value="Active">Active</option>
-										<option value="Draft">Draft</option>
-										<option value="Hidden">Hidden</option>
-									</select>
-								</div>
-								<div className="space-y-1">
-									<label className="font-semibold text-slate-700 text-sm dark:text-slate-300">
-										Sort Order
-									</label>
-									<Input
-										onChange={(e) => setEditSort(Number(e.target.value))}
-										type="number"
-										value={editSort}
-									/>
-								</div>
-							</div>
-						) : (
-							<div className="space-y-4">
-								<div className="flex items-center justify-between border-slate-100 border-b pb-3 dark:border-slate-800">
-									<div className="text-slate-500 text-sm">Status</div>
-									<Badge
-										variant={
-											category.status === "Active" ? "success" : "secondary"
-										}
-									>
-										{category.status}
-									</Badge>
-								</div>
-								<div className="flex items-center justify-between pb-1">
-									<div className="text-slate-500 text-sm">Sort Priority</div>
-									<div className="font-bold text-slate-900 dark:text-white">
-										#{category.sort}
-									</div>
-								</div>
-							</div>
-						)}
-					</div>
-
-					<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-						<h2 className="mb-4 font-bold text-lg text-slate-900 dark:text-white">
-							Media
-						</h2>
-						<div className="relative flex min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-slate-200 border-dashed bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
-							{isEditing ? (
-								<>
-									{editImage ? (
-										<img
-											alt={editName}
-											className="h-full max-h-48 w-full object-contain"
-											src={editImage}
-										/>
-									) : (
-										<>
-											<ImageIcon className="mb-2 h-8 w-8 text-slate-400" />
-											<p className="text-center text-slate-500 text-sm">
-												Click to upload category cover image
-											</p>
-										</>
-									)}
-									<input
-										accept="image/*"
-										className="absolute inset-0 cursor-pointer opacity-0"
-										disabled={isUploading}
-										onChange={handleImageUpload}
-										type="file"
-									/>
-									{isUploading && (
-										<div className="absolute inset-0 flex items-center justify-center bg-black/20 font-medium text-sm text-white">
-											Uploading...
+									{selectedProducts.length === 0 && (
+										<div className="col-span-full py-12 text-center text-slate-500">
+											<div className="mx-auto h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+												<UploadCloud className="h-6 w-6 text-slate-400" />
+											</div>
+											<p className="font-medium text-slate-700">No products in this category</p>
+											<p className="text-sm mt-1">Click "+ Add Products" to populate this category.</p>
 										</div>
 									)}
-								</>
-							) : category.image ? (
-								<img
-									alt={category.name}
-									className="h-full max-h-48 w-full object-contain"
-									src={category.image}
-								/>
-							) : (
-								<>
-									<ImageIcon className="mb-2 h-8 w-8 text-slate-400" />
-									<p className="text-center text-slate-500 text-sm">
-										No image uploaded
-									</p>
-								</>
-							)}
+								</div>
+							</div>
 						</div>
 					</div>
+
+					{/* Right Panel: Category Info */}
+					<div className="lg:col-span-1 space-y-6">
+						<div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
+							<h2 className="mb-6 text-xl font-bold text-slate-800">Category info</h2>
+							
+							<div className="space-y-6">
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-slate-700">Category name</label>
+									<Input
+										value={editName}
+										onChange={(e) => setEditName(e.target.value)}
+										className="bg-slate-50 border-slate-200 focus:bg-white"
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-slate-700">URL Slug</label>
+									<Input
+										value={editSlug}
+										onChange={(e) => setEditSlug(e.target.value)}
+										className="bg-slate-50 border-slate-200 focus:bg-white"
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-slate-700">Status</label>
+									<Select value={editStatus} onValueChange={setEditStatus}>
+										<SelectTrigger className="bg-slate-50 border-slate-200 focus:bg-white">
+											<SelectValue placeholder="Select status" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="Active">Active</SelectItem>
+											<SelectItem value="Draft">Draft</SelectItem>
+											<SelectItem value="Archived">Archived</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+
+								<div className="space-y-2 pt-2">
+									<label className="text-sm font-medium text-slate-700">Category image</label>
+									<div className="relative mt-2 overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:bg-slate-100">
+										{editImage ? (
+											<div className="relative group">
+												<img
+													src={editImage}
+													alt="Category"
+													className="w-full h-40 object-cover"
+												/>
+												<div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+													<label className="cursor-pointer rounded-full bg-white/20 p-3 backdrop-blur-md hover:bg-white/30 transition-colors text-white">
+														<UploadCloud className="h-6 w-6" />
+														<input
+															type="file"
+															className="hidden"
+															accept="image/*"
+															onChange={handleImageUpload}
+															disabled={isUploading}
+														/>
+													</label>
+												</div>
+											</div>
+										) : (
+											<label className="flex h-40 cursor-pointer flex-col items-center justify-center">
+												<UploadCloud className="mb-2 h-8 w-8 text-slate-400" />
+												<span className="text-sm font-medium text-slate-600">
+													{isUploading ? "Uploading..." : "Click to upload image"}
+												</span>
+												<input
+													type="file"
+													className="hidden"
+													accept="image/*"
+													onChange={handleImageUpload}
+													disabled={isUploading}
+												/>
+											</label>
+										)}
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+
 				</div>
 			</div>
 		</div>
