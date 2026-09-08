@@ -192,16 +192,15 @@ export function BooksView() {
 						const stockNum = Number.parseInt(row.stock) || 0;
 						const categoryName = row.categoryName
 							? row.categoryName.trim()
-							: "Fiction";
+							: "";
 						const searchName = categoryName.toLowerCase();
-						const selectedCat =
-							categories.find(
-								(c: any) =>
-									c.name.toLowerCase() === searchName ||
-									c.slug.toLowerCase() === searchName ||
-									c.name.toLowerCase().includes(searchName) ||
-									searchName.includes(c.name.toLowerCase())
-							) || categories[0];
+						const selectedCat = categoryName ? categories.find(
+							(c: any) =>
+								c.name.toLowerCase() === searchName ||
+								c.slug.toLowerCase() === searchName ||
+								c.name.toLowerCase().includes(searchName) ||
+								searchName.includes(c.name.toLowerCase())
+						) : undefined;
 
 						const productInput = {
 							title: row.title || "Untitled Book",
@@ -214,9 +213,9 @@ export function BooksView() {
 									Date.now(),
 							author: row.author || "",
 							isbn: row.isbn || "",
-							categoryId: selectedCat?.id,
-							categorySlug: selectedCat?.slug,
-							categoryName: selectedCat?.name || categoryName,
+							categoryId: selectedCat?.id || undefined,
+							categorySlug: selectedCat?.slug || undefined,
+							categoryName: selectedCat?.name || undefined,
 							price: priceNum,
 							originalPrice: priceNum * 1.2,
 							stock: stockNum,
@@ -230,7 +229,17 @@ export function BooksView() {
 								: undefined,
 						} as any;
 
-						if (row.id) {
+						const existingBook = row.isbn
+							? books.find((b: any) => b.isbn === row.isbn)
+							: null;
+
+						if (existingBook) {
+							await updateProductMutation.mutateAsync({
+								id: existingBook.id,
+								input: productInput,
+							});
+							updatedCount++;
+						} else if (row.id) {
 							await updateProductMutation.mutateAsync({
 								id: row.id,
 								input: productInput,

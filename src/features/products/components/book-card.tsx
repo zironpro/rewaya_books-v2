@@ -3,18 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Eye, Plus } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 import { AddToCartButton } from "@/features/products/components/add-to-cart-button";
 import { WishlistToggleButton } from "@/features/wishlist/components/wishlist-toggle-button";
@@ -133,14 +122,14 @@ export function BookCard({
 				<div className="absolute right-0 bottom-0 left-0 z-20 translate-y-full bg-primary transition-transform duration-300 group-hover:translate-y-0">
 					<AddToCartButton
 						availableForSale={availableForSale ?? true}
-						stock={stock}
-						className="h-auto w-full rounded-none p-3 text-white hover:text-white md:p-4"
+						className="h-auto w-full rounded-none p-3 text-white hover:bg-black/20 hover:text-white md:p-4"
 						disabled={!(productId || id)}
 						image={finalImage}
 						price={price}
 						productId={(productId || id) ?? ""}
 						productName={title}
 						productVariant={defaultVariant}
+						stock={stock}
 						variant="ghost"
 					>
 						<Plus className="mr-2" size={14} /> Add to Bag

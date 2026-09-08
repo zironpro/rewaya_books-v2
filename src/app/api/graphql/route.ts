@@ -596,6 +596,25 @@ const resolvers = {
 					$push: { products: product._id },
 					$inc: { count: 1 }
 				});
+			} else if (input.categoryName) {
+				let cat = await Category.findOne({ name: { $regex: new RegExp("^" + input.categoryName.trim() + "$", "i") } });
+				if (!cat) {
+					cat = new Category({
+						name: input.categoryName.trim(),
+						slug: input.categoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+						count: 0
+					});
+					await cat.save();
+				}
+				
+				await Category.findByIdAndUpdate(cat._id, {
+					$push: { products: product._id },
+					$inc: { count: 1 }
+				});
+				
+				product.categoryId = cat._id.toString();
+				product.categorySlug = cat.slug;
+				await product.save();
 			}
 			return product;
 		},
@@ -608,15 +627,32 @@ const resolvers = {
 			
 			const oldProduct = await Product.findById(id);
 			
-			if (oldProduct && oldProduct.categoryId !== input.categoryId) {
+			let newCategoryId = input.categoryId;
+
+			if (!newCategoryId && input.categoryName) {
+				let cat = await Category.findOne({ name: { $regex: new RegExp("^" + input.categoryName.trim() + "$", "i") } });
+				if (!cat) {
+					cat = new Category({
+						name: input.categoryName.trim(),
+						slug: input.categoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+						count: 0
+					});
+					await cat.save();
+				}
+				newCategoryId = cat._id.toString();
+				input.categoryId = newCategoryId;
+				input.categorySlug = cat.slug;
+			}
+			
+			if (oldProduct && oldProduct.categoryId !== newCategoryId) {
 				if (oldProduct.categoryId) {
 					await Category.findByIdAndUpdate(oldProduct.categoryId, {
 						$pull: { products: id },
 						$inc: { count: -1 }
 					});
 				}
-				if (input.categoryId) {
-					await Category.findByIdAndUpdate(input.categoryId, {
+				if (newCategoryId) {
+					await Category.findByIdAndUpdate(newCategoryId, {
 						$push: { products: id },
 						$inc: { count: 1 }
 					});
