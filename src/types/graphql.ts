@@ -436,7 +436,9 @@ export type PopupInput = {
 export type Product = {
   __typename?: 'Product';
   author?: Maybe<Scalars['String']['output']>;
+  categories?: Maybe<Array<Maybe<Category>>>;
   categoryId?: Maybe<Scalars['String']['output']>;
+  categoryIds?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   categoryName?: Maybe<Scalars['String']['output']>;
   categorySlug?: Maybe<Scalars['String']['output']>;
   coverImage?: Maybe<Scalars['String']['output']>;
@@ -462,6 +464,7 @@ export type Product = {
 export type ProductInput = {
   author?: InputMaybe<Scalars['String']['input']>;
   categoryId?: InputMaybe<Scalars['String']['input']>;
+  categoryIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   categoryName?: InputMaybe<Scalars['String']['input']>;
   categorySlug?: InputMaybe<Scalars['String']['input']>;
   coverImage?: InputMaybe<Scalars['String']['input']>;
@@ -661,7 +664,7 @@ export type CreateProductMutationVariables = Exact<{
 }>;
 
 
-export type CreateProductMutation = { createProduct: { id: string, title: string, slug: string, price: number, stock: number | null, ribbon: string | null, publisher: string | null, description: string | null, language: string | null } };
+export type CreateProductMutation = { createProduct: { id: string, title: string, slug: string, price: number, stock: number | null, ribbon: string | null, publisher: string | null, description: string | null, language: string | null, categoryIds: Array<string | null> | null, categories: Array<{ id: string, name: string, slug: string } | null> | null } };
 
 export type UpdateProductMutationVariables = Exact<{
   id: string | number;
@@ -669,7 +672,7 @@ export type UpdateProductMutationVariables = Exact<{
 }>;
 
 
-export type UpdateProductMutation = { updateProduct: { id: string, title: string, slug: string, price: number, stock: number | null, ribbon: string | null, publisher: string | null, description: string | null, language: string | null } };
+export type UpdateProductMutation = { updateProduct: { id: string, title: string, slug: string, price: number, stock: number | null, ribbon: string | null, publisher: string | null, description: string | null, language: string | null, categoryIds: Array<string | null> | null, categories: Array<{ id: string, name: string, slug: string } | null> | null } };
 
 export type DeleteProductMutationVariables = Exact<{
   id: string | number;
@@ -865,14 +868,14 @@ export type ProcessStripeRefundMutation = { processStripeRefund: { id: string, s
 export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProductsQuery = { products: Array<{ id: string, title: string, slug: string, author: string | null, description: string | null, price: number, originalPrice: number | null, stock: number | null, coverImage: string | null, categoryId: string | null, categorySlug: string | null, categoryName: string | null, isbn: string | null, pages: number | null, language: string | null, format: string | null, ribbon: string | null, publisher: string | null, sortOrder: number | null }> };
+export type GetProductsQuery = { products: Array<{ id: string, title: string, slug: string, author: string | null, description: string | null, price: number, originalPrice: number | null, stock: number | null, coverImage: string | null, categoryId: string | null, categorySlug: string | null, categoryName: string | null, categoryIds: Array<string | null> | null, isbn: string | null, pages: number | null, language: string | null, format: string | null, ribbon: string | null, publisher: string | null, sortOrder: number | null, categories: Array<{ id: string, name: string, slug: string } | null> | null }> };
 
 export type GetProductBySlugQueryVariables = Exact<{
   slug: string;
 }>;
 
 
-export type GetProductBySlugQuery = { productBySlug: { id: string, title: string, slug: string, author: string | null, description: string | null, price: number, originalPrice: number | null, stock: number | null, coverImage: string | null, images: Array<string | null> | null, categoryId: string | null, categorySlug: string | null, categoryName: string | null, isbn: string | null, pages: number | null, language: string | null, format: string | null, ribbon: string | null, publisher: string | null } | null };
+export type GetProductBySlugQuery = { productBySlug: { id: string, title: string, slug: string, author: string | null, description: string | null, price: number, originalPrice: number | null, stock: number | null, coverImage: string | null, images: Array<string | null> | null, categoryId: string | null, categorySlug: string | null, categoryName: string | null, categoryIds: Array<string | null> | null, isbn: string | null, pages: number | null, language: string | null, format: string | null, ribbon: string | null, publisher: string | null, categories: Array<{ id: string, name: string, slug: string } | null> | null } | null };
 
 export type GetBundlesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1008,6 +1011,12 @@ export const CreateProductDocument = new TypedDocumentString(`
     publisher
     description
     language
+    categoryIds
+    categories {
+      id
+      name
+      slug
+    }
   }
 }
     `);
@@ -1037,6 +1046,12 @@ export const UpdateProductDocument = new TypedDocumentString(`
     publisher
     description
     language
+    categoryIds
+    categories {
+      id
+      name
+      slug
+    }
   }
 }
     `);
@@ -1692,6 +1707,12 @@ export const GetProductsDocument = new TypedDocumentString(`
     categoryId
     categorySlug
     categoryName
+    categoryIds
+    categories {
+      id
+      name
+      slug
+    }
     isbn
     pages
     language
@@ -1735,6 +1756,12 @@ export const GetProductBySlugDocument = new TypedDocumentString(`
     categoryId
     categorySlug
     categoryName
+    categoryIds
+    categories {
+      id
+      name
+      slug
+    }
     isbn
     pages
     language

@@ -192,17 +192,22 @@ export function BooksView() {
 					try {
 						const priceNum = Number.parseFloat(row.price) || 0;
 						const stockNum = Number.parseInt(row.stock) || 0;
-						const categoryName = row.categoryName
-							? row.categoryName.trim()
-							: "";
-						const searchName = categoryName.toLowerCase();
-						const selectedCat = categoryName ? categories.find(
-							(c: any) =>
-								c.name.toLowerCase() === searchName ||
-								c.slug.toLowerCase() === searchName ||
-								c.name.toLowerCase().includes(searchName) ||
-								searchName.includes(c.name.toLowerCase())
-						) : undefined;
+						const categoryNames = row.categoryName
+							? row.categoryName.split(',').map((s: string) => s.trim()).filter(Boolean)
+							: [];
+						
+						const selectedCats = categoryNames.map((catName: string) => {
+							const searchName = catName.toLowerCase();
+							return categories.find(
+								(c: any) =>
+									c.name.toLowerCase() === searchName ||
+									c.slug.toLowerCase() === searchName ||
+									c.name.toLowerCase().includes(searchName) ||
+									searchName.includes(c.name.toLowerCase())
+							);
+						}).filter(Boolean);
+
+						const primaryCat = selectedCats.length > 0 ? selectedCats[0] : undefined;
 
 						const productInput = {
 							title: row.title || "Untitled Book",
@@ -215,9 +220,10 @@ export function BooksView() {
 									Date.now(),
 							author: row.author || "",
 							isbn: row.isbn || "",
-							categoryId: selectedCat?.id || undefined,
-							categorySlug: selectedCat?.slug || undefined,
-							categoryName: selectedCat?.name || undefined,
+							categoryIds: selectedCats.map((c: any) => c.id),
+							categoryId: primaryCat?.id || undefined,
+							categorySlug: primaryCat?.slug || undefined,
+							categoryName: primaryCat?.name || undefined,
 							price: priceNum,
 							originalPrice: priceNum * 1.2,
 							stock: stockNum,
@@ -298,7 +304,9 @@ export function BooksView() {
 			title: book.title || "",
 			author: book.author || "",
 			isbn: book.isbn || "",
-			categoryName: book.categoryName || "",
+			categoryName: book.categories && book.categories.length > 0
+				? book.categories.map((c: any) => c.name).join(", ")
+				: book.categoryName || "",
 			price: book.price || 0,
 			stock: book.stock || 0,
 			language: book.language || "English",
@@ -343,7 +351,7 @@ export function BooksView() {
 	const [editTitle, setEditTitle] = React.useState("");
 	const [editAuthor, setEditAuthor] = React.useState("");
 	const [editIsbn, setEditIsbn] = React.useState("");
-	const [editCategory, setEditCategory] = React.useState("Fiction");
+	const [editCategoryIds, setEditCategoryIds] = React.useState<string[]>([]);
 	const [editPrice, setEditPrice] = React.useState("120");
 	const [editStock, setEditStock] = React.useState("50");
 	const [editLanguage, setEditLanguage] = React.useState("English");
@@ -390,11 +398,9 @@ export function BooksView() {
 		setEditTitle(book.title || "");
 		setEditAuthor(book.author || "");
 		setEditIsbn(book.isbn || "");
-		setEditCategory(
-			book.categoryId ||
-				categories.find((c: any) => c.name === book.categoryName)?.id ||
-				""
-		);
+		const ids = book.categoryIds || [];
+		if (ids.length === 0 && book.categoryId) ids.push(book.categoryId);
+		setEditCategoryIds(ids);
 		setEditPrice(book.price ? book.price.toString() : "0");
 		setEditStock(book.stock ? book.stock.toString() : "0");
 		setEditLanguage(book.language || "English");
@@ -487,7 +493,8 @@ export function BooksView() {
 
 		const priceNum = Number.parseFloat(editPrice) || 0;
 		const stockNum = Number.parseInt(editStock) || 0;
-		const selectedCat = categories.find((c: any) => c.id === editCategory);
+		const selectedCats = categories.filter((c: any) => editCategoryIds.includes(c.id));
+		const primaryCat = selectedCats.length > 0 ? selectedCats[0] : undefined;
 
 		try {
 			await updateProductMutation.mutateAsync({
@@ -500,9 +507,10 @@ export function BooksView() {
 						Date.now(),
 					author: editAuthor,
 					isbn: editIsbn,
-					categoryId: selectedCat?.id,
-					categorySlug: selectedCat?.slug,
-					categoryName: selectedCat?.name || editCategory,
+					categoryIds: selectedCats.map((c: any) => c.id),
+					categoryId: primaryCat?.id,
+					categorySlug: primaryCat?.slug,
+					categoryName: primaryCat?.name || editCategoryIds.join(","),
 					price: priceNum,
 					originalPrice: priceNum * 1.2,
 					stock: stockNum,

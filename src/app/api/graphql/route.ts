@@ -34,6 +34,8 @@ const typeDefs = gql`
     categoryId: String
     categorySlug: String
     categoryName: String
+    categoryIds: [String]
+    categories: [Category]
     isbn: String
     pages: Int
     language: String
@@ -251,6 +253,7 @@ const typeDefs = gql`
     categoryId: String
     categorySlug: String
     categoryName: String
+    categoryIds: [String]
     isbn: String
     pages: Int
     language: String
@@ -609,10 +612,32 @@ const resolvers = {
 				input.sortOrder = maxProduct ? (maxProduct.sortOrder || 0) + 1 : 1;
 			}
 			
+			// Resolve multiple categories
+			const resolvedCategories = [];
+			if (input.categoryIds && input.categoryIds.length > 0) {
+				const cats = await Category.find({ _id: { $in: input.categoryIds } });
+				for (const cat of cats) {
+					resolvedCategories.push({
+						id: cat._id.toString(),
+						name: cat.name,
+						slug: cat.slug
+					});
+				}
+				input.categories = resolvedCategories;
+			}
+
 			const product = new Product(input);
 			await product.save();
 			
-			if (input.categoryId) {
+			if (input.categoryIds && input.categoryIds.length > 0) {
+				await Category.updateMany(
+					{ _id: { $in: input.categoryIds } },
+					{
+						$push: { products: product._id },
+						$inc: { count: 1 }
+					}
+				);
+			} else if (input.categoryId) {
 				await Category.findByIdAndUpdate(input.categoryId, {
 					$push: { products: product._id },
 					$inc: { count: 1 }
@@ -648,35 +673,63 @@ const resolvers = {
 			
 			const oldProduct = await Product.findById(id);
 			
-			let newCategoryId = input.categoryId;
+			if (input.categoryIds) {
+				const oldCategoryIds = oldProduct.categoryIds || [];
+				const newCategoryIds = input.categoryIds;
 
-			if (!newCategoryId && input.categoryName) {
-				let cat = await Category.findOne({ name: { $regex: new RegExp("^" + input.categoryName.trim() + "$", "i") } });
-				if (!cat) {
-					cat = new Category({
-						name: input.categoryName.trim(),
-						slug: input.categoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-						count: 0
-					});
-					await cat.save();
+				const addedIds = newCategoryIds.filter((id) => !oldCategoryIds.includes(id));
+				const removedIds = oldCategoryIds.filter((id) => !newCategoryIds.includes(id));
+
+				if (addedIds.length > 0) {
+					await Category.updateMany(
+						{ _id: { $in: addedIds } },
+						{ $push: { products: id }, $inc: { count: 1 } }
+					);
 				}
-				newCategoryId = cat._id.toString();
-				input.categoryId = newCategoryId;
-				input.categorySlug = cat.slug;
-			}
-			
-			if (oldProduct && oldProduct.categoryId !== newCategoryId) {
-				if (oldProduct.categoryId) {
-					await Category.findByIdAndUpdate(oldProduct.categoryId, {
-						$pull: { products: id },
-						$inc: { count: -1 }
-					});
+				if (removedIds.length > 0) {
+					await Category.updateMany(
+						{ _id: { $in: removedIds } },
+						{ $pull: { products: id }, $inc: { count: -1 } }
+					);
 				}
-				if (newCategoryId) {
-					await Category.findByIdAndUpdate(newCategoryId, {
-						$push: { products: id },
-						$inc: { count: 1 }
-					});
+
+				const cats = await Category.find({ _id: { $in: newCategoryIds } });
+				input.categories = cats.map(cat => ({
+					id: cat._id.toString(),
+					name: cat.name,
+					slug: cat.slug
+				}));
+			} else {
+				let newCategoryId = input.categoryId;
+
+				if (!newCategoryId && input.categoryName) {
+					let cat = await Category.findOne({ name: { $regex: new RegExp("^" + input.categoryName.trim() + "$", "i") } });
+					if (!cat) {
+						cat = new Category({
+							name: input.categoryName.trim(),
+							slug: input.categoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+							count: 0
+						});
+						await cat.save();
+					}
+					newCategoryId = cat._id.toString();
+					input.categoryId = newCategoryId;
+					input.categorySlug = cat.slug;
+				}
+				
+				if (oldProduct && oldProduct.categoryId !== newCategoryId) {
+					if (oldProduct.categoryId) {
+						await Category.findByIdAndUpdate(oldProduct.categoryId, {
+							$pull: { products: id },
+							$inc: { count: -1 }
+						});
+					}
+					if (newCategoryId) {
+						await Category.findByIdAndUpdate(newCategoryId, {
+							$push: { products: id },
+							$inc: { count: 1 }
+						});
+					}
 				}
 			}
 			

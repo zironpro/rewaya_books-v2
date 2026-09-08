@@ -15,6 +15,12 @@ export const GET_PRODUCTS = gql`
       categoryId
       categorySlug
       categoryName
+      categoryIds
+      categories {
+        id
+        name
+        slug
+      }
       isbn
       pages
       language
@@ -42,6 +48,12 @@ export const GET_PRODUCT_BY_SLUG = gql`
       categoryId
       categorySlug
       categoryName
+      categoryIds
+      categories {
+        id
+        name
+        slug
+      }
       isbn
       pages
       language

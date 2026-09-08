@@ -26,7 +26,7 @@ export function BookCreateView() {
 	const [newTitle, setNewTitle] = React.useState("");
 	const [newAuthor, setNewAuthor] = React.useState("");
 	const [newIsbn, setNewIsbn] = React.useState("");
-	const [newCategory, setNewCategory] = React.useState("Fiction");
+	const [newCategoryIds, setNewCategoryIds] = React.useState<string[]>([]);
 	const [newPrice, setNewPrice] = React.useState("120");
 	const [newStock, setNewStock] = React.useState("50");
 	const [newLanguage, setNewLanguage] = React.useState("English");
@@ -70,7 +70,7 @@ export function BookCreateView() {
 		const priceNum = Number.parseFloat(newPrice) || 0;
 		const stockNum = Number.parseInt(newStock) || 0;
 
-		const selectedCat = categories.find((c: any) => c.id === newCategory);
+		const selectedCats = categories.filter((c: any) => newCategoryIds.includes(c.id));
 
 		try {
 			await createProductMutation.mutateAsync({
@@ -82,9 +82,10 @@ export function BookCreateView() {
 						Date.now(),
 					author: newAuthor,
 					isbn: newIsbn,
-					categoryId: selectedCat?.id,
-					categorySlug: selectedCat?.slug,
-					categoryName: selectedCat?.name || newCategory,
+					categoryIds: selectedCats.map((c: any) => c.id),
+					categoryId: selectedCats.length > 0 ? selectedCats[0].id : undefined,
+					categorySlug: selectedCats.length > 0 ? selectedCats[0].slug : undefined,
+					categoryName: selectedCats.length > 0 ? selectedCats[0].name : undefined,
 					price: priceNum,
 					originalPrice: 0,
 					stock: stockNum,
@@ -209,18 +210,29 @@ export function BookCreateView() {
 							<label className="font-semibold text-slate-700 dark:text-slate-300">
 								Category
 							</label>
-							<select
-								className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary"
-								onChange={(e) => setNewCategory(e.target.value)}
-								value={newCategory}
-							>
-								<option value="">Select Category</option>
-								{categories.map((cat: any) => (
-									<option key={cat.id} value={cat.id}>
-										{cat.name}
-									</option>
-								))}
-							</select>
+							<div className="max-h-40 overflow-y-auto rounded-lg border border-input bg-background p-3">
+								<div className="flex flex-col gap-2">
+									{categories.map((cat: any) => (
+										<label key={cat.id} className="flex items-center gap-2 text-sm">
+											<input
+												type="checkbox"
+												className="rounded border-slate-300 text-primary focus:ring-primary"
+												checked={newCategoryIds.includes(cat.id)}
+												onChange={(e) => {
+													if (e.target.checked) {
+														setNewCategoryIds((prev) => [...prev, cat.id]);
+													} else {
+														setNewCategoryIds((prev) =>
+															prev.filter((id) => id !== cat.id)
+														);
+													}
+												}}
+											/>
+											{cat.name}
+										</label>
+									))}
+								</div>
+							</div>
 						</div>
 						<div className="space-y-2">
 							<label className="font-semibold text-slate-700 dark:text-slate-300">

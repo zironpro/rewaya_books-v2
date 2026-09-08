@@ -12,6 +12,12 @@ export const CREATE_PRODUCT = gql`
       publisher
       description
       language
+      categoryIds
+      categories {
+        id
+        name
+        slug
+      }
     }
   }
 `;
@@ -28,6 +34,12 @@ export const UPDATE_PRODUCT = gql`
       publisher
       description
       language
+      categoryIds
+      categories {
+        id
+        name
+        slug
+      }
     }
   }
 `;

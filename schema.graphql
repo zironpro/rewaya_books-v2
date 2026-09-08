@@ -13,6 +13,8 @@
     categoryId: String
     categorySlug: String
     categoryName: String
+    categoryIds: [String]
+    categories: [Category]
     isbn: String
     pages: Int
     language: String
@@ -228,6 +230,7 @@
     categoryId: String
     categorySlug: String
     categoryName: String
+    categoryIds: [String]
     isbn: String
     pages: Int
     language: String

@@ -14,6 +14,12 @@ const ProductSchema = new mongoose.Schema(
 		categoryId: { type: String },
 		categorySlug: { type: String },
 		categoryName: { type: String },
+		categoryIds: [{ type: String }],
+		categories: [{
+			id: { type: String },
+			name: { type: String },
+			slug: { type: String }
+		}],
 		isbn: { type: String },
 		pages: { type: Number },
 		language: { type: String },
