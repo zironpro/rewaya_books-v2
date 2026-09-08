@@ -1071,6 +1071,48 @@ const resolvers = {
 				}
 			}
 
+			// If products array is provided, sync product category references
+			if (input.products !== undefined) {
+				const currentCat = await Category.findById(id);
+				const catName = input.name || currentCat?.name || "";
+				const catSlug = input.slug || currentCat?.slug || "";
+
+				// 1. Remove this category from all products that currently have it (to cleanly overwrite)
+				await Product.updateMany(
+					{ categoryIds: id },
+					{
+						$pull: {
+							categoryIds: id,
+							categories: { id: id },
+						},
+					}
+				);
+				await Product.updateMany(
+					{ categoryId: id },
+					{
+						$unset: { categoryId: "", categoryName: "", categorySlug: "" },
+					}
+				);
+
+				// 2. Add this category to all products in input.products
+				if (input.products.length > 0) {
+					await Product.updateMany(
+						{ _id: { $in: input.products } },
+						{
+							$set: {
+								categoryId: id,
+								categoryName: catName,
+								categorySlug: catSlug,
+							},
+							$addToSet: {
+								categoryIds: id,
+								categories: { id: id, name: catName, slug: catSlug },
+							},
+						}
+					);
+				}
+			}
+
 			return await Category.findByIdAndUpdate(id, input, {
 				new: true,
 			}).populate("products");
