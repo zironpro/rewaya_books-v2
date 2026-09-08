@@ -4,7 +4,7 @@ import { BundleDetailView } from "@/features/bundles/bundle-detail-view";
 import { graphqlClient } from "@/lib/graphql-client";
 import { GetBundlesDocument, GetProductsDocument } from "@/types/graphql";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function BundleDetailPage({
 	params,

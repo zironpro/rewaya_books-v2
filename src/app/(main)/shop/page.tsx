@@ -2,7 +2,7 @@ import { ShopView } from "@/features/shop/shop-view";
 import { graphqlClient } from "@/lib/graphql-client";
 import { GetProductsDocument, GetCategoriesDocument } from "@/types/graphql";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface ShopPageProps {
 	searchParams: Promise<{
@@ -56,7 +56,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 					b => productIdsInCategory.has(b.id) || 
 						 b.categorySlug?.toLowerCase() === catLower ||
 						 b.categoryId === matchedCategory.id ||
-						 b.categoryName?.toLowerCase() === catLower
+						 b.categoryName?.toLowerCase() === catLower ||
+						 (b.categoryIds && b.categoryIds.includes(matchedCategory.id))
 				);
 				
 				// Apply custom sort ONLY if no explicit sort is requested
@@ -73,7 +74,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 					(b) =>
 						b.categorySlug?.toLowerCase() === catLower ||
 						b.categoryId === category ||
-						b.categoryName?.toLowerCase() === catLower
+						b.categoryName?.toLowerCase() === catLower ||
+						(b.categoryIds && b.categoryIds.includes(category))
 				);
 			}
 		}

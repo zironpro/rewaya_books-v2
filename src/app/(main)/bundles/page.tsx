@@ -2,7 +2,7 @@ import { BundlesView } from "@/features/bundles/bundles-view";
 import { graphqlClient } from "@/lib/graphql-client";
 import { GetBundlesDocument } from "@/types/graphql";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function BundlesPage() {
 	let bundles: any[] = [];

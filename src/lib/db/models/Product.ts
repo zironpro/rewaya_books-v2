@@ -33,6 +33,7 @@ const ProductSchema = new mongoose.Schema(
 
 ProductSchema.index({ sortOrder: 1, createdAt: -1 });
 ProductSchema.index({ categoryId: 1 });
+ProductSchema.index({ categoryIds: 1 });
 ProductSchema.index({ slug: 1 });
 
 export const Product =
