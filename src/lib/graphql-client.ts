@@ -10,7 +10,12 @@ if (endpoint.startsWith("/")) {
 	}
 }
 
-export const graphqlClient = new GraphQLClient(endpoint);
+export const graphqlClient = new GraphQLClient(endpoint, {
+	fetch:
+		typeof window === "undefined"
+			? (url, options) => fetch(url, { ...options, cache: "no-store" })
+			: fetch,
+});
 
 export function customFetcher<TData, TVariables extends Record<string, any>>(
 	query: any,
@@ -23,7 +28,13 @@ export function customFetcher<TData, TVariables extends Record<string, any>>(
 		if (typeof window === "undefined" && url.startsWith("/")) {
 			url = `http://localhost:${process.env.PORT || 3000}${url}`;
 		}
-		const client = new GraphQLClient(url);
+		const client = new GraphQLClient(url, {
+			fetch:
+				typeof window === "undefined"
+					? (url, options) =>
+							fetch(url, { ...options, next: { revalidate: 60 } })
+					: fetch,
+		});
 		// @ts-ignore
 		return client.request<TData, TVariables>(query, variables, options);
 	};

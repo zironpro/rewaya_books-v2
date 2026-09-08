@@ -123,8 +123,8 @@ export const PaymentTab = ({
 						Your Security is Our Priority
 					</h4>
 					<p className="mt-1 text-stone-400 text-xs leading-relaxed">
-						Rewaya uses secure checkout. We do not store full card numbers
-						on our servers. New cards are saved when you pay at checkout.
+						Rewaya uses secure checkout. We do not store full card numbers on
+						our servers. New cards are saved when you pay at checkout.
 					</p>
 				</div>
 			</div>

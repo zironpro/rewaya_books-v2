@@ -11,7 +11,11 @@ import { Button } from "@/components/ui/button";
 import { AddressesTab } from "@/features/profile/components/addresses-tab";
 import { ProfilePageHeader } from "@/features/profile/components/profile-page-header";
 
-export const AddressesPage = ({ initialAddresses = [] }: { initialAddresses?: any[] }) => {
+export const AddressesPage = ({
+	initialAddresses = [],
+}: {
+	initialAddresses?: any[];
+}) => {
 	const [addresses] = useState<any[]>(initialAddresses);
 	const [loading] = useState(false);
 
@@ -21,7 +25,7 @@ export const AddressesPage = ({ initialAddresses = [] }: { initialAddresses?: an
 				action={
 					<Button
 						asChild
-						className="h-12 gap-2 rounded-2xl px-6 bg-primary hover:bg-primary/90 text-white"
+						className="h-12 gap-2 rounded-2xl bg-primary px-6 text-white hover:bg-primary/90"
 					>
 						<Link href="/profile/settings">
 							<Plus size={18} />

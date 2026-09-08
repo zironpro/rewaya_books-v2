@@ -63,7 +63,7 @@ export function WishlistToggleButton({
 				});
 				return;
 			}
-			
+
 			toastManager.add({
 				title: "Error",
 				description: "Failed to update wishlist",

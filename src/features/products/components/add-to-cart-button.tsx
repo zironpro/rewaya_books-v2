@@ -103,7 +103,7 @@ export function AddToCartButton({
 			.catch((e: any) => {
 				console.error("[cart] add to cart failed:", e);
 				setStatus("error");
-				
+
 				if (e instanceof Error && e.message === "require_auth") {
 					toastManager.add({
 						title: "Login Required",
@@ -120,11 +120,12 @@ export function AddToCartButton({
 				} else {
 					toastManager.add({
 						title: "Error",
-						description: e instanceof Error ? e.message : "Could not add to cart.",
+						description:
+							e instanceof Error ? e.message : "Could not add to cart.",
 						type: "error",
 					});
 				}
-				
+
 				dispatchCartUpdated();
 				setTimeout(() => setStatus("idle"), 2500);
 			});

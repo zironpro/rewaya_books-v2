@@ -1,4 +1,4 @@
-import { CreditCard, MapPin, Package, Settings, User } from "lucide-react";
+import { MapPin, Package, Settings, User } from "lucide-react";
 
 export const profileNavItems = [
 	{ href: "/profile", label: "Overview", icon: User },

@@ -4,17 +4,17 @@ import { gql } from "graphql-tag";
 
 import { Bundle } from "@/lib/db/models/Bundle";
 import { Category } from "@/lib/db/models/Category";
+import { Coupon } from "@/lib/db/models/Coupon";
 import { HeroBanner } from "@/lib/db/models/HeroBanner";
 import { HomepageSection } from "@/lib/db/models/HomepageSection";
+import { Notification } from "@/lib/db/models/Notification";
 import { Order } from "@/lib/db/models/Order";
+import { Popup } from "@/lib/db/models/Popup";
 import { Product } from "@/lib/db/models/Product";
+import { RefundRequest } from "@/lib/db/models/RefundRequest";
 import { ShippingConfig } from "@/lib/db/models/ShippingConfig";
 import { TaxConfig } from "@/lib/db/models/TaxConfig";
 import { User } from "@/lib/db/models/User";
-import { Coupon } from "@/lib/db/models/Coupon";
-import { Notification } from "@/lib/db/models/Notification";
-import { Popup } from "@/lib/db/models/Popup";
-import { RefundRequest } from "@/lib/db/models/RefundRequest";
 import connectToDatabase from "@/lib/db/mongodb";
 import { stripe } from "@/lib/stripe";
 
@@ -220,7 +220,21 @@ const typeDefs = gql`
     createdAt: String
   }
 
+  type ProductConnection {
+    items: [Product!]!
+    totalCount: Int!
+    totalPages: Int!
+  }
+
   type Query {
+    productsPaginated(
+      category: String
+      q: String
+      sort: String
+      page: Int
+      limit: Int
+      customOrderIds: [ID!]
+    ): ProductConnection!
     products: [Product!]!
     productBySlug(slug: String!): Product
     bundles: [Bundle!]!
@@ -444,9 +458,132 @@ const typeDefs = gql`
 // Define the resolvers
 const resolvers = {
 	Query: {
+		productsPaginated: async (_: any, args: any) => {
+			await connectToDatabase();
+			const { category, q, sort, page = 1, limit = 25, customOrderIds } = args;
+			const skip = (page - 1) * limit;
+
+			let filter: any = { stock: { $gt: 0 } };
+
+			if (category) {
+				const catLower = category.toLowerCase();
+				filter.$or = [
+					{ categorySlug: new RegExp("^" + catLower + "$", "i") },
+					{ categoryId: category },
+					{ categoryName: new RegExp("^" + catLower + "$", "i") },
+					{ categoryIds: category },
+				];
+
+				if (customOrderIds && customOrderIds.length > 0) {
+					const mongoose = require("mongoose");
+					const objectIds = customOrderIds
+						.map((id) => {
+							try {
+								return new mongoose.Types.ObjectId(id);
+							} catch (e) {
+								return null;
+							}
+						})
+						.filter((id) => id !== null);
+
+					filter.$or.push({ _id: { $in: objectIds } });
+				}
+			}
+
+			if (q) {
+				const query = q.toLowerCase();
+				const qOr = [
+					{ title: { $regex: new RegExp(query, "i") } },
+					{ author: { $regex: new RegExp(query, "i") } },
+					{ isbn: query },
+				];
+				if (filter.$or) {
+					filter.$and = [{ $or: filter.$or }, { $or: qOr }];
+					delete filter.$or;
+				} else {
+					filter.$or = qOr;
+				}
+				/* 
+					{ title: { $regex: new RegExp(query, "i") } },
+					{ author: { $regex: new RegExp(query, "i") } },
+					{ isbn: query }
+				);
+*/
+			}
+
+			let pipeline: any[] = [{ $match: filter }];
+
+			if (customOrderIds && customOrderIds.length > 0) {
+				pipeline.push({
+					$addFields: {
+						indexFound: {
+							$indexOfArray: [customOrderIds, { $toString: "$_id" }],
+						},
+					},
+				});
+				pipeline.push({
+					$addFields: {
+						customSortOrder: {
+							$cond: [{ $eq: ["$indexFound", -1] }, 999999, "$indexFound"],
+						},
+					},
+				});
+				pipeline.push({
+					$sort: { customSortOrder: 1, sortOrder: 1, createdAt: -1 },
+				});
+			} else if (sort) {
+				let sortObj: any = {};
+				switch (sort) {
+					case "price-asc":
+						sortObj.price = 1;
+						break;
+					case "price-desc":
+						sortObj.price = -1;
+						break;
+					case "title-asc":
+						sortObj.title = 1;
+						break;
+					case "title-desc":
+						sortObj.title = -1;
+						break;
+					case "newest":
+						sortObj.createdAt = -1;
+						break;
+					default:
+						sortObj.sortOrder = 1;
+						sortObj.createdAt = -1;
+						break;
+				}
+				pipeline.push({ $sort: sortObj });
+			} else {
+				pipeline.push({ $sort: { sortOrder: 1, createdAt: -1 } });
+			}
+
+			// execute pipeline
+			pipeline.push({ $skip: skip });
+			pipeline.push({ $limit: limit });
+
+			const items = await Product.aggregate(pipeline);
+			const totalCount = await Product.countDocuments(filter);
+			const totalPages = Math.ceil(totalCount / limit);
+
+			// map _id to id to match GraphQL type
+			const mappedItems = items.map((item) => ({
+				...item,
+				id: item._id.toString(),
+			}));
+
+			return {
+				items: mappedItems,
+				totalCount,
+				totalPages,
+			};
+		},
 		products: async () => {
 			await connectToDatabase();
-			return await Product.find({}).sort({ sortOrder: 1, createdAt: -1 }).lean();
+			return await Product.find({})
+				.sort({ sortOrder: 1, createdAt: -1 })
+				.lean();
 		},
 		productBySlug: async (_: any, { slug }: { slug: string }) => {
 			await connectToDatabase();
@@ -474,7 +611,10 @@ const resolvers = {
 		},
 		homepageSections: async () => {
 			await connectToDatabase();
-			return await HomepageSection.find({}).sort({ sortOrder: 1, createdAt: -1 });
+			return await HomepageSection.find({}).sort({
+				sortOrder: 1,
+				createdAt: -1,
+			});
 		},
 		users: async () => {
 			await connectToDatabase();
@@ -494,7 +634,7 @@ const resolvers = {
 				.populate({
 					path: "products",
 					select: "id title coverImage slug",
-					options: { lean: true }
+					options: { lean: true },
 				})
 				.sort({ sort: 1 })
 				.lean();
@@ -507,12 +647,16 @@ const resolvers = {
 			await connectToDatabase();
 			return await Coupon.findById(id);
 		},
-		validateCoupon: async (_: any, { code, cartTotal }: { code: string, cartTotal: number }) => {
+		validateCoupon: async (
+			_: any,
+			{ code, cartTotal }: { code: string; cartTotal: number }
+		) => {
 			await connectToDatabase();
 			const coupon = await Coupon.findOne({ code: code.toUpperCase() });
-			
+
 			if (!coupon) throw new Error("Invalid coupon code");
-			if (coupon.status !== "Active") throw new Error("Coupon is no longer active");
+			if (coupon.status !== "Active")
+				throw new Error("Coupon is no longer active");
 			if (coupon.expiryDate) {
 				const expiry = new Date(coupon.expiryDate);
 				expiry.setHours(23, 59, 59, 999);
@@ -520,9 +664,13 @@ const resolvers = {
 					throw new Error("Coupon has expired");
 				}
 			}
-			if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) throw new Error("Coupon usage limit reached");
-			if (coupon.minPurchase && cartTotal < coupon.minPurchase) throw new Error(`Minimum purchase of AED ${coupon.minPurchase} required`);
-			
+			if (coupon.maxUses && coupon.usedCount >= coupon.maxUses)
+				throw new Error("Coupon usage limit reached");
+			if (coupon.minPurchase && cartTotal < coupon.minPurchase)
+				throw new Error(
+					`Minimum purchase of AED ${coupon.minPurchase} required`
+				);
+
 			return coupon;
 		},
 		popups: async () => {
@@ -539,10 +687,12 @@ const resolvers = {
 		},
 	},
 	Product: {
-		id: (parent: any) => parent.id || (parent._id ? parent._id.toString() : null),
+		id: (parent: any) =>
+			parent.id || (parent._id ? parent._id.toString() : null),
 	},
 	Category: {
-		id: (parent: any) => parent.id || (parent._id ? parent._id.toString() : null),
+		id: (parent: any) =>
+			parent.id || (parent._id ? parent._id.toString() : null),
 	},
 	OrderItem: {
 		product: async (parent: any) => {
@@ -554,23 +704,26 @@ const resolvers = {
 			if (!parent.bundleId) return null;
 			await connectToDatabase();
 			return await Bundle.findById(parent.bundleId).populate("books");
-		}
+		},
 	},
 	RefundRequest: {
 		order: async (parent: any) => {
 			if (!parent.orderId) return null;
 			await connectToDatabase();
 			return await Order.findById(parent.orderId);
-		}
+		},
 	},
 	Mutation: {
-		updateOrderStatus: async (_: any, { id, status }: { id: string, status: string }) => {
+		updateOrderStatus: async (
+			_: any,
+			{ id, status }: { id: string; status: string }
+		) => {
 			await connectToDatabase();
 			const validStatuses = ["PENDING", "SHIPPED", "DELIVERED", "CANCELLED"];
 			if (!validStatuses.includes(status)) {
 				throw new Error("Invalid status");
 			}
-			
+
 			const existingOrder = await Order.findById(id);
 			if (!existingOrder) throw new Error("Order not found");
 
@@ -578,8 +731,10 @@ const resolvers = {
 			if (status === "DELIVERED") {
 				updateData.isPaid = true;
 			}
-			
-			const order = await Order.findByIdAndUpdate(id, updateData, { new: true });
+
+			const order = await Order.findByIdAndUpdate(id, updateData, {
+				new: true,
+			});
 			if (!order) throw new Error("Order not found");
 
 			// Trigger Cancelled Notification and restore stock
@@ -588,7 +743,7 @@ const resolvers = {
 				for (const item of order.items) {
 					if (item.productId) {
 						await Product.findByIdAndUpdate(item.productId, {
-							$inc: { stock: item.quantity }
+							$inc: { stock: item.quantity },
 						});
 					}
 				}
@@ -606,12 +761,12 @@ const resolvers = {
 		createProduct: async (_: any, { input }: { input: any }) => {
 			await connectToDatabase();
 			console.log("CREATE PRODUCT INPUT:", input);
-			
+
 			if (input.sortOrder === undefined || input.sortOrder === null) {
 				const maxProduct = await Product.findOne().sort({ sortOrder: -1 });
 				input.sortOrder = maxProduct ? (maxProduct.sortOrder || 0) + 1 : 1;
 			}
-			
+
 			// Resolve multiple categories
 			const resolvedCategories = [];
 			if (input.categoryIds && input.categoryIds.length > 0) {
@@ -620,7 +775,7 @@ const resolvers = {
 					resolvedCategories.push({
 						id: cat._id.toString(),
 						name: cat.name,
-						slug: cat.slug
+						slug: cat.slug,
 					});
 				}
 				input.categories = resolvedCategories;
@@ -628,36 +783,43 @@ const resolvers = {
 
 			const product = new Product(input);
 			await product.save();
-			
+
 			if (input.categoryIds && input.categoryIds.length > 0) {
 				await Category.updateMany(
 					{ _id: { $in: input.categoryIds } },
 					{
 						$push: { products: product._id },
-						$inc: { count: 1 }
+						$inc: { count: 1 },
 					}
 				);
 			} else if (input.categoryId) {
 				await Category.findByIdAndUpdate(input.categoryId, {
 					$push: { products: product._id },
-					$inc: { count: 1 }
+					$inc: { count: 1 },
 				});
 			} else if (input.categoryName) {
-				let cat = await Category.findOne({ name: { $regex: new RegExp("^" + input.categoryName.trim() + "$", "i") } });
+				let cat = await Category.findOne({
+					name: {
+						$regex: new RegExp("^" + input.categoryName.trim() + "$", "i"),
+					},
+				});
 				if (!cat) {
 					cat = new Category({
 						name: input.categoryName.trim(),
-						slug: input.categoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-						count: 0
+						slug: input.categoryName
+							.trim()
+							.toLowerCase()
+							.replace(/[^a-z0-9]+/g, "-"),
+						count: 0,
 					});
 					await cat.save();
 				}
-				
+
 				await Category.findByIdAndUpdate(cat._id, {
 					$push: { products: product._id },
-					$inc: { count: 1 }
+					$inc: { count: 1 },
 				});
-				
+
 				product.categoryId = cat._id.toString();
 				product.categorySlug = cat.slug;
 				await product.save();
@@ -670,15 +832,19 @@ const resolvers = {
 		) => {
 			await connectToDatabase();
 			console.log("UPDATE PRODUCT INPUT:", input);
-			
+
 			const oldProduct = await Product.findById(id);
-			
+
 			if (input.categoryIds) {
 				const oldCategoryIds = oldProduct.categoryIds || [];
 				const newCategoryIds = input.categoryIds;
 
-				const addedIds = newCategoryIds.filter((id) => !oldCategoryIds.includes(id));
-				const removedIds = oldCategoryIds.filter((id) => !newCategoryIds.includes(id));
+				const addedIds = newCategoryIds.filter(
+					(id) => !oldCategoryIds.includes(id)
+				);
+				const removedIds = oldCategoryIds.filter(
+					(id) => !newCategoryIds.includes(id)
+				);
 
 				if (addedIds.length > 0) {
 					await Category.updateMany(
@@ -694,21 +860,28 @@ const resolvers = {
 				}
 
 				const cats = await Category.find({ _id: { $in: newCategoryIds } });
-				input.categories = cats.map(cat => ({
+				input.categories = cats.map((cat) => ({
 					id: cat._id.toString(),
 					name: cat.name,
-					slug: cat.slug
+					slug: cat.slug,
 				}));
 			} else {
 				let newCategoryId = input.categoryId;
 
 				if (!newCategoryId && input.categoryName) {
-					let cat = await Category.findOne({ name: { $regex: new RegExp("^" + input.categoryName.trim() + "$", "i") } });
+					let cat = await Category.findOne({
+						name: {
+							$regex: new RegExp("^" + input.categoryName.trim() + "$", "i"),
+						},
+					});
 					if (!cat) {
 						cat = new Category({
 							name: input.categoryName.trim(),
-							slug: input.categoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-							count: 0
+							slug: input.categoryName
+								.trim()
+								.toLowerCase()
+								.replace(/[^a-z0-9]+/g, "-"),
+							count: 0,
 						});
 						await cat.save();
 					}
@@ -716,26 +889,29 @@ const resolvers = {
 					input.categoryId = newCategoryId;
 					input.categorySlug = cat.slug;
 				}
-				
+
 				if (oldProduct && oldProduct.categoryId !== newCategoryId) {
 					if (oldProduct.categoryId) {
 						await Category.findByIdAndUpdate(oldProduct.categoryId, {
 							$pull: { products: id },
-							$inc: { count: -1 }
+							$inc: { count: -1 },
 						});
 					}
 					if (newCategoryId) {
 						await Category.findByIdAndUpdate(newCategoryId, {
 							$push: { products: id },
-							$inc: { count: 1 }
+							$inc: { count: 1 },
 						});
 					}
 				}
 			}
-			
+
 			return await Product.findByIdAndUpdate(id, input, { new: true });
 		},
-		updateProductsSortOrder: async (_: any, { updates }: { updates: { id: string, sortOrder: number }[] }) => {
+		updateProductsSortOrder: async (
+			_: any,
+			{ updates }: { updates: { id: string; sortOrder: number }[] }
+		) => {
 			await connectToDatabase();
 			if (!updates || updates.length === 0) return true;
 
@@ -755,7 +931,7 @@ const resolvers = {
 			if (product && product.categoryId) {
 				await Category.findByIdAndUpdate(product.categoryId, {
 					$pull: { products: id },
-					$inc: { count: -1 }
+					$inc: { count: -1 },
 				});
 			}
 			const res = await Product.findByIdAndDelete(id);
@@ -788,7 +964,7 @@ const resolvers = {
 			await bundle.save();
 			return bundle;
 		},
-		updateBundle: async (_: any, { id, input }: { id: string, input: any }) => {
+		updateBundle: async (_: any, { id, input }: { id: string; input: any }) => {
 			await connectToDatabase();
 			const updated = await Bundle.findByIdAndUpdate(id, input, { new: true });
 			return updated;
@@ -804,9 +980,14 @@ const resolvers = {
 			await banner.save();
 			return banner;
 		},
-		updateHeroBanner: async (_: any, { id, input }: { id: string, input: any }) => {
+		updateHeroBanner: async (
+			_: any,
+			{ id, input }: { id: string; input: any }
+		) => {
 			await connectToDatabase();
-			const updated = await HeroBanner.findByIdAndUpdate(id, input, { new: true });
+			const updated = await HeroBanner.findByIdAndUpdate(id, input, {
+				new: true,
+			});
 			return updated;
 		},
 		deleteHeroBanner: async (_: any, { id }: { id: string }) => {
@@ -831,9 +1012,14 @@ const resolvers = {
 			await config.save();
 			return config;
 		},
-		updateShippingConfig: async (_: any, { id, input }: { id: string, input: any }) => {
+		updateShippingConfig: async (
+			_: any,
+			{ id, input }: { id: string; input: any }
+		) => {
 			await connectToDatabase();
-			const config = await ShippingConfig.findByIdAndUpdate(id, input, { new: true });
+			const config = await ShippingConfig.findByIdAndUpdate(id, input, {
+				new: true,
+			});
 			return config;
 		},
 		deleteShippingConfig: async (_: any, { id }: { id: string }) => {
@@ -847,9 +1033,14 @@ const resolvers = {
 			await config.save();
 			return config;
 		},
-		updateTaxConfig: async (_: any, { id, input }: { id: string, input: any }) => {
+		updateTaxConfig: async (
+			_: any,
+			{ id, input }: { id: string; input: any }
+		) => {
 			await connectToDatabase();
-			const config = await TaxConfig.findByIdAndUpdate(id, input, { new: true });
+			const config = await TaxConfig.findByIdAndUpdate(id, input, {
+				new: true,
+			});
 			return config;
 		},
 		deleteTaxConfig: async (_: any, { id }: { id: string }) => {
@@ -868,22 +1059,21 @@ const resolvers = {
 			{ id, input }: { id: string; input: any }
 		) => {
 			await connectToDatabase();
-			
+
 			// Sync category name and slug to all associated products
 			if (input.name || input.slug) {
 				const updateFields: any = {};
 				if (input.name) updateFields.categoryName = input.name;
 				if (input.slug) updateFields.categorySlug = input.slug;
-				
+
 				if (Object.keys(updateFields).length > 0) {
-					await Product.updateMany(
-						{ categoryId: id },
-						{ $set: updateFields }
-					);
+					await Product.updateMany({ categoryId: id }, { $set: updateFields });
 				}
 			}
 
-			return await Category.findByIdAndUpdate(id, input, { new: true }).populate("products");
+			return await Category.findByIdAndUpdate(id, input, {
+				new: true,
+			}).populate("products");
 		},
 		deleteCategory: async (_: any, { id }: { id: string }) => {
 			await connectToDatabase();
@@ -901,7 +1091,7 @@ const resolvers = {
 			await coupon.save();
 			return coupon;
 		},
-		updateCoupon: async (_: any, { id, input }: { id: string, input: any }) => {
+		updateCoupon: async (_: any, { id, input }: { id: string; input: any }) => {
 			await connectToDatabase();
 			const updated = await Coupon.findByIdAndUpdate(id, input, { new: true });
 			return updated;
@@ -917,7 +1107,7 @@ const resolvers = {
 			await popup.save();
 			return popup;
 		},
-		updatePopup: async (_: any, { id, input }: { id: string, input: any }) => {
+		updatePopup: async (_: any, { id, input }: { id: string; input: any }) => {
 			await connectToDatabase();
 			const updated = await Popup.findByIdAndUpdate(id, input, { new: true });
 			return updated;
@@ -927,7 +1117,11 @@ const resolvers = {
 			const res = await Popup.findByIdAndDelete(id);
 			return !!res;
 		},
-		createRefundRequest: async (_: any, { input }: { input: any }, context: any) => {
+		createRefundRequest: async (
+			_: any,
+			{ input }: { input: any },
+			context: any
+		) => {
 			await connectToDatabase();
 			const existing = await RefundRequest.findOne({ orderId: input.orderId });
 			if (existing) {
@@ -940,14 +1134,21 @@ const resolvers = {
 			await request.save();
 			return request;
 		},
-		updateRefundRequestStatus: async (_: any, { id, status, adminNotes }: { id: string, status: string, adminNotes?: string }) => {
+		updateRefundRequestStatus: async (
+			_: any,
+			{
+				id,
+				status,
+				adminNotes,
+			}: { id: string; status: string; adminNotes?: string }
+		) => {
 			await connectToDatabase();
 			const request = await RefundRequest.findById(id);
 			if (!request) throw new Error("Refund request not found");
-			
+
 			request.status = status;
 			if (adminNotes !== undefined) request.adminNotes = adminNotes;
-			
+
 			await request.save();
 
 			// When a refund is confirmed (e.g. manual/COD), also cancel the linked order
@@ -962,13 +1163,17 @@ const resolvers = {
 			const request = await RefundRequest.findById(id);
 			if (!request) throw new Error("Refund request not found");
 			if (request.status === "REFUNDED") throw new Error("Already refunded");
-			if (request.status !== "ACCEPTED") throw new Error("Refund request must be ACCEPTED first");
-			
+			if (request.status !== "ACCEPTED")
+				throw new Error("Refund request must be ACCEPTED first");
+
 			const order = await Order.findById(request.orderId);
 			if (!order) throw new Error("Order not found");
-			if (order.paymentMethod !== "Stripe") throw new Error("Not a Stripe order. Refund manually.");
-			if (!order.stripeTransactionId) throw new Error("No Stripe Transaction ID found for this order.");
-			if (request.stripeRefundId) throw new Error("Stripe refund already initiated.");
+			if (order.paymentMethod !== "Stripe")
+				throw new Error("Not a Stripe order. Refund manually.");
+			if (!order.stripeTransactionId)
+				throw new Error("No Stripe Transaction ID found for this order.");
+			if (request.stripeRefundId)
+				throw new Error("Stripe refund already initiated.");
 
 			try {
 				const refund = await stripe.refunds.create({

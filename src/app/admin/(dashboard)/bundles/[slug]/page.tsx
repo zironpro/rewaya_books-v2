@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { BundleDetailView } from "@/features/admin/bundles/bundle-detail-view";
 
 export const metadata: Metadata = {

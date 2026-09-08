@@ -31,16 +31,20 @@ export async function POST(req: Request) {
 
 		if (cart) {
 			// Extract line items to construct order items
-			const items = cart.lineItems?.map((item: any) => {
-				const isBundle = item.isBundle;
-				return {
-					productId: isBundle ? undefined : (item.productId || item._id),
-					bundleId: isBundle ? (item.productId || item._id) : undefined,
-					title: item.title,
-					price: typeof item.price === "object" ? Number(item.price.amount || 0) : Number(item.price || 0),
-					quantity: item.quantity,
-				};
-			}) || [];
+			const items =
+				cart.lineItems?.map((item: any) => {
+					const isBundle = item.isBundle;
+					return {
+						productId: isBundle ? undefined : item.productId || item._id,
+						bundleId: isBundle ? item.productId || item._id : undefined,
+						title: item.title,
+						price:
+							typeof item.price === "object"
+								? Number(item.price.amount || 0)
+								: Number(item.price || 0),
+						quantity: item.quantity,
+					};
+				}) || [];
 
 			// Create Order in MongoDB
 			const newOrder = new Order({
@@ -52,33 +56,58 @@ export async function POST(req: Request) {
 				status: "PENDING", // Initial status, will be shipped later
 				items,
 				total: session.amount_total ? session.amount_total / 100 : 0,
-				shippingCost: session.metadata?.s_cost ? Number(session.metadata.s_cost) : 0,
+				shippingCost: session.metadata?.s_cost
+					? Number(session.metadata.s_cost)
+					: 0,
 				taxAmount: session.metadata?.s_tax ? Number(session.metadata.s_tax) : 0,
 				couponCode: session.metadata?.s_coupon || undefined,
-				discountAmount: session.metadata?.s_discount ? Number(session.metadata.s_discount) : 0,
+				discountAmount: session.metadata?.s_discount
+					? Number(session.metadata.s_discount)
+					: 0,
 				paymentMethod: "Stripe",
 				shippingMethod: session.metadata?.s_method || "standard",
 				isPaid: true,
 				stripeTransactionId: session.payment_intent || session.id,
 				shippingAddress: {
-					firstName: session.metadata?.s_first || session.customer_details?.name?.split(" ")[0] || "Unknown",
+					firstName:
+						session.metadata?.s_first ||
+						session.customer_details?.name?.split(" ")[0] ||
+						"Unknown",
 					lastName:
 						session.metadata?.s_last ||
 						session.customer_details?.name?.split(" ").slice(1).join(" ") ||
 						"Unknown",
-					addressLine1: session.metadata?.s_line1 || session.customer_details?.address?.line1 || "Unknown",
-					addressLine2: session.metadata?.s_line2 || session.customer_details?.address?.line2 || "",
-					city: session.metadata?.s_city || session.customer_details?.address?.city || "Unknown",
-					state: session.metadata?.s_state || session.customer_details?.address?.state || "Unknown",
+					addressLine1:
+						session.metadata?.s_line1 ||
+						session.customer_details?.address?.line1 ||
+						"Unknown",
+					addressLine2:
+						session.metadata?.s_line2 ||
+						session.customer_details?.address?.line2 ||
+						"",
+					city:
+						session.metadata?.s_city ||
+						session.customer_details?.address?.city ||
+						"Unknown",
+					state:
+						session.metadata?.s_state ||
+						session.customer_details?.address?.state ||
+						"Unknown",
 					postalCode:
-						session.metadata?.s_postal || session.customer_details?.address?.postal_code || "Unknown",
-					country: session.metadata?.s_country || session.customer_details?.address?.country || "UAE",
-					phone: session.metadata?.s_phone || session.customer_details?.phone || "",
+						session.metadata?.s_postal ||
+						session.customer_details?.address?.postal_code ||
+						"Unknown",
+					country:
+						session.metadata?.s_country ||
+						session.customer_details?.address?.country ||
+						"UAE",
+					phone:
+						session.metadata?.s_phone || session.customer_details?.phone || "",
 				},
 			});
 
 			await newOrder.save();
-			
+
 			// Reduce stock
 			const { Product } = await import("@/lib/db/models/Product");
 			for (const item of items) {
@@ -88,7 +117,7 @@ export async function POST(req: Request) {
 					});
 				}
 			}
-			
+
 			// Generate Invoice
 			try {
 				const { generateAndUploadInvoice } = await import("@/lib/invoice");

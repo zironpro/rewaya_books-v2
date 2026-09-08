@@ -1,26 +1,24 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
+
 import {
 	Calendar,
 	CheckCircle2,
 	Package,
 	Plus,
 	Sparkles,
-	Tag,
 	Trash2,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import {
-	useGetBundlesQuery,
-	useCreateBundleMutation,
-	useUpdateBundleMutation,
-	useGetProductsQuery,
 	useDeleteProductMutation,
+	useGetBundlesQuery,
+	useGetProductsQuery,
+	useUpdateBundleMutation,
 } from "@/types/graphql";
 
 const initialBundles = [
@@ -79,13 +77,11 @@ export function BundlesView() {
 
 	const updateBundleMutation = useUpdateBundleMutation();
 	const deleteProductMutation = useDeleteProductMutation();
-	
+
 	const { data: productsData } = useGetProductsQuery();
 	const products = productsData?.products || [];
 
 	const bundles = data?.bundles || [];
-
-
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm("Are you sure you want to delete this bundle?")) {
@@ -102,22 +98,22 @@ export function BundlesView() {
 	return (
 		<div className="space-y-6">
 			{/* Header Banner */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
 				<div>
 					<div className="flex items-center gap-2">
 						<Package className="h-5 w-5 text-primary" />
-						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
+						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
 							Marketing Book Bundles
 						</h1>
 					</div>
-					<p className="text-sm text-slate-500 mt-1">
+					<p className="mt-1 text-slate-500 text-sm">
 						Configure CMS Book Bundles (`BookBundles`), discount SKUs,
 						strikethrough prices, and included titles list.
 					</p>
 				</div>
 
 				<Link href="/admin/bundles/new">
-					<Button className="gap-2 font-semibold text-sm h-10 px-4">
+					<Button className="h-10 gap-2 px-4 font-semibold text-sm">
 						<Plus className="h-4 w-4" />
 						Create Book Bundle
 					</Button>
@@ -128,32 +124,30 @@ export function BundlesView() {
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 				{bundles.map((bdl) => (
 					<div
-						key={bdl.id}
 						className="flex flex-col justify-between space-y-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-primary/40 dark:border-slate-800 dark:bg-slate-900"
+						key={bdl.id}
 					>
 						<div className="space-y-3">
 							<div className="flex items-center justify-between">
-								<Badge variant="success" className="text-[10px] gap-1">
+								<Badge className="gap-1 text-[10px]" variant="success">
 									<Sparkles className="h-3 w-3" />
-									{bdl.originalPrice && bdl.originalPrice > bdl.price 
-										? `${Math.round(((bdl.originalPrice - bdl.price) / bdl.originalPrice) * 100)}% OFF` 
+									{bdl.originalPrice && bdl.originalPrice > bdl.price
+										? `${Math.round(((bdl.originalPrice - bdl.price) / bdl.originalPrice) * 100)}% OFF`
 										: "Special Offer"}
 								</Badge>
-								<span className="font-semibold text-sm text-primary">
+								<span className="font-semibold text-primary text-sm">
 									{bdl.id || bdl.slug}
 								</span>
-								<div className="flex gap-1 items-center">
-									<Button variant="ghost" size="sm" asChild>
-										<Link href={`/admin/bundles/${bdl.slug}`}>
-											Edit
-										</Link>
+								<div className="flex items-center gap-1">
+									<Button asChild size="sm" variant="ghost">
+										<Link href={`/admin/bundles/${bdl.slug}`}>Edit</Link>
 									</Button>
 									<Button
-										variant="ghost"
-										size="sm"
-										className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 px-2"
-										onClick={() => handleDelete(bdl.id)}
+										className="px-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
 										disabled={deleteProductMutation.isPending}
+										onClick={() => handleDelete(bdl.id)}
+										size="sm"
+										variant="ghost"
 									>
 										<Trash2 className="h-4 w-4" />
 									</Button>
@@ -164,7 +158,7 @@ export function BundlesView() {
 								<h3 className="font-bold text-lg text-slate-900 dark:text-white">
 									{bdl.title}
 								</h3>
-								<p className="text-[11px] text-slate-500 font-mono">
+								<p className="font-mono text-[11px] text-slate-500">
 									/{bdl.slug}
 								</p>
 							</div>
@@ -174,23 +168,23 @@ export function BundlesView() {
 								<span className="font-extrabold text-2xl text-slate-900 dark:text-white">
 									AED {bdl.price.toFixed(2)}
 								</span>
-								<span className="text-sm text-slate-400 line-through font-semibold">
+								<span className="font-semibold text-slate-400 text-sm line-through">
 									AED {bdl.originalPrice?.toFixed(2) || "N/A"}
 								</span>
 							</div>
 
 							{/* Included Books List */}
-							<div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-								<div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+							<div className="space-y-1.5 border-slate-100 border-t pt-2 dark:border-slate-800">
+								<div className="font-semibold text-[11px] text-slate-500 uppercase tracking-wider">
 									Included Titles ({bdl.books?.length || 0}):
 								</div>
 								<ul className="space-y-1">
 									{bdl.books?.map((item: any, idx: number) => (
 										<li
+											className="flex items-center gap-1.5 text-slate-700 text-sm dark:text-slate-300"
 											key={idx}
-											className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300"
 										>
-											<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+											<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
 											<span className="truncate">{item.title}</span>
 										</li>
 									))}
@@ -198,12 +192,12 @@ export function BundlesView() {
 							</div>
 						</div>
 
-						<div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500">
+						<div className="flex items-center justify-between border-slate-100 border-t pt-3 text-slate-500 text-sm dark:border-slate-800">
 							<div className="flex items-center gap-1">
 								<Calendar className="h-3.5 w-3.5 text-slate-400" />
 								<span>Ongoing Offer</span>
 							</div>
-							<Badge variant="outline" className="text-[10px]">
+							<Badge className="text-[10px]" variant="outline">
 								{bdl.isFeatured ? "Featured" : "Standard"}
 							</Badge>
 						</div>

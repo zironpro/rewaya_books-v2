@@ -1,27 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateRefundRequestMutation, useGetRefundRequestsQuery } from "@/types/graphql";
+
+import { RefreshCcw } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogDescription,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RefreshCcw } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
+import {
+	useCreateRefundRequestMutation,
+	useGetRefundRequestsQuery,
+} from "@/types/graphql";
 
 interface RequestRefundDialogProps {
 	orderId: string;
 	isDelivered: boolean;
 }
 
-export function RequestRefundDialog({ orderId, isDelivered }: RequestRefundDialogProps) {
+export function RequestRefundDialog({
+	orderId,
+	isDelivered,
+}: RequestRefundDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [reason, setReason] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +40,9 @@ export function RequestRefundDialog({ orderId, isDelivered }: RequestRefundDialo
 	const createRefundRequestMutation = useCreateRefundRequestMutation();
 
 	// Check if a request already exists for this order
-	const existingRequest = data?.refundRequests?.find((r) => r.orderId === orderId);
+	const existingRequest = data?.refundRequests?.find(
+		(r) => r.orderId === orderId
+	);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -58,7 +69,15 @@ export function RequestRefundDialog({ orderId, isDelivered }: RequestRefundDialo
 
 	if (existingRequest) {
 		return (
-			<Badge variant={existingRequest.status === "REFUNDED" ? "success" : existingRequest.status === "REJECTED" ? "destructive" : "secondary"}>
+			<Badge
+				variant={
+					existingRequest.status === "REFUNDED"
+						? "success"
+						: existingRequest.status === "REJECTED"
+							? "destructive"
+							: "secondary"
+				}
+			>
 				Refund: {existingRequest.status}
 			</Badge>
 		);
@@ -69,7 +88,7 @@ export function RequestRefundDialog({ orderId, isDelivered }: RequestRefundDialo
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>
 				<Button variant="outline">
 					<RefreshCcw className="mr-2 h-4 w-4" /> Request Refund
@@ -79,30 +98,35 @@ export function RequestRefundDialog({ orderId, isDelivered }: RequestRefundDialo
 				<DialogHeader>
 					<DialogTitle>Request Refund or Return</DialogTitle>
 					<DialogDescription>
-						Please provide a reason for your refund or return request. Our team will review it and get back to you shortly.
+						Please provide a reason for your refund or return request. Our team
+						will review it and get back to you shortly.
 					</DialogDescription>
 				</DialogHeader>
 
-				<form onSubmit={handleSubmit} className="space-y-4 pt-4">
+				<form className="space-y-4 pt-4" onSubmit={handleSubmit}>
 					<div className="space-y-2">
 						<Label htmlFor="reason">Reason for Refund/Return</Label>
 						<Textarea
 							id="reason"
-							placeholder="e.g. Item arrived damaged, changed my mind, etc."
-							value={reason}
 							onChange={(e) => setReason(e.target.value)}
+							placeholder="e.g. Item arrived damaged, changed my mind, etc."
 							required
 							rows={4}
+							value={reason}
 						/>
 					</div>
 
-					{error && <p className="text-sm text-red-500">{error}</p>}
+					{error && <p className="text-red-500 text-sm">{error}</p>}
 
 					<div className="flex justify-end gap-2">
-						<Button variant="ghost" type="button" onClick={() => setOpen(false)}>
+						<Button
+							onClick={() => setOpen(false)}
+							type="button"
+							variant="ghost"
+						>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={isSubmitting || !reason.trim()}>
+						<Button disabled={isSubmitting || !reason.trim()} type="submit">
 							{isSubmitting ? "Submitting..." : "Submit Request"}
 						</Button>
 					</div>

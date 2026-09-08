@@ -24,7 +24,11 @@ export default async function ProfileOrdersPage() {
 		.lean();
 
 	const formattedOrders = rawOrders.map((o: any) => {
-		const totalItems = o.items?.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) || 0;
+		const totalItems =
+			o.items?.reduce(
+				(sum: number, item: any) => sum + (item.quantity || 1),
+				0
+			) || 0;
 		const statusMap: Record<string, string> = {
 			DELIVERED: "Delivered",
 			SHIPPED: "Shipped",

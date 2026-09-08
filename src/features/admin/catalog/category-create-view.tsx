@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Layers, Save } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -105,7 +107,10 @@ export function CategoryCreateView() {
 				</Link>
 			</div>
 
-			<form className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-3" onSubmit={handleSave}>
+			<form
+				className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-3"
+				onSubmit={handleSave}
+			>
 				<div className="space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-2 dark:border-slate-800 dark:bg-slate-900">
 					<div className="space-y-2">
 						<label className="font-semibold text-slate-700 dark:text-slate-300">
@@ -217,9 +222,15 @@ export function CategoryCreateView() {
 					</div>
 
 					<div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-						<Button className="h-11 w-full gap-2" disabled={createCategoryMutation.isPending} type="submit">
-							<Save className="h-4 w-4" /> 
-							{createCategoryMutation.isPending ? "Creating..." : "Create Category"}
+						<Button
+							className="h-11 w-full gap-2"
+							disabled={createCategoryMutation.isPending}
+							type="submit"
+						>
+							<Save className="h-4 w-4" />
+							{createCategoryMutation.isPending
+								? "Creating..."
+								: "Create Category"}
 						</Button>
 					</div>
 				</div>

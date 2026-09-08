@@ -26,16 +26,15 @@ export async function searchProductsAction(
 
 	try {
 		const { Product } = await import("@/lib/db/models/Product");
-		await import("@/lib/db/mongodb").then(m => m.default());
+		await import("@/lib/db/mongodb").then((m) => m.default());
 
 		const queryFilter = {
-			$or: [
-				{ isbn: trimmed },
-				{ title: { $regex: trimmed, $options: "i" } }
-			]
+			$or: [{ isbn: trimmed }, { title: { $regex: trimmed, $options: "i" } }],
 		};
 
-		const products = await Product.find(queryFilter).limit(_SUGGESTION_LIMIT).lean();
+		const products = await Product.find(queryFilter)
+			.limit(_SUGGESTION_LIMIT)
+			.lean();
 
 		const results: SearchSuggestion[] = products.map((p: any) => ({
 			id: p._id.toString(),

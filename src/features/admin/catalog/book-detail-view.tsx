@@ -1,25 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+
+import { useQueryClient } from "@tanstack/react-query";
 import {
 	ArrowLeft,
 	BookOpen,
-	Image as ImageIcon,
-	Package,
 	CheckCircle,
 	Edit,
+	Image as ImageIcon,
+	Package,
 	Save,
 	X,
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { useGetProductBySlugQuery, useUpdateProductMutation, useGetCategoriesQuery } from "@/types/graphql";
-import Image from "next/image";
+import {
+	useGetCategoriesQuery,
+	useGetProductBySlugQuery,
+	useUpdateProductMutation,
+} from "@/types/graphql";
 
 export function BookDetailView() {
 	const params = useParams();
@@ -54,7 +60,11 @@ export function BookDetailView() {
 			setEditTitle(book.title || "");
 			setEditAuthor(book.author || "");
 			setEditIsbn(book.isbn || "");
-			setEditCategory(book.categoryId || categories.find((c: any) => c.name === book.categoryName)?.id || "");
+			setEditCategory(
+				book.categoryId ||
+					categories.find((c: any) => c.name === book.categoryName)?.id ||
+					""
+			);
 			setEditPrice(book.price ? book.price.toString() : "0");
 			setEditStock(book.stock ? book.stock.toString() : "0");
 			setEditLanguage(book.language || "English");
@@ -120,9 +130,9 @@ export function BookDetailView() {
 	};
 
 	const handleSave = async () => {
-		const priceNum = parseFloat(editPrice) || 0;
-		const stockNum = parseInt(editStock) || 0;
-		
+		const priceNum = Number.parseFloat(editPrice) || 0;
+		const stockNum = Number.parseInt(editStock) || 0;
+
 		const selectedCat = categories.find((c: any) => c.id === editCategory);
 
 		try {
@@ -159,7 +169,7 @@ export function BookDetailView() {
 	return (
 		<div className="space-y-6">
 			{/* Page Header */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 				<div className="flex items-center gap-4">
 					<Button
 						onClick={() => router.push("/admin/catalog")}
@@ -171,21 +181,21 @@ export function BookDetailView() {
 					<div>
 						<h1 className="flex items-center gap-2 font-bold text-2xl text-slate-900 dark:text-white">
 							{isEditing ? "Edit Book" : book.title}
-							{!isEditing && (
-								book.stock && book.stock > 0 ? (
+							{!isEditing &&
+								(book.stock && book.stock > 0 ? (
 									<Badge className="ml-2 font-semibold" variant="success">
 										<CheckCircle className="mr-1 h-3 w-3" /> In Stock
 									</Badge>
 								) : (
-									<Badge className="ml-2 font-semibold bg-red-100 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400">
+									<Badge className="ml-2 bg-red-100 font-semibold text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400">
 										Out of Stock
 									</Badge>
-								)
-							)}
+								))}
 						</h1>
 						{!isEditing && (
 							<p className="mt-1 flex items-center gap-1.5 text-slate-500 text-sm">
-								<BookOpen className="h-4 w-4" /> By {book.author || "Unknown Author"}
+								<BookOpen className="h-4 w-4" /> By{" "}
+								{book.author || "Unknown Author"}
 							</p>
 						)}
 					</div>
@@ -195,26 +205,23 @@ export function BookDetailView() {
 					{isEditing ? (
 						<>
 							<Button
-								variant="outline"
-								onClick={() => setIsEditing(false)}
 								className="gap-2"
+								onClick={() => setIsEditing(false)}
+								variant="outline"
 							>
 								<X className="h-4 w-4" /> Cancel
 							</Button>
 							<Button
-								onClick={handleSave}
-								disabled={updateProductMutation.isPending}
 								className="gap-2"
+								disabled={updateProductMutation.isPending}
+								onClick={handleSave}
 							>
 								<Save className="h-4 w-4" />
 								{updateProductMutation.isPending ? "Saving..." : "Save Changes"}
 							</Button>
 						</>
 					) : (
-						<Button
-							onClick={() => setIsEditing(true)}
-							className="gap-2"
-						>
+						<Button className="gap-2" onClick={() => setIsEditing(true)}>
 							<Edit className="h-4 w-4" /> Edit Book
 						</Button>
 					)}
@@ -228,67 +235,111 @@ export function BookDetailView() {
 						<h2 className="mb-4 font-bold text-lg text-slate-900 dark:text-white">
 							Book Information
 						</h2>
-						
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+						<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Title</label>
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Title
+								</label>
 								{isEditing ? (
-									<Input value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+									<Input
+										onChange={(e) => setEditTitle(e.target.value)}
+										value={editTitle}
+									/>
 								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.title}</div>
-								)}
-							</div>
-							
-							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Author</label>
-								{isEditing ? (
-									<Input value={editAuthor} onChange={e => setEditAuthor(e.target.value)} />
-								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.author || "N/A"}</div>
-								)}
-							</div>
-							
-							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Price (AED)</label>
-								{isEditing ? (
-									<Input type="number" value={editPrice} onChange={e => setEditPrice(e.target.value)} />
-								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.price.toFixed(2)}</div>
-								)}
-							</div>
-							
-							{isEditing && (
-								<div className="space-y-1">
-									<label className="text-xs font-semibold uppercase text-slate-400">Stock</label>
-									<Input type="number" value={editStock} onChange={e => setEditStock(e.target.value)} />
-								</div>
-							)}
-							
-							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">ISBN</label>
-								{isEditing ? (
-									<Input value={editIsbn} onChange={e => setEditIsbn(e.target.value)} />
-								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.isbn || "N/A"}</div>
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.title}
+									</div>
 								)}
 							</div>
 
 							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Publisher</label>
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Author
+								</label>
 								{isEditing ? (
-									<Input value={editPublisher} onChange={e => setEditPublisher(e.target.value)} />
+									<Input
+										onChange={(e) => setEditAuthor(e.target.value)}
+										value={editAuthor}
+									/>
 								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.publisher || "N/A"}</div>
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.author || "N/A"}
+									</div>
 								)}
 							</div>
-							
+
 							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Category</label>
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Price (AED)
+								</label>
+								{isEditing ? (
+									<Input
+										onChange={(e) => setEditPrice(e.target.value)}
+										type="number"
+										value={editPrice}
+									/>
+								) : (
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.price.toFixed(2)}
+									</div>
+								)}
+							</div>
+
+							{isEditing && (
+								<div className="space-y-1">
+									<label className="font-semibold text-slate-400 text-xs uppercase">
+										Stock
+									</label>
+									<Input
+										onChange={(e) => setEditStock(e.target.value)}
+										type="number"
+										value={editStock}
+									/>
+								</div>
+							)}
+
+							<div className="space-y-1">
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									ISBN
+								</label>
+								{isEditing ? (
+									<Input
+										onChange={(e) => setEditIsbn(e.target.value)}
+										value={editIsbn}
+									/>
+								) : (
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.isbn || "N/A"}
+									</div>
+								)}
+							</div>
+
+							<div className="space-y-1">
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Publisher
+								</label>
+								{isEditing ? (
+									<Input
+										onChange={(e) => setEditPublisher(e.target.value)}
+										value={editPublisher}
+									/>
+								) : (
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.publisher || "N/A"}
+									</div>
+								)}
+							</div>
+
+							<div className="space-y-1">
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Category
+								</label>
 								{isEditing ? (
 									<select
-										value={editCategory}
+										className="h-9 w-full rounded-lg border border-input bg-background px-2.5 text-sm focus:ring-1 focus:ring-primary"
 										onChange={(e) => setEditCategory(e.target.value)}
-										className="w-full h-9 rounded-lg border border-input bg-background px-2.5 text-sm focus:ring-1 focus:ring-primary"
+										value={editCategory}
 									>
 										<option value="">Select Category</option>
 										{categories.map((cat: any) => (
@@ -298,36 +349,49 @@ export function BookDetailView() {
 										))}
 									</select>
 								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.categoryName || "N/A"}</div>
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.categoryName || "N/A"}
+									</div>
 								)}
 							</div>
 
 							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Language</label>
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Language
+								</label>
 								{isEditing ? (
 									<select
-										value={editLanguage}
+										className="h-9 w-full rounded-lg border border-input bg-background px-2.5 text-sm focus:ring-1 focus:ring-primary"
 										onChange={(e) => setEditLanguage(e.target.value)}
-										className="w-full h-9 rounded-lg border border-input bg-background px-2.5 text-sm focus:ring-1 focus:ring-primary"
+										value={editLanguage}
 									>
 										<option value="English">English</option>
 										<option value="Arabic">Arabic</option>
 										<option value="Bilingual">Bilingual</option>
 									</select>
 								) : (
-									<div className="font-medium text-slate-900 dark:text-white">{book.language || "N/A"}</div>
+									<div className="font-medium text-slate-900 dark:text-white">
+										{book.language || "N/A"}
+									</div>
 								)}
 							</div>
-							
-
 
 							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase text-slate-400">Ribbon/Badge</label>
+								<label className="font-semibold text-slate-400 text-xs uppercase">
+									Ribbon/Badge
+								</label>
 								{isEditing ? (
-									<Input value={editRibbon} onChange={e => setEditRibbon(e.target.value)} />
+									<Input
+										onChange={(e) => setEditRibbon(e.target.value)}
+										value={editRibbon}
+									/>
 								) : (
 									<div className="font-medium text-slate-900 dark:text-white">
-										{book.ribbon ? <Badge variant="secondary">{book.ribbon}</Badge> : "None"}
+										{book.ribbon ? (
+											<Badge variant="secondary">{book.ribbon}</Badge>
+										) : (
+											"None"
+										)}
 									</div>
 								)}
 							</div>
@@ -340,12 +404,12 @@ export function BookDetailView() {
 						</h2>
 						{isEditing ? (
 							<textarea
-								value={editDescription}
+								className="min-h-[150px] w-full rounded-lg border border-input bg-background p-3 text-sm focus:ring-1 focus:ring-primary"
 								onChange={(e) => setEditDescription(e.target.value)}
-								className="w-full min-h-[150px] rounded-lg border border-input bg-background p-3 text-sm focus:ring-1 focus:ring-primary"
+								value={editDescription}
 							/>
 						) : (
-							<p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
+							<p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
 								{book.description || "No description provided."}
 							</p>
 						)}
@@ -363,14 +427,14 @@ export function BookDetailView() {
 							{isEditing ? (
 								<div className="w-full">
 									<Input
-										type="file"
 										accept="image/*"
-										onChange={handleImageUpload}
+										className="w-full cursor-pointer file:mr-4 file:rounded-full file:border-0 file:bg-primary/10 file:px-4 file:py-1 file:font-semibold file:text-primary file:text-xs hover:file:bg-primary/20"
 										disabled={isUploading}
-										className="w-full cursor-pointer file:mr-4 file:rounded-full file:border-0 file:bg-primary/10 file:px-4 file:py-1 file:text-xs file:font-semibold file:text-primary hover:file:bg-primary/20"
+										onChange={handleImageUpload}
+										type="file"
 									/>
 									{isUploading && (
-										<div className="mt-2 text-xs text-slate-500 animate-pulse">
+										<div className="mt-2 animate-pulse text-slate-500 text-xs">
 											Uploading...
 										</div>
 									)}
@@ -379,21 +443,21 @@ export function BookDetailView() {
 
 							{editCoverImage || book.coverImage ? (
 								<Image
-									src={isEditing ? editCoverImage : book.coverImage || ""}
 									alt={book.title}
-									width={300}
-									height={450}
 									className="rounded-md object-cover shadow-sm"
+									height={450}
+									src={isEditing ? editCoverImage : book.coverImage || ""}
+									width={300}
 								/>
 							) : (
 								<div className="flex h-[300px] w-full flex-col items-center justify-center rounded-md bg-slate-50 text-slate-400 dark:bg-slate-800/50">
-									<ImageIcon className="h-10 w-10 mb-2" />
+									<ImageIcon className="mb-2 h-10 w-10" />
 									<span>No cover image</span>
 								</div>
 							)}
 						</div>
 					</div>
-					
+
 					{/* Key Metrics */}
 					{!isEditing && (
 						<div className="rounded-lg border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
@@ -401,13 +465,13 @@ export function BookDetailView() {
 								Availability
 							</h2>
 							<div className="space-y-3">
-								<div className="flex justify-between border-b border-slate-100 pb-2 text-sm dark:border-slate-800">
+								<div className="flex justify-between border-slate-100 border-b pb-2 text-sm dark:border-slate-800">
 									<span className="text-slate-500">Current Stock</span>
 									<span className="font-medium text-slate-900 dark:text-white">
 										{book.stock || 0} units
 									</span>
 								</div>
-								<div className="flex justify-between border-b border-slate-100 pb-2 text-sm dark:border-slate-800">
+								<div className="flex justify-between border-slate-100 border-b pb-2 text-sm dark:border-slate-800">
 									<span className="text-slate-500">Category</span>
 									<span className="font-medium text-slate-900 dark:text-white">
 										{book.categoryName || "Uncategorized"}

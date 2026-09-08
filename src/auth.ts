@@ -1,7 +1,8 @@
-import NextAuth from "next-auth";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+
 import clientPromise from "./lib/db/mongodb-client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

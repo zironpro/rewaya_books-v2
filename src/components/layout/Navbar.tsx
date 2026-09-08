@@ -5,13 +5,13 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 
 import { Logo } from "@/assets/logo";
 
 import { useCartCount } from "@/hooks/use-cart-count";
-import { useSession } from "next-auth/react";
 
 import { CategoriesMenu } from "./components/categories-menu";
 import { MobileNavigationDrawer } from "./components/mobile-navigation-drawer";
@@ -100,22 +100,22 @@ export function Navbar({
 								</Button> */}
 
 								<Button
+									asChild
 									className="hidden md:inline-flex"
 									variant="ghost"
-									asChild
 								>
-									<Link href="/wishlist" className="flex items-center gap-2">
+									<Link className="flex items-center gap-2" href="/wishlist">
 										<Heart size={20} strokeWidth={1.5} />
 										<span className="hidden text-sm xl:block">Wishlist</span>
 									</Link>
 								</Button>
 
 								<Button
+									asChild
 									className="relative hidden md:inline-flex"
 									variant="ghost"
-									asChild
 								>
-									<Link href="/cart" className="flex items-center gap-2">
+									<Link className="flex items-center gap-2" href="/cart">
 										<ShoppingBag size={24} strokeWidth={1.5} />
 										<span className="hidden text-sm xl:block">Cart</span>
 										{wixCartCount > 0 && (
@@ -126,10 +126,7 @@ export function Navbar({
 									</Link>
 								</Button>
 
-								<Button
-									className="hidden md:inline-flex"
-									asChild
-								>
+								<Button asChild className="hidden md:inline-flex">
 									<Link href={isLoggedIn ? "/profile" : "/login"}>
 										<User size={20} strokeWidth={1.5} />
 										<span className="hidden text-sm xl:block">

@@ -9,15 +9,18 @@ import {
 	useMemo,
 	useState,
 } from "react";
+
 import { useSession } from "next-auth/react";
 
-import { CART_UPDATED_EVENT, dispatchCartUpdated } from "@/components/commerce/cart-events";
-import { toastManager } from "@/components/ui/toast";
+import { CART_UPDATED_EVENT } from "@/components/commerce/cart-events";
 
-import { fetchCart, syncCart, addItem as serverAddItem, clearCart as serverClearCart } from "@/features/cart/cart-actions";
 import {
-	type CartSnapshot,
-} from "@/features/cart/cart-sdk";
+	fetchCart,
+	addItem as serverAddItem,
+	clearCart as serverClearCart,
+	syncCart,
+} from "@/features/cart/cart-actions";
+import { type CartSnapshot } from "@/features/cart/cart-sdk";
 
 interface CartContextValue {
 	count: number;
@@ -35,7 +38,10 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
 	const { data: session, status } = useSession();
-	const [snapshot, setSnapshot] = useState<CartSnapshot | null>({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+	const [snapshot, setSnapshot] = useState<CartSnapshot | null>({
+		lineItems: [],
+		summary: { subtotal: "0", total: "0", discountNames: [] },
+	});
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -48,7 +54,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 				const serverCart = await fetchCart();
 				if (serverCart) setSnapshot(serverCart);
 			} else {
-				setSnapshot({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+				setSnapshot({
+					lineItems: [],
+					summary: { subtotal: "0", total: "0", discountNames: [] },
+				});
 			}
 		} catch (e) {
 			console.error("Cart refresh error", e);
@@ -63,7 +72,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 			if (detail?.cart) {
 				setSnapshot(detail.cart as CartSnapshot);
 			} else {
-				setSnapshot({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+				setSnapshot({
+					lineItems: [],
+					summary: { subtotal: "0", total: "0", discountNames: [] },
+				});
 			}
 		};
 
@@ -79,60 +91,82 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 	const updateCartTotals = (items: any[]) => {
 		const subtotal = items.reduce((acc, item) => {
-			const itemPrice = typeof item.price === "object" ? Number(item.price.amount || 0) : Number(item.price || 0);
-			return acc + (itemPrice * (item.quantity || 1));
+			const itemPrice =
+				typeof item.price === "object"
+					? Number(item.price.amount || 0)
+					: Number(item.price || 0);
+			return acc + itemPrice * (item.quantity || 1);
 		}, 0);
 		return {
 			lineItems: items,
 			summary: {
 				subtotal: `AED ${subtotal.toFixed(2)}`,
 				total: `AED ${subtotal.toFixed(2)}`,
-				discountNames: []
-			}
+				discountNames: [],
+			},
 		} as CartSnapshot;
 	};
 
-	const addItem = useCallback(async (item: any) => {
-		if (!session?.user) {
-			throw new Error("require_auth");
-		}
-		const res = await serverAddItem(null, item);
-		if (res.error) {
-			throw new Error(res.error);
-		}
-		if (res.cart) {
-			setSnapshot(res.cart);
-		}
-	}, [session?.user]);
+	const addItem = useCallback(
+		async (item: any) => {
+			if (!session?.user) {
+				throw new Error("require_auth");
+			}
+			const res = await serverAddItem(null, item);
+			if (res.error) {
+				throw new Error(res.error);
+			}
+			if (res.cart) {
+				setSnapshot(res.cart);
+			}
+		},
+		[session?.user]
+	);
 
-	const removeItem = useCallback(async (lineId: string) => {
-		if (!session?.user) return;
-		const currentItems = snapshot?.lineItems || [];
-		const newItems = currentItems.filter(i => i._id !== lineId && i.productId !== lineId);
-		setSnapshot(updateCartTotals(newItems));
-		await syncCart(newItems);
-	}, [session?.user, snapshot]);
-
-	const updateQuantity = useCallback(async (lineId: string, quantity: number) => {
-		if (!session?.user) return;
-		const currentItems = snapshot?.lineItems || [];
-		const newItems = [...currentItems];
-		const item = newItems.find(i => i._id === lineId || i.productId === lineId);
-		if (item) {
-			item.quantity = quantity;
-			const itemPrice = typeof item.price === "object" ? Number(item.price.amount || 0) : Number(item.price || 0);
-			item.lineItemPrice = {
-				amount: (itemPrice * quantity).toString(),
-				formattedConvertedAmount: `AED ${(itemPrice * quantity).toFixed(2)}`
-			};
+	const removeItem = useCallback(
+		async (lineId: string) => {
+			if (!session?.user) return;
+			const currentItems = snapshot?.lineItems || [];
+			const newItems = currentItems.filter(
+				(i) => i._id !== lineId && i.productId !== lineId
+			);
 			setSnapshot(updateCartTotals(newItems));
 			await syncCart(newItems);
-		}
-	}, [session?.user, snapshot]);
+		},
+		[session?.user, snapshot]
+	);
+
+	const updateQuantity = useCallback(
+		async (lineId: string, quantity: number) => {
+			if (!session?.user) return;
+			const currentItems = snapshot?.lineItems || [];
+			const newItems = [...currentItems];
+			const item = newItems.find(
+				(i) => i._id === lineId || i.productId === lineId
+			);
+			if (item) {
+				item.quantity = quantity;
+				const itemPrice =
+					typeof item.price === "object"
+						? Number(item.price.amount || 0)
+						: Number(item.price || 0);
+				item.lineItemPrice = {
+					amount: (itemPrice * quantity).toString(),
+					formattedConvertedAmount: `AED ${(itemPrice * quantity).toFixed(2)}`,
+				};
+				setSnapshot(updateCartTotals(newItems));
+				await syncCart(newItems);
+			}
+		},
+		[session?.user, snapshot]
+	);
 
 	const clearCartAction = useCallback(async () => {
 		if (!session?.user) return;
-		setSnapshot({ lineItems: [], summary: { subtotal: "0", total: "0", discountNames: [] } });
+		setSnapshot({
+			lineItems: [],
+			summary: { subtotal: "0", total: "0", discountNames: [] },
+		});
 		await serverClearCart();
 	}, [session?.user]);
 
@@ -146,8 +180,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	);
 
 	const value = useMemo(
-		() => ({ count, snapshot, error, isLoading, refresh, addItem, removeItem, updateQuantity, clearCart: clearCartAction }),
-		[count, snapshot, error, isLoading, refresh, addItem, removeItem, updateQuantity, clearCartAction]
+		() => ({
+			count,
+			snapshot,
+			error,
+			isLoading,
+			refresh,
+			addItem,
+			removeItem,
+			updateQuantity,
+			clearCart: clearCartAction,
+		}),
+		[
+			count,
+			snapshot,
+			error,
+			isLoading,
+			refresh,
+			addItem,
+			removeItem,
+			updateQuantity,
+			clearCartAction,
+		]
 	);
 
 	return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

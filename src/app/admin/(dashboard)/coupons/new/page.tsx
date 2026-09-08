@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { CouponCreateView } from "@/features/admin/coupons/coupon-create-view";
 
 export const metadata: Metadata = {

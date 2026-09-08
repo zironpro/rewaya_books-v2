@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { CategoriesView } from "@/features/admin/catalog/categories-view";
 
 export const metadata: Metadata = {

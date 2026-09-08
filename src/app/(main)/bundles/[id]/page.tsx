@@ -12,17 +12,17 @@ export default async function BundleDetailPage({
 	params: Promise<{ id: string }>;
 }) {
 	const { id } = await params;
-	
+
 	let allBundles: any[] = [];
 	let relatedBooks: any[] = [];
-	
+
 	try {
 		const [bundlesRes, productsRes] = await Promise.all([
 			graphqlClient.request(GetBundlesDocument),
-			graphqlClient.request(GetProductsDocument)
+			graphqlClient.request(GetProductsDocument),
 		]);
 		allBundles = bundlesRes.bundles || [];
-		
+
 		// For related books, just pick some random/recent products
 		// Assuming we just take the first 4 for demonstration, or we can filter them
 		relatedBooks = (productsRes.products || []).slice(0, 4);

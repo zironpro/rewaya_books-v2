@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { Bell, ChevronRight, Search, X, Package, XCircle } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+
+import { Bell, ChevronRight, Package, XCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toastManager } from "@/components/ui/toast";
+
 type AppNotification = {
 	_id: string;
 	title: string;
@@ -22,11 +23,13 @@ type AppNotification = {
 
 export function DashboardHeader() {
 	const router = useRouter();
-	const [notifications, setNotifications] = React.useState<AppNotification[]>([]);
+	const [notifications, setNotifications] = React.useState<AppNotification[]>(
+		[]
+	);
 	const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 	const prevNotifCountRef = React.useRef<number>(0);
 
-	const unreadCount = notifications.filter(n => !n.read).length;
+	const unreadCount = notifications.filter((n) => !n.read).length;
 
 	const fetchNotifications = React.useCallback(async () => {
 		try {
@@ -49,7 +52,7 @@ export function DashboardHeader() {
 	const handleBellClick = async () => {
 		setIsDropdownOpen(!isDropdownOpen);
 		if (!isDropdownOpen && unreadCount > 0) {
-			setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+			setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 			try {
 				await fetch("/api/admin/notifications", { method: "PATCH" });
 			} catch (error) {
@@ -65,22 +68,23 @@ export function DashboardHeader() {
 
 	const playNotificationSound = React.useCallback(() => {
 		try {
-			const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+			const AudioContext =
+				window.AudioContext || (window as any).webkitAudioContext;
 			const ctx = new AudioContext();
 			const osc = ctx.createOscillator();
 			const gain = ctx.createGain();
-			
+
 			osc.connect(gain);
 			gain.connect(ctx.destination);
-			
+
 			osc.type = "sine";
 			osc.frequency.setValueAtTime(800, ctx.currentTime);
 			osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
-			
+
 			gain.gain.setValueAtTime(0, ctx.currentTime);
 			gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
 			gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-			
+
 			osc.start(ctx.currentTime);
 			osc.stop(ctx.currentTime + 0.3);
 		} catch (e) {
@@ -90,7 +94,10 @@ export function DashboardHeader() {
 
 	React.useEffect(() => {
 		const currentCount = notifications.length;
-		if (prevNotifCountRef.current > 0 && currentCount > prevNotifCountRef.current) {
+		if (
+			prevNotifCountRef.current > 0 &&
+			currentCount > prevNotifCountRef.current
+		) {
 			// A new notification just arrived! Play sound and toast
 			playNotificationSound();
 			const latest = notifications[0]; // Assuming sorted descending
@@ -116,9 +123,7 @@ export function DashboardHeader() {
 						alrewaya Admin
 					</span>
 					<ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-slate-300 sm:inline" />
-					<span className="truncate font-semibold text-primary">
-						Overview
-					</span>
+					<span className="truncate font-semibold text-primary">Overview</span>
 				</nav>
 			</div>
 
@@ -126,15 +131,15 @@ export function DashboardHeader() {
 				<div className="relative">
 					<Button
 						className="relative h-8 w-8 text-slate-600 dark:text-slate-300"
+						onClick={handleBellClick}
 						size="icon"
 						variant="ghost"
-						onClick={handleBellClick}
 					>
 						<Bell className="h-4 w-4" />
 						{unreadCount > 0 && (
 							<span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-								<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-								<span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+								<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+								<span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
 							</span>
 						)}
 						<span className="sr-only">Notifications</span>
@@ -142,10 +147,15 @@ export function DashboardHeader() {
 
 					{isDropdownOpen && (
 						<div className="absolute right-0 mt-2 w-80 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900">
-							<div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+							<div className="flex items-center justify-between border-slate-100 border-b px-4 py-3 dark:border-slate-800">
 								<h3 className="font-semibold text-sm">Notifications</h3>
 								{notifications.length > 0 && (
-									<Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary" onClick={() => setNotifications([])}>
+									<Button
+										className="h-auto p-0 text-primary text-xs"
+										onClick={() => setNotifications([])}
+										size="sm"
+										variant="ghost"
+									>
 										Clear all
 									</Button>
 								)}
@@ -159,22 +169,31 @@ export function DashboardHeader() {
 									<div className="flex flex-col">
 										{notifications.map((notif) => (
 											<button
+												className={`flex items-start gap-3 border-slate-100 border-b px-4 py-3 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50 ${!notif.read ? "bg-primary/5" : ""}`}
 												key={notif._id}
 												onClick={() => handleNotificationClick(notif.orderId)}
-												className={`flex items-start gap-3 border-b border-slate-100 px-4 py-3 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50 ${!notif.read ? "bg-primary/5" : ""}`}
 											>
-												<div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${notif.type === "new_order" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400"}`}>
-													{notif.type === "new_order" ? <Package className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+												<div
+													className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${notif.type === "new_order" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400"}`}
+												>
+													{notif.type === "new_order" ? (
+														<Package className="h-4 w-4" />
+													) : (
+														<XCircle className="h-4 w-4" />
+													)}
 												</div>
 												<div className="flex flex-col gap-1">
-													<p className="font-medium text-sm text-slate-900 dark:text-slate-100">
+													<p className="font-medium text-slate-900 text-sm dark:text-slate-100">
 														{notif.title}
 													</p>
 													<p className="text-slate-500 text-xs dark:text-slate-400">
 														{notif.message}
 													</p>
 													<span className="text-[10px] text-slate-400">
-														{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+														{new Date(notif.createdAt).toLocaleTimeString([], {
+															hour: "2-digit",
+															minute: "2-digit",
+														})}
 													</span>
 												</div>
 											</button>

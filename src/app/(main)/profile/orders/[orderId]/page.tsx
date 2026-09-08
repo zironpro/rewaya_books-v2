@@ -47,7 +47,8 @@ export default async function ProfileOrderDetailPage({
 			items: rawOrder.items?.map((item: any) => ({
 				...item,
 				_id: item._id?.toString(),
-				productId: item.productId?._id?.toString() || item.productId?.toString(),
+				productId:
+					item.productId?._id?.toString() || item.productId?.toString(),
 				isbn: item.productId?.isbn || undefined,
 				bundleId: item.bundleId?.toString(),
 			})),

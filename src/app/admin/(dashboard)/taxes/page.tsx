@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { TaxesView } from "@/features/admin/taxes/taxes-view";
 
 export const metadata: Metadata = {

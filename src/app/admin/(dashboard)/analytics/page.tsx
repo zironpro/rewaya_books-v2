@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { AnalyticsView } from "@/features/admin/analytics/analytics-view";
 
 export const metadata: Metadata = {

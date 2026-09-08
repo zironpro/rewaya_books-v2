@@ -65,7 +65,9 @@ export const BundlesFilter = ({
 									? bundles.length
 									: bundles.filter(
 											(b) =>
-												b.tag?.includes(cat) || b.id?.includes(cat.toLowerCase()) || b.slug?.includes(cat.toLowerCase())
+												b.tag?.includes(cat) ||
+												b.id?.includes(cat.toLowerCase()) ||
+												b.slug?.includes(cat.toLowerCase())
 										).length}
 								)
 							</span>

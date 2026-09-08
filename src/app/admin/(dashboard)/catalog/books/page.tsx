@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { BooksView } from "@/features/admin/catalog/books-view";
 
 export const metadata: Metadata = {

@@ -193,21 +193,27 @@ export function BooksView() {
 						const priceNum = Number.parseFloat(row.price) || 0;
 						const stockNum = Number.parseInt(row.stock) || 0;
 						const categoryNames = row.categoryName
-							? row.categoryName.split(',').map((s: string) => s.trim()).filter(Boolean)
+							? row.categoryName
+									.split(",")
+									.map((s: string) => s.trim())
+									.filter(Boolean)
 							: [];
-						
-						const selectedCats = categoryNames.map((catName: string) => {
-							const searchName = catName.toLowerCase();
-							return categories.find(
-								(c: any) =>
-									c.name.toLowerCase() === searchName ||
-									c.slug.toLowerCase() === searchName ||
-									c.name.toLowerCase().includes(searchName) ||
-									searchName.includes(c.name.toLowerCase())
-							);
-						}).filter(Boolean);
 
-						const primaryCat = selectedCats.length > 0 ? selectedCats[0] : undefined;
+						const selectedCats = categoryNames
+							.map((catName: string) => {
+								const searchName = catName.toLowerCase();
+								return categories.find(
+									(c: any) =>
+										c.name.toLowerCase() === searchName ||
+										c.slug.toLowerCase() === searchName ||
+										c.name.toLowerCase().includes(searchName) ||
+										searchName.includes(c.name.toLowerCase())
+								);
+							})
+							.filter(Boolean);
+
+						const primaryCat =
+							selectedCats.length > 0 ? selectedCats[0] : undefined;
 
 						const productInput = {
 							title: row.title || "Untitled Book",
@@ -304,9 +310,10 @@ export function BooksView() {
 			title: book.title || "",
 			author: book.author || "",
 			isbn: book.isbn || "",
-			categoryName: book.categories && book.categories.length > 0
-				? book.categories.map((c: any) => c.name).join(", ")
-				: book.categoryName || "",
+			categoryName:
+				book.categories && book.categories.length > 0
+					? book.categories.map((c: any) => c.name).join(", ")
+					: book.categoryName || "",
 			price: book.price || 0,
 			stock: book.stock || 0,
 			language: book.language || "English",
@@ -493,7 +500,9 @@ export function BooksView() {
 
 		const priceNum = Number.parseFloat(editPrice) || 0;
 		const stockNum = Number.parseInt(editStock) || 0;
-		const selectedCats = categories.filter((c: any) => editCategoryIds.includes(c.id));
+		const selectedCats = categories.filter((c: any) =>
+			editCategoryIds.includes(c.id)
+		);
 		const primaryCat = selectedCats.length > 0 ? selectedCats[0] : undefined;
 
 		try {

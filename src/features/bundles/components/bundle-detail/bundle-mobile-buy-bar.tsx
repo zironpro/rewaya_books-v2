@@ -19,11 +19,11 @@ export function BundleMobileBuyBar({ bundle }: BundleMobileBuyBarProps) {
 					bundleSlug={bundle.id}
 					checkoutCatalogAppId={bundle.checkoutCatalogAppId}
 					checkoutCatalogItemId={bundle.checkoutCatalogItemId || bundle.id}
-					title={bundle.title}
-					price={bundle.price}
-					image={bundle.coverImage}
 					className="gap-2"
+					image={bundle.coverImage}
+					price={bundle.price}
 					size="lg"
+					title={bundle.title}
 					variant="secondary"
 				>
 					<ShoppingBagIcon size={18} />

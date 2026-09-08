@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { signIn } from "next-auth/react";
@@ -49,14 +49,14 @@ export const LoginView = () => {
 	return (
 		<main className="grid min-h-svh grid-cols-1 lg:grid-cols-[450px_1fr] xl:grid-cols-[500px_1fr]">
 			{/* Left Column - Form */}
-			<div className="flex flex-col justify-center px-8 py-12 sm:px-16 bg-white border-r border-stone-100">
-				<div className="w-full max-w-[400px] mx-auto">
-					<Link href="/" className="mb-12 inline-block">
+			<div className="flex flex-col justify-center border-stone-100 border-r bg-white px-8 py-12 sm:px-16">
+				<div className="mx-auto w-full max-w-[400px]">
+					<Link className="mb-12 inline-block" href="/">
 						<Image
-							src="/rewaya-logo.svg"
 							alt="Rewaya Books"
-							width={160}
 							height={55}
+							src="/rewaya-logo.svg"
+							width={160}
 						/>
 					</Link>
 					<h1 className="mb-2 font-bold font-serif text-3xl text-slate-900">
@@ -72,11 +72,11 @@ export const LoginView = () => {
 						</Link>
 					</p>
 
-					<Button 
-						variant="outline" 
-						className="w-full h-11 text-base font-medium mb-6"
+					<Button
+						className="mb-6 h-11 w-full font-medium text-base"
 						onClick={() => signIn("google", { callbackUrl: returnUrl })}
 						type="button"
+						variant="outline"
 					>
 						<svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
 							<path
@@ -102,7 +102,7 @@ export const LoginView = () => {
 
 					<div className="relative mb-6">
 						<div className="absolute inset-0 flex items-center">
-							<span className="w-full border-t border-slate-200" />
+							<span className="w-full border-slate-200 border-t" />
 						</div>
 						<div className="relative flex justify-center text-xs uppercase">
 							<span className="bg-white px-2 text-slate-500">
@@ -126,6 +126,7 @@ export const LoginView = () => {
 								Email Address
 							</label>
 							<Input
+								className="h-11"
 								disabled={isPending}
 								id="login-email"
 								onChange={(e) => setEmail(e.target.value)}
@@ -133,7 +134,6 @@ export const LoginView = () => {
 								required
 								type="email"
 								value={email}
-								className="h-11"
 							/>
 						</div>
 
@@ -147,6 +147,7 @@ export const LoginView = () => {
 								</label>
 							</div>
 							<Input
+								className="h-11"
 								disabled={isPending}
 								id="login-password"
 								onChange={(e) => setPassword(e.target.value)}
@@ -154,11 +155,14 @@ export const LoginView = () => {
 								required
 								type="password"
 								value={password}
-								className="h-11"
 							/>
 						</div>
 
-						<Button className="w-full h-11 text-base font-bold" disabled={isPending} type="submit">
+						<Button
+							className="h-11 w-full font-bold text-base"
+							disabled={isPending}
+							type="submit"
+						>
 							{isPending ? "Logging in..." : "Log In"}
 						</Button>
 					</form>
@@ -166,24 +170,34 @@ export const LoginView = () => {
 			</div>
 
 			{/* Right Column - Promotional Text */}
-			<div className="hidden flex-col justify-center bg-primary p-12 lg:flex xl:p-24 text-white relative overflow-hidden">
+			<div className="relative hidden flex-col justify-center overflow-hidden bg-primary p-12 text-white lg:flex xl:p-24">
 				<div className="relative z-10 max-w-lg">
-					<h2 className="font-serif text-4xl lg:text-5xl font-bold leading-tight mb-6">
+					<h2 className="mb-6 font-bold font-serif text-4xl leading-tight lg:text-5xl">
 						Discover your next great read.
 					</h2>
-					<p className="text-lg text-stone-300 mb-8 leading-relaxed">
-						Connect with fellow book lovers, gain access to exclusive releases, and explore curated collections tailored just for you.
+					<p className="mb-8 text-lg text-stone-300 leading-relaxed">
+						Connect with fellow book lovers, gain access to exclusive releases,
+						and explore curated collections tailored just for you.
 					</p>
 					<div className="mb-12">
-						<p className="font-medium text-stone-200">Use code <span className="font-bold text-white bg-white/20 px-2 py-1 rounded">WELCOME20</span> for 20% off your first order.</p>
+						<p className="font-medium text-stone-200">
+							Use code{" "}
+							<span className="rounded bg-white/20 px-2 py-1 font-bold text-white">
+								WELCOME20
+							</span>{" "}
+							for 20% off your first order.
+						</p>
 					</div>
-					<Link href="/shop" className="inline-flex items-center text-white font-bold hover:underline">
+					<Link
+						className="inline-flex items-center font-bold text-white hover:underline"
+						href="/shop"
+					>
 						Browse collections <span className="ml-2">→</span>
 					</Link>
 				</div>
 				{/* Decorative shapes */}
-				<div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] bg-[#E8C288]/10 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-				<div className="absolute top-1/4 -right-12 w-64 h-64 bg-[#78938A]/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+				<div className="pointer-events-none absolute -right-24 -bottom-24 h-[500px] w-[500px] rounded-full bg-[#E8C288]/10 mix-blend-screen blur-3xl" />
+				<div className="pointer-events-none absolute top-1/4 -right-12 h-64 w-64 rounded-full bg-[#78938A]/20 mix-blend-screen blur-3xl" />
 			</div>
 		</main>
 	);

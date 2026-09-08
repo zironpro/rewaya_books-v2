@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Heart, ShoppingBag } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,6 @@ import { useWishlist } from "@/features/wishlist/wishlist-provider";
 import { type BookProps, getBookReactKey } from "@/lib/store";
 
 import { fetchWishlistProducts } from "./wishlist-actions";
-import { useSession } from "next-auth/react";
 
 export const WishlistView = () => {
 	const { data: session } = useSession();

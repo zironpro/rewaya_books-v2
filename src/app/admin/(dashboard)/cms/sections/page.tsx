@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { HomepageSectionsView } from "@/features/admin/cms/homepage-sections-view";
 
 export const metadata: Metadata = {

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
 import { resolveCampaignBanners } from "@/features/bundle-landing/data/bundle-campaign-banners";
+import { buildBundlesIndexPageData } from "@/features/bundle-landing/lib/bundlesIndexData";
 import { BundleLandingPageView } from "@/features/bundles/bundle-landing-page-view";
 import { graphqlClient } from "@/lib/graphql-client";
 import { GetBundlesDocument } from "@/types/graphql";
-import { buildBundlesIndexPageData } from "@/features/bundle-landing/lib/bundlesIndexData";
 export async function generateMetadata(): Promise<Metadata> {
 	const title = "Bundle deals · Rewaya Book world";
 	const description =

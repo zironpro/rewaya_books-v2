@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+
 import { useCart } from "@/features/cart/cart-provider";
 
 export function ClearCartEffect() {

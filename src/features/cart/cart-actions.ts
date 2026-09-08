@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import connectToDatabase from "@/lib/db/mongodb";
 import { Cart } from "@/lib/db/models/Cart";
+import connectToDatabase from "@/lib/db/mongodb";
 
 export type CartActionResult = {
 	error: string | null;
@@ -20,36 +20,51 @@ export async function fetchCart(): Promise<any | null> {
 
 	await connectToDatabase();
 	const cart = await Cart.findOne({ userId }).lean();
-	
-	if (!cart) return { lineItems: [], summary: { subtotal: "AED 0.00", total: "AED 0.00", discountNames: [] } };
-	
-	const subtotal = cart.lineItems.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
-	cart.summary = { 
-		subtotal: `AED ${subtotal.toFixed(2)}`, 
-		total: `AED ${subtotal.toFixed(2)}`, 
-		discountNames: [] 
+
+	if (!cart)
+		return {
+			lineItems: [],
+			summary: { subtotal: "AED 0.00", total: "AED 0.00", discountNames: [] },
+		};
+
+	const subtotal = cart.lineItems.reduce(
+		(acc: number, item: any) => acc + item.price * item.quantity,
+		0
+	);
+	cart.summary = {
+		subtotal: `AED ${subtotal.toFixed(2)}`,
+		total: `AED ${subtotal.toFixed(2)}`,
+		discountNames: [],
 	};
-	
+
 	const { Product } = await import("@/lib/db/models/Product");
-	const productIds = cart.lineItems.map((item: any) => item.productId).filter(Boolean);
-	const products = await Product.find({ _id: { $in: productIds } }).select("stock").lean();
-	const stockMap = new Map(products.map((p: any) => [p._id.toString(), p.stock]));
-	
+	const productIds = cart.lineItems
+		.map((item: any) => item.productId)
+		.filter(Boolean);
+	const products = await Product.find({ _id: { $in: productIds } })
+		.select("stock")
+		.lean();
+	const stockMap = new Map(
+		products.map((p: any) => [p._id.toString(), p.stock])
+	);
+
 	// Map items to match expected CartSnapshot format
 	cart.lineItems = cart.lineItems.map((item: any) => ({
 		...item,
-		availability: { quantityAvailable: stockMap.get(item.productId?.toString()) ?? 99 },
+		availability: {
+			quantityAvailable: stockMap.get(item.productId?.toString()) ?? 99,
+		},
 		price: {
 			amount: (item.price || 0).toString(),
-			formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`
+			formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`,
 		},
 		lineItemPrice: {
 			amount: ((item.price || 0) * (item.quantity || 1)).toString(),
-			formattedConvertedAmount: `AED ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+			formattedConvertedAmount: `AED ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`,
 		},
-		productName: { translated: item.title || "Product" }
+		productName: { translated: item.title || "Product" },
 	}));
-	
+
 	// Stringify and parse to avoid Mongoose lean Object ID issues with Next.js Server Components
 	return JSON.parse(JSON.stringify(cart));
 }
@@ -59,11 +74,14 @@ export async function syncCart(localCartLineItems: any[]) {
 	if (!userId) return null;
 
 	await connectToDatabase();
-	
-	const dbLineItems = localCartLineItems.map(item => ({
+
+	const dbLineItems = localCartLineItems.map((item) => ({
 		productId: item.productId || item._id,
 		quantity: item.quantity || 1,
-		price: typeof item.price === "object" ? Number(item.price.amount || 0) : Number(item.price || 0),
+		price:
+			typeof item.price === "object"
+				? Number(item.price.amount || 0)
+				: Number(item.price || 0),
 		title: item.title || item.productName?.translated || "Product",
 		image: item.image,
 		isBundle: item.isBundle || false,
@@ -75,50 +93,67 @@ export async function syncCart(localCartLineItems: any[]) {
 		{ $set: { lineItems: dbLineItems } },
 		{ new: true, upsert: true }
 	);
-	
-	const subtotal = cart.lineItems.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
+
+	const subtotal = cart.lineItems.reduce(
+		(acc: number, item: any) => acc + item.price * item.quantity,
+		0
+	);
 	const leanCart = cart.toObject();
-	leanCart.summary = { 
-		subtotal: `AED ${subtotal.toFixed(2)}`, 
-		total: `AED ${subtotal.toFixed(2)}`, 
-		discountNames: [] 
+	leanCart.summary = {
+		subtotal: `AED ${subtotal.toFixed(2)}`,
+		total: `AED ${subtotal.toFixed(2)}`,
+		discountNames: [],
 	};
-	
+
 	const { Product } = await import("@/lib/db/models/Product");
-	const productIds = leanCart.lineItems.map((item: any) => item.productId).filter(Boolean);
-	const products = await Product.find({ _id: { $in: productIds } }).select("stock").lean();
-	const stockMap = new Map(products.map((p: any) => [p._id.toString(), p.stock]));
+	const productIds = leanCart.lineItems
+		.map((item: any) => item.productId)
+		.filter(Boolean);
+	const products = await Product.find({ _id: { $in: productIds } })
+		.select("stock")
+		.lean();
+	const stockMap = new Map(
+		products.map((p: any) => [p._id.toString(), p.stock])
+	);
 
 	// Map items to match expected CartSnapshot format
 	leanCart.lineItems = leanCart.lineItems.map((item: any) => ({
 		...item,
-		availability: { quantityAvailable: stockMap.get(item.productId?.toString()) ?? 99 },
+		availability: {
+			quantityAvailable: stockMap.get(item.productId?.toString()) ?? 99,
+		},
 		price: {
 			amount: (item.price || 0).toString(),
-			formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`
+			formattedConvertedAmount: `AED ${(item.price || 0).toFixed(2)}`,
 		},
 		lineItemPrice: {
 			amount: ((item.price || 0) * (item.quantity || 1)).toString(),
-			formattedConvertedAmount: `AED ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+			formattedConvertedAmount: `AED ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`,
 		},
-		productName: { translated: item.title || "Product" }
+		productName: { translated: item.title || "Product" },
 	}));
-	
+
 	return JSON.parse(JSON.stringify(leanCart));
 }
 
-// These functions will now be bypassed by the client-side Zustand store for UI speed, 
+// These functions will now be bypassed by the client-side Zustand store for UI speed,
 // and the store will call `syncCart` periodically or on changes when logged in.
 // Alternatively, we can use these directly for authenticated users.
 
-export async function addItem(_prevState: unknown, item: any): Promise<CartActionResult> {
+export async function addItem(
+	_prevState: unknown,
+	item: any
+): Promise<CartActionResult> {
 	const userId = await getUserId();
 	if (!userId) {
-		return { error: "Please log in to add items server-side. (Use local storage for guests)" };
+		return {
+			error:
+				"Please log in to add items server-side. (Use local storage for guests)",
+		};
 	}
 
 	await connectToDatabase();
-	
+
 	// Atomic update to avoid VersionError
 	let cart = await Cart.findOne({ userId });
 	if (!cart) cart = new Cart({ userId, lineItems: [] });
@@ -127,7 +162,9 @@ export async function addItem(_prevState: unknown, item: any): Promise<CartActio
 	const product = await Product.findById(item.productId).select("stock").lean();
 	const maxStock = product?.stock ?? 0;
 
-	const existing = cart.lineItems.find((i: any) => i.productId === item.productId);
+	const existing = cart.lineItems.find(
+		(i: any) => i.productId === item.productId
+	);
 	if (existing) {
 		const currentQty = existing.quantity || 1;
 		const addQty = item.quantity || 1;
@@ -146,8 +183,8 @@ export async function addItem(_prevState: unknown, item: any): Promise<CartActio
 		}
 		await Cart.findOneAndUpdate(
 			{ userId },
-			{ 
-				$push: { 
+			{
+				$push: {
 					lineItems: {
 						productId: item.productId,
 						quantity: addQty,
@@ -156,8 +193,8 @@ export async function addItem(_prevState: unknown, item: any): Promise<CartActio
 						image: item.image,
 						isBundle: item.isBundle || false,
 						bundleSlug: item.bundleSlug,
-					}
-				}
+					},
+				},
 			},
 			{ upsert: true }
 		);

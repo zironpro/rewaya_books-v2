@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { useSession } from "next-auth/react";
+
 import { fetchWishlist, syncWishlist } from "./wishlist-actions";
 
 type WishlistContextValue = {
@@ -64,33 +65,36 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 		return () => window.removeEventListener("wishlist-updated", onUpdate);
 	}, [refresh]);
 
-	const toggle = useCallback(async (productId: string) => {
-		if (!productId) return;
-		if (!session?.user) {
-			throw new Error("require_auth");
-		}
-
-		const isCurrentlyWishlisted = productIds.includes(productId);
-		const nextIds = isCurrentlyWishlisted
-			? productIds.filter((id) => id !== productId)
-			: [...productIds, productId];
-
-		// Optimistic update
-		setProductIds(nextIds);
-		
-		try {
-			await syncWishlist(nextIds);
-			dispatchWishlistUpdated();
-		} catch (e: any) {
-			// Rollback on error
-			setProductIds(productIds);
-			if (e.message === "require_auth") {
-				throw e;
+	const toggle = useCallback(
+		async (productId: string) => {
+			if (!productId) return;
+			if (!session?.user) {
+				throw new Error("require_auth");
 			}
-			console.error("Failed to sync wishlist", e);
-			throw new Error("Failed to sync wishlist");
-		}
-	}, [session?.user, productIds]);
+
+			const isCurrentlyWishlisted = productIds.includes(productId);
+			const nextIds = isCurrentlyWishlisted
+				? productIds.filter((id) => id !== productId)
+				: [...productIds, productId];
+
+			// Optimistic update
+			setProductIds(nextIds);
+
+			try {
+				await syncWishlist(nextIds);
+				dispatchWishlistUpdated();
+			} catch (e: any) {
+				// Rollback on error
+				setProductIds(productIds);
+				if (e.message === "require_auth") {
+					throw e;
+				}
+				console.error("Failed to sync wishlist", e);
+				throw new Error("Failed to sync wishlist");
+			}
+		},
+		[session?.user, productIds]
+	);
 
 	const value = useMemo<WishlistContextValue>(
 		() => ({

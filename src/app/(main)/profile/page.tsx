@@ -38,7 +38,11 @@ export default async function ProfilePage() {
 		.lean();
 
 	const formattedOrders = rawOrders.map((o: any) => {
-		const totalItems = o.items?.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) || 0;
+		const totalItems =
+			o.items?.reduce(
+				(sum: number, item: any) => sum + (item.quantity || 1),
+				0
+			) || 0;
 		const statusMap: Record<string, string> = {
 			DELIVERED: "Delivered",
 			SHIPPED: "Shipped",
@@ -61,5 +65,10 @@ export default async function ProfilePage() {
 		};
 	});
 
-	return <OverviewPage initialOrders={formattedOrders} initialUser={serializedUser} />;
+	return (
+		<OverviewPage
+			initialOrders={formattedOrders}
+			initialUser={serializedUser}
+		/>
+	);
 }

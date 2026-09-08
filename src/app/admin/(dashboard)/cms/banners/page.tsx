@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { HeroBannersView } from "@/features/admin/cms/hero-banners-view";
 
 export const metadata: Metadata = {

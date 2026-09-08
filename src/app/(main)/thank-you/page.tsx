@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+
 import { ClearCartEffect } from "@/features/cart/components/clear-cart-effect";
 
 export default async function ThankYouPage({
@@ -26,7 +27,7 @@ export default async function ThankYouPage({
 				<Button asChild>
 					<Link href="/shop">Continue shopping</Link>
 				</Button>
-				<Button variant="outline" asChild>
+				<Button asChild variant="outline">
 					<Link href="/profile/orders">View orders</Link>
 				</Button>
 			</div>

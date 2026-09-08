@@ -1,5 +1,58 @@
 import { gql } from "graphql-tag";
 
+export const GetProductsPaginated = gql`
+	query GetProductsPaginated(
+		$category: String
+		$q: String
+		$sort: String
+		$page: Int
+		$limit: Int
+		$customOrderIds: [ID!]
+	) {
+		productsPaginated(
+			category: $category
+			q: $q
+			sort: $sort
+			page: $page
+			limit: $limit
+			customOrderIds: $customOrderIds
+		) {
+			items {
+				id
+				title
+				slug
+				author
+				description
+				price
+				originalPrice
+				stock
+				coverImage
+				images
+				categoryId
+				categorySlug
+				categoryName
+				categoryIds
+				categories {
+					id
+					name
+					slug
+				}
+				isbn
+				pages
+				language
+				format
+				ribbon
+				publisher
+				createdAt
+				updatedAt
+				sortOrder
+			}
+			totalCount
+			totalPages
+		}
+	}
+`;
+
 export const GET_PRODUCTS = gql`
   query GetProducts {
     products {

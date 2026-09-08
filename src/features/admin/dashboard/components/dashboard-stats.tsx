@@ -7,7 +7,12 @@ import {
 	TrendingUp,
 	Users,
 } from "lucide-react";
-import { useGetOrdersQuery, useGetUsersQuery, useGetProductsQuery } from "@/types/graphql";
+
+import {
+	useGetOrdersQuery,
+	useGetProductsQuery,
+	useGetUsersQuery,
+} from "@/types/graphql";
 
 export function DashboardStats() {
 	const { data: ordersData } = useGetOrdersQuery();
@@ -18,7 +23,9 @@ export function DashboardStats() {
 	const users = usersData?.users || [];
 	const products = productsData?.products || [];
 
-	const totalSales = orders.filter(o => o.isPaid).reduce((sum, o) => sum + o.total, 0);
+	const totalSales = orders
+		.filter((o) => o.isPaid)
+		.reduce((sum, o) => sum + o.total, 0);
 	const totalOrders = orders.length;
 	const activeCustomers = users.length;
 	const totalBooks = products.length;
@@ -26,7 +33,10 @@ export function DashboardStats() {
 	const stats = [
 		{
 			label: "Total Sales (AED)",
-			value: totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+			value: totalSales.toLocaleString(undefined, {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2,
+			}),
 			change: "Upward",
 			trend: "up",
 			icon: TrendingUp,
@@ -64,8 +74,8 @@ export function DashboardStats() {
 				const Icon = stat.icon;
 				return (
 					<div
-						key={i}
 						className="space-y-3 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-primary/40 dark:border-slate-800 dark:bg-slate-900"
+						key={i}
 					>
 						<div className="flex items-center justify-between">
 							<span className="font-medium text-slate-500 text-sm">
@@ -76,7 +86,7 @@ export function DashboardStats() {
 							</div>
 						</div>
 						<div className="flex items-baseline justify-between">
-							<span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
+							<span className="font-extrabold text-2xl text-slate-900 tracking-tight dark:text-white">
 								{stat.value}
 							</span>
 							<span className="flex items-center font-bold text-emerald-600 text-sm dark:text-emerald-400">

@@ -27,6 +27,7 @@ const wishlistSchema = new Schema<IWishlist>(
 
 // Prevent mongoose from compiling the model multiple times in development
 const Wishlist: Model<IWishlist> =
-	mongoose.models.Wishlist || mongoose.model<IWishlist>("Wishlist", wishlistSchema);
+	mongoose.models.Wishlist ||
+	mongoose.model<IWishlist>("Wishlist", wishlistSchema);
 
 export default Wishlist;

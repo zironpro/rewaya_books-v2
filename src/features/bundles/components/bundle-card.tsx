@@ -3,17 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Eye, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog";
 
 import type { Bundle } from "@/domain/catalog";
@@ -88,10 +85,10 @@ export function BundleCard({
 						bundleSlug={id}
 						checkoutCatalogAppId={checkoutCatalogAppId}
 						checkoutCatalogItemId={checkoutCatalogItemId || id}
-						title={title}
-						price={price}
-						image={coverImage}
 						className="h-auto w-full rounded-none p-3 text-white hover:text-white md:p-4"
+						image={coverImage}
+						price={price}
+						title={title}
 						variant="ghost"
 					>
 						<Plus className="mr-2" size={14} /> Add to Bag
@@ -196,10 +193,10 @@ function BundleQuickViewDialog({
 								bundleSlug={id}
 								checkoutCatalogAppId={checkoutCatalogAppId}
 								checkoutCatalogItemId={checkoutCatalogItemId || id}
-								title={title}
-								price={price}
-								image={coverImage}
 								className="flex-1"
+								image={coverImage}
+								price={price}
+								title={title}
 								variant="default"
 							>
 								Add to Bag

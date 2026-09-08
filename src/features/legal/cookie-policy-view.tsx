@@ -30,8 +30,8 @@ export const CookiePolicyView = () => {
 				<LegalParagraph>
 					These cookies are required for the site to work. They support features
 					such as keeping you signed in, remembering items in your cart, and
-					processing checkout through our e-commerce provider. Without
-					them, certain parts of the store may not function correctly.
+					processing checkout through our e-commerce provider. Without them,
+					certain parts of the store may not function correctly.
 				</LegalParagraph>
 			</LegalSection>
 
@@ -56,9 +56,9 @@ export const CookiePolicyView = () => {
 
 			<LegalSection title="4. Other Third-Party Cookies">
 				<LegalParagraph>
-					When you complete a purchase or sign in, our secure payment partners may
-					set cookies to process transactions securely. Their use of cookies is
-					governed by their own privacy and cookie policies.
+					When you complete a purchase or sign in, our secure payment partners
+					may set cookies to process transactions securely. Their use of cookies
+					is governed by their own privacy and cookie policies.
 				</LegalParagraph>
 			</LegalSection>
 

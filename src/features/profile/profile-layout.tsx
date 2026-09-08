@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+
+import { signOut, useSession } from "next-auth/react";
 
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 
@@ -14,11 +15,14 @@ function breadcrumbItems(pathname: string) {
 	if (pathname === "/profile") {
 		return [{ label: "My Profile" }];
 	}
-	if (pathname.startsWith("/profile/orders/") && pathname.length > "/profile/orders/".length) {
+	if (
+		pathname.startsWith("/profile/orders/") &&
+		pathname.length > "/profile/orders/".length
+	) {
 		return [
 			{ label: "My Profile", href: "/profile" },
 			{ label: "Orders", href: "/profile/orders" },
-			{ label: "Order Details" }
+			{ label: "Order Details" },
 		];
 	}
 	const segment = pathname.split("/").pop() ?? "";
@@ -36,7 +40,7 @@ export const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 	const pathname = usePathname();
 
 	const { data: session, status } = useSession();
-	
+
 	const isPending = status === "loading";
 	const memberDisplayName = session?.user?.name || "User";
 	const memberEmail = session?.user?.email || "";

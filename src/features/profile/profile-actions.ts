@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import connectToDatabase from "@/lib/db/mongodb";
 import { User } from "@/lib/db/models/User";
+import connectToDatabase from "@/lib/db/mongodb";
 
 export async function updateUserProfile(data: {
 	firstName: string;
@@ -34,6 +34,9 @@ export async function updateUserProfile(data: {
 		return { status: "success", message: "Profile updated successfully." };
 	} catch (error) {
 		console.error("Failed to update profile", error);
-		return { status: "error", message: "Failed to update profile. Please try again." };
+		return {
+			status: "error",
+			message: "Failed to update profile. Please try again.",
+		};
 	}
 }

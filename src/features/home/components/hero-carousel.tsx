@@ -154,7 +154,7 @@ export function HeroCarousel({ banners = [] }: HeroCarouselProps) {
 					<div className="absolute right-4 bottom-4 z-10 flex gap-2 md:right-20 md:bottom-10">
 						<Button
 							aria-label="Previous slide"
-							className="bg-transparent border-white/30 text-white transition duration-300 hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+							className="border-white/30 bg-transparent text-white transition duration-300 hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 							onClick={() => {
 								pauseInteraction();
 								prev();
@@ -167,7 +167,7 @@ export function HeroCarousel({ banners = [] }: HeroCarouselProps) {
 						</Button>
 						<Button
 							aria-label="Next slide"
-							className="bg-transparent border-white/30 text-white transition duration-300 hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+							className="border-white/30 bg-transparent text-white transition duration-300 hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 							onClick={() => {
 								pauseInteraction();
 								next();

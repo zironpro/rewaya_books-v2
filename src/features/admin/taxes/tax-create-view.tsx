@@ -1,13 +1,16 @@
 "use client";
 
 import * as React from "react";
+
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, ShieldCheck } from "lucide-react";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import { useCreateTaxConfigMutation } from "@/types/graphql";
 
 const availableCountries = [
@@ -47,7 +50,7 @@ export function TaxCreateView() {
 		try {
 			const input = {
 				name: taxName,
-				rate: parseFloat(taxRate) || 0,
+				rate: Number.parseFloat(taxRate) || 0,
 				region: taxRegion,
 				type: "Custom Rate",
 				appliedToShipping,
@@ -65,15 +68,15 @@ export function TaxCreateView() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
 				<div>
 					<div className="flex items-center gap-2">
 						<ShieldCheck className="h-5 w-5 text-primary" />
-						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
+						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
 							Add Tax Rule
 						</h1>
 					</div>
-					<p className="text-sm text-slate-500 mt-1">
+					<p className="mt-1 text-slate-500 text-sm">
 						Define tax rates for specific shipping regions.
 					</p>
 				</div>
@@ -84,17 +87,20 @@ export function TaxCreateView() {
 				</Link>
 			</div>
 
-			<form className="max-w-2xl space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900" onSubmit={handleAddTax}>
+			<form
+				className="max-w-2xl space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+				onSubmit={handleAddTax}
+			>
 				<div className="space-y-1">
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
 						Tax Rule Name *
 					</label>
 					<Input
-						required
-						placeholder="e.g. Oman VAT Rule"
-						value={taxName}
-						onChange={(e) => setTaxName(e.target.value)}
 						className="h-10"
+						onChange={(e) => setTaxName(e.target.value)}
+						placeholder="e.g. Oman VAT Rule"
+						required
+						value={taxName}
 					/>
 				</div>
 
@@ -104,10 +110,10 @@ export function TaxCreateView() {
 							Tax Rate (%)
 						</label>
 						<Input
+							className="h-10"
+							onChange={(e) => setTaxRate(e.target.value)}
 							type="number"
 							value={taxRate}
-							onChange={(e) => setTaxRate(e.target.value)}
-							className="h-10"
 						/>
 					</div>
 					<div className="space-y-1">
@@ -115,9 +121,9 @@ export function TaxCreateView() {
 							Region
 						</label>
 						<select
-							value={taxRegion}
+							className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:focus-visible:ring-primary dark:placeholder:text-slate-400"
 							onChange={(e) => setTaxRegion(e.target.value)}
-							className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-primary"
+							value={taxRegion}
 						>
 							{availableCountries.map((ac) => (
 								<option key={ac.code} value={ac.code}>
@@ -128,18 +134,20 @@ export function TaxCreateView() {
 					</div>
 				</div>
 
-				<label className="flex items-center gap-2 mt-4 cursor-pointer">
-					<input 
-						type="checkbox" 
+				<label className="mt-4 flex cursor-pointer items-center gap-2">
+					<input
 						checked={appliedToShipping}
+						className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
 						onChange={(e) => setAppliedToShipping(e.target.checked)}
-						className="rounded border-slate-300 h-4 w-4 text-primary focus:ring-primary"
+						type="checkbox"
 					/>
-					<span className="font-semibold text-slate-700 dark:text-slate-300">Apply tax to shipping cost</span>
+					<span className="font-semibold text-slate-700 dark:text-slate-300">
+						Apply tax to shipping cost
+					</span>
 				</label>
 
-				<div className="pt-4 flex justify-end">
-					<Button type="submit" className="gap-2 h-10 px-6">
+				<div className="flex justify-end pt-4">
+					<Button className="h-10 gap-2 px-6" type="submit">
 						<Save className="h-4 w-4" /> Save Tax Rule
 					</Button>
 				</div>

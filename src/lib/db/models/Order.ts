@@ -28,7 +28,11 @@ const OrderSchema = new mongoose.Schema(
 		couponCode: { type: String },
 		discountAmount: { type: Number, default: 0 },
 		paymentMethod: { type: String, enum: ["COD", "Stripe"], default: "Stripe" },
-		shippingMethod: { type: String, enum: ["standard", "express"], default: "standard" },
+		shippingMethod: {
+			type: String,
+			enum: ["standard", "express"],
+			default: "standard",
+		},
 		isPaid: { type: Boolean, default: false },
 		stripeTransactionId: { type: String },
 		invoiceUrl: { type: String },

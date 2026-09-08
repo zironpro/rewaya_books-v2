@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { ShippingView } from "@/features/admin/shipping/shipping-view";
 
 export const metadata: Metadata = {

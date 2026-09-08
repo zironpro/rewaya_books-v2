@@ -1,22 +1,14 @@
 "use client";
 
-import * as React from "react";
-import {
-	Check,
-	Eye,
-	EyeOff,
-	LayoutGrid,
-	Sliders,
-	ToggleLeft,
-	ToggleRight,
-} from "lucide-react";
+import { Eye, EyeOff, Sliders } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
 import {
-	useGetHomepageSectionsQuery,
 	useCreateHomepageSectionMutation,
 	useDeleteHomepageSectionMutation,
+	useGetHomepageSectionsQuery,
 } from "@/types/graphql";
 
 const initialSections = [
@@ -76,7 +68,7 @@ export function HomepageSectionsView() {
 	const { data, isLoading, refetch } = useGetHomepageSectionsQuery();
 	const createSectionMutation = useCreateHomepageSectionMutation();
 	const deleteSectionMutation = useDeleteHomepageSectionMutation();
-	
+
 	const sections = data?.homepageSections || [];
 
 	const toggleSection = async (id: string, enabled: boolean) => {
@@ -88,23 +80,23 @@ export function HomepageSectionsView() {
 	return (
 		<div className="space-y-6">
 			{/* Header Banner */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
 				<div>
 					<div className="flex items-center gap-2">
 						<Sliders className="h-5 w-5 text-primary" />
-						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
+						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
 							Homepage CMS Section Manager
 						</h1>
 					</div>
-					<p className="text-sm text-slate-500 mt-1">
+					<p className="mt-1 text-slate-500 text-sm">
 						Configure dynamic category-driven sections on the storefront
 						(`HomepageSections` schema).
 					</p>
 				</div>
 
 				<Badge
+					className="self-start px-3 py-1 text-sm sm:self-auto"
 					variant="outline"
-					className="text-sm px-3 py-1 self-start sm:self-auto"
 				>
 					5 Configured Sections
 				</Badge>
@@ -114,15 +106,15 @@ export function HomepageSectionsView() {
 			<div className="space-y-4">
 				{sections.map((sec) => (
 					<div
-						key={sec.id}
-						className={`flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-lg border p-5 transition-all bg-white dark:bg-slate-900 ${
+						className={`flex flex-col justify-between gap-4 rounded-lg border bg-white p-5 transition-all md:flex-row md:items-center dark:bg-slate-900 ${
 							sec.enabled
-								? "border-slate-200/80 dark:border-slate-800 shadow-xs"
+								? "border-slate-200/80 shadow-xs dark:border-slate-800"
 								: "border-slate-200/50 bg-slate-50/50 opacity-60 dark:border-slate-800/50 dark:bg-slate-900/40"
 						}`}
+						key={sec.id}
 					>
 						<div className="flex items-start gap-4">
-							<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-extrabold text-primary dark:bg-primary/20 text-base">
+							<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-extrabold text-base text-primary dark:bg-primary/20">
 								#{sec.sortOrder}
 							</div>
 							<div className="space-y-1">
@@ -130,17 +122,17 @@ export function HomepageSectionsView() {
 									<h3 className="font-bold text-lg text-slate-900 dark:text-white">
 										{sec.title}
 									</h3>
-									<Badge variant="secondary" className="text-[10px]">
+									<Badge className="text-[10px]" variant="secondary">
 										Key: {sec.key}
 									</Badge>
 									{sec.badge && (
-										<Badge variant="default" className="text-[10px]">
+										<Badge className="text-[10px]" variant="default">
 											{sec.badge}
 										</Badge>
 									)}
 								</div>
-								<p className="text-sm text-slate-500">{sec.subtitle}</p>
-								<div className="flex items-center gap-3 text-sm text-slate-400 font-mono pt-1">
+								<p className="text-slate-500 text-sm">{sec.subtitle}</p>
+								<div className="flex items-center gap-3 pt-1 font-mono text-slate-400 text-sm">
 									<span>
 										Category Slug: <strong>/{sec.categorySlug}</strong>
 									</span>
@@ -154,10 +146,10 @@ export function HomepageSectionsView() {
 
 						<div className="flex items-center gap-3 self-end md:self-center">
 							<Button
+								className="h-9 gap-2 px-4 text-sm"
+								onClick={() => toggleSection(sec.id, !!sec.enabled)}
 								size="sm"
 								variant={sec.enabled ? "outline" : "secondary"}
-								className="gap-2 text-sm h-9 px-4"
-								onClick={() => toggleSection(sec.id, !!sec.enabled)}
 							>
 								{sec.enabled ? (
 									<>

@@ -13,17 +13,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import {
-	Combobox,
-	ComboboxEmpty,
-	ComboboxGroup,
-	ComboboxItem,
-	ComboboxList,
-	ComboboxProvider,
-} from "@/components/ui/combobox";
+import { SearchIcon } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { SearchIcon } from "lucide-react";
 
 import {
 	type SearchSuggestion,
@@ -176,6 +169,14 @@ export function ProductSearch({
 				aria-expanded={showDropdown}
 				aria-label="Search books"
 				autoFocus={autoFocus}
+				className="w-full"
+				icon={
+					isLoading ? (
+						<Spinner aria-hidden className="text-muted-foreground" />
+					) : (
+						<SearchIcon aria-hidden className="text-muted-foreground" />
+					)
+				}
 				onChange={(event) => {
 					setQuery(event.target.value);
 					setIsOpen(true);
@@ -191,14 +192,6 @@ export function ProductSearch({
 				size="lg"
 				type="search"
 				value={query}
-				icon={
-					isLoading ? (
-						<Spinner aria-hidden className="text-muted-foreground" />
-					) : (
-						<SearchIcon aria-hidden className="text-muted-foreground" />
-					)
-				}
-				className="w-full"
 			/>
 
 			{showDropdown && (

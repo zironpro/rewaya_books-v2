@@ -1,20 +1,20 @@
 "use client";
 
 import * as React from "react";
+
 import Link from "next/link";
 
 import { Edit2, Layers, Plus, Search, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
 
 import {
+	useDeleteCategoryMutation,
 	useGetCategoriesQuery,
 	useGetProductsQuery,
 	useUpdateCategoryMutation,
-	useDeleteCategoryMutation,
 } from "@/types/graphql";
 
 const initialCategories = [
@@ -261,9 +261,9 @@ export function CategoriesView() {
 						<div className="flex items-center gap-3">
 							{cat.image ? (
 								<img
-									src={cat.image}
 									alt={cat.name}
-									className="h-9 w-9 shrink-0 rounded-lg object-cover border border-slate-200 dark:border-slate-800"
+									className="h-9 w-9 shrink-0 rounded-lg border border-slate-200 object-cover dark:border-slate-800"
+									src={cat.image}
 								/>
 							) : (
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
@@ -284,8 +284,8 @@ export function CategoriesView() {
 								{cat.count} titles
 							</Badge>
 							<Button
-								className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30"
 								asChild
+								className="h-8 w-8 text-slate-500 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30"
 								size="icon"
 								variant="ghost"
 							>
@@ -294,11 +294,11 @@ export function CategoriesView() {
 								</Link>
 							</Button>
 							<Button
-								className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+								className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+								disabled={deleteCategoryMutation.isPending}
+								onClick={() => handleDelete(cat.id)}
 								size="icon"
 								variant="ghost"
-								onClick={() => handleDelete(cat.id)}
-								disabled={deleteCategoryMutation.isPending}
 							>
 								<Trash2 className="h-4 w-4" />
 							</Button>

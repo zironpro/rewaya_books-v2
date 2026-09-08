@@ -1,24 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { useOpenPanel } from "@openpanel/nextjs";
 
-import {
-	CART_UPDATED_EVENT,
-	dispatchCartUpdated,
-} from "@/components/commerce/cart-events";
 import { StatusBanner } from "@/components/feedback/status-banner";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { toastManager } from "@/components/ui/toast";
 
 import { redirectToCheckout } from "@/features/cart/cart-actions";
 import { useCart } from "@/features/cart/cart-provider";
-import {
-	type CartSummary,
-	isItemUnavailable,
-	type LineItem,
-} from "@/features/cart/cart-sdk";
+import { isItemUnavailable } from "@/features/cart/cart-sdk";
 import { CartEmpty } from "@/features/cart/components/cart-empty";
 import { CartLineItem } from "@/features/cart/components/cart-line-item";
 import { CartLoading } from "@/features/cart/components/cart-loading";
@@ -43,7 +35,9 @@ export function CartView() {
 			await updateQuantity(itemId, quantity);
 			setActionError(null);
 		} catch (e: any) {
-			setActionError(e.message || "Could not update quantity. Please try again.");
+			setActionError(
+				e.message || "Could not update quantity. Please try again."
+			);
 		}
 	};
 

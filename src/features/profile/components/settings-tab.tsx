@@ -143,7 +143,11 @@ export const SettingsTab = ({
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-3 border-stone-100 border-t pt-6">
-						<Button disabled={isSaving} onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white">
+						<Button
+							className="bg-primary text-white hover:bg-primary/90"
+							disabled={isSaving}
+							onClick={handleSave}
+						>
 							{isSaving ? "Saving…" : "Save changes"}
 						</Button>
 					</div>

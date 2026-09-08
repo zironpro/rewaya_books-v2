@@ -14,9 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import {
-	useGetPopupsQuery,
 	useCreatePopupMutation,
 	useDeletePopupMutation,
+	useGetPopupsQuery,
 } from "@/types/graphql";
 
 const initialBanners = [

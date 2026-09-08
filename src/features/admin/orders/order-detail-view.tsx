@@ -7,12 +7,12 @@ import {
 	Calendar,
 	CheckCircle2,
 	CreditCard,
+	Download,
 	MapPin,
 	Package,
 	ShoppingBag,
 	Truck,
 	User,
-	Download,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -86,12 +86,15 @@ export function OrderDetailView() {
 								<CheckCircle2 className="mr-1 h-3 w-3" /> Paid
 							</Badge>
 						) : (
-							<Badge className="ml-2 font-semibold bg-orange-100 text-orange-700 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400">
+							<Badge className="ml-2 bg-orange-100 font-semibold text-orange-700 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400">
 								Unpaid
 							</Badge>
 						)}
 						{order.shippingMethod === "express" && (
-							<Badge variant="warning" className="ml-2 font-semibold bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary border-primary/20">
+							<Badge
+								className="ml-2 border-primary/20 bg-primary/10 font-semibold text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary"
+								variant="warning"
+							>
 								<Truck className="mr-1 h-3 w-3" /> Express Delivery
 							</Badge>
 						)}
@@ -118,8 +121,12 @@ export function OrderDetailView() {
 						</select>
 					</div>
 					{order.invoiceUrl && (
-						<a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer">
-							<Button variant="outline" size="sm" className="h-9 gap-2">
+						<a
+							href={order.invoiceUrl}
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							<Button className="h-9 gap-2" size="sm" variant="outline">
 								<Download className="h-4 w-4" /> Invoice
 							</Button>
 						</a>
@@ -167,23 +174,37 @@ export function OrderDetailView() {
 															{item.bundleId ? "Bundle" : "Book"}
 														</div>
 														{item.product?.isbn && (
-															<div className="mt-0.5 text-slate-400 text-xs font-mono">
+															<div className="mt-0.5 font-mono text-slate-400 text-xs">
 																ISBN: {item.product.isbn}
 															</div>
 														)}
-														{item.bundle?.books && item.bundle.books.length > 0 && (
-															<div className="mt-2 space-y-1 pl-1 border-l-2 border-slate-200 dark:border-slate-700">
-																<div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider ml-1">Included Books:</div>
-																<ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1 ml-1">
-																	{item.bundle.books.map((b: any, i: number) => (
-																		<li key={i} className="flex flex-col gap-0.5">
-																			<span className="font-medium text-slate-700 dark:text-slate-300">• {b.title}</span>
-																			{b.isbn && <span className="font-mono text-slate-400 ml-2">ISBN: {b.isbn}</span>}
-																		</li>
-																	))}
-																</ul>
-															</div>
-														)}
+														{item.bundle?.books &&
+															item.bundle.books.length > 0 && (
+																<div className="mt-2 space-y-1 border-slate-200 border-l-2 pl-1 dark:border-slate-700">
+																	<div className="ml-1 font-semibold text-[10px] text-slate-500 uppercase tracking-wider">
+																		Included Books:
+																	</div>
+																	<ul className="ml-1 space-y-1 text-slate-600 text-xs dark:text-slate-400">
+																		{item.bundle.books.map(
+																			(b: any, i: number) => (
+																				<li
+																					className="flex flex-col gap-0.5"
+																					key={i}
+																				>
+																					<span className="font-medium text-slate-700 dark:text-slate-300">
+																						• {b.title}
+																					</span>
+																					{b.isbn && (
+																						<span className="ml-2 font-mono text-slate-400">
+																							ISBN: {b.isbn}
+																						</span>
+																					)}
+																				</li>
+																			)
+																		)}
+																	</ul>
+																</div>
+															)}
 													</div>
 												</div>
 											</td>
@@ -212,7 +233,13 @@ export function OrderDetailView() {
 							<div className="flex justify-between text-slate-600 text-sm dark:text-slate-400">
 								<span>Subtotal</span>
 								<span className="font-medium text-slate-900 dark:text-white">
-									AED {(order.total - (order.shippingCost || 0) - (order.taxAmount || 0) + (order.discountAmount || 0)).toFixed(2)}
+									AED{" "}
+									{(
+										order.total -
+										(order.shippingCost || 0) -
+										(order.taxAmount || 0) +
+										(order.discountAmount || 0)
+									).toFixed(2)}
 								</span>
 							</div>
 							{order.couponCode && (
@@ -236,31 +263,35 @@ export function OrderDetailView() {
 								</span>
 							</div>
 							<div className="my-2 border-slate-200 border-t dark:border-slate-700" />
-							<div className="flex justify-between font-bold text-base text-slate-900 dark:text-white mb-4">
+							<div className="mb-4 flex justify-between font-bold text-base text-slate-900 dark:text-white">
 								<span>Total Amount</span>
 								<span className="text-primary text-xl">
 									AED {order.total.toFixed(2)}
 								</span>
 							</div>
-							
-							<div className="border-t border-slate-200 pt-4 mt-4 dark:border-slate-700 space-y-3 text-sm">
+
+							<div className="mt-4 space-y-3 border-slate-200 border-t pt-4 text-sm dark:border-slate-700">
 								<div className="flex justify-between text-slate-600 dark:text-slate-400">
 									<span>Payment Method</span>
 									<span className="font-semibold text-slate-900 dark:text-white">
-										{order.paymentMethod === "COD" ? "Cash on Delivery" : "Stripe (Card)"}
+										{order.paymentMethod === "COD"
+											? "Cash on Delivery"
+											: "Stripe (Card)"}
 									</span>
 								</div>
 								{order.stripeTransactionId && (
 									<div className="flex justify-between text-slate-600 dark:text-slate-400">
 										<span>Transaction ID</span>
-										<span className="font-mono text-xs text-slate-900 dark:text-white">
+										<span className="font-mono text-slate-900 text-xs dark:text-white">
 											{order.stripeTransactionId}
 										</span>
 									</div>
 								)}
 								<div className="flex justify-between text-slate-600 dark:text-slate-400">
 									<span>Payment Status</span>
-									<span className={`font-semibold ${order.isPaid ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+									<span
+										className={`font-semibold ${order.isPaid ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}`}
+									>
 										{order.isPaid ? "Paid" : "Unpaid"}
 									</span>
 								</div>
@@ -305,14 +336,22 @@ export function OrderDetailView() {
 						</h2>
 
 						<div className="space-y-4">
-							<div className={`flex items-start gap-3 rounded-lg border p-3 ${order.shippingMethod === "express" ? "border-amber-200/50 bg-amber-50/50 dark:border-amber-800/30 dark:bg-amber-900/10" : "border-primary/20 bg-primary/5"}`}>
-								<Truck className={`mt-0.5 h-5 w-5 ${order.shippingMethod === "express" ? "text-amber-600 dark:text-amber-500" : "text-primary"}`} />
+							<div
+								className={`flex items-start gap-3 rounded-lg border p-3 ${order.shippingMethod === "express" ? "border-amber-200/50 bg-amber-50/50 dark:border-amber-800/30 dark:bg-amber-900/10" : "border-primary/20 bg-primary/5"}`}
+							>
+								<Truck
+									className={`mt-0.5 h-5 w-5 ${order.shippingMethod === "express" ? "text-amber-600 dark:text-amber-500" : "text-primary"}`}
+								/>
 								<div>
 									<div className="font-bold text-slate-900 text-sm dark:text-white">
-										{order.shippingMethod === "express" ? "Express Delivery" : "Standard Delivery"}
+										{order.shippingMethod === "express"
+											? "Express Delivery"
+											: "Standard Delivery"}
 									</div>
 									<div className="mt-0.5 text-slate-500 text-xs">
-										{order.shippingMethod === "express" ? "Estimated delivery: 1-2 business days" : "Estimated delivery: 2-3 business days"}
+										{order.shippingMethod === "express"
+											? "Estimated delivery: 1-2 business days"
+											: "Estimated delivery: 2-3 business days"}
 									</div>
 								</div>
 							</div>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "next-auth/react";
+
 import { useRouter } from "next/navigation";
+
+import { signOut } from "next-auth/react";
 
 import { ProfilePageHeader } from "@/features/profile/components/profile-page-header";
 import { SettingsTab } from "@/features/profile/components/settings-tab";
@@ -28,9 +30,9 @@ export const SettingsPage = ({ initialUser }: SettingsPageProps) => {
 		phone: string;
 	}) => {
 		setSaving(true);
-		
+
 		const result = await updateUserProfile(data);
-		
+
 		setSaving(false);
 		if (result.status === "success") {
 			router.refresh();

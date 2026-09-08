@@ -12,15 +12,15 @@ export const metadata = {
 
 export default async function ProfileAddressesPage() {
 	const session = await auth();
-	
+
 	if (!session?.user?.email) {
 		redirect("/login");
 	}
-	
+
 	await connectToDatabase();
-	
+
 	const user = await User.findOne({ email: session.user.email }).lean();
-	
+
 	let addresses: any[] = [];
 	if (user?.shippingAddress && user.shippingAddress.firstName) {
 		addresses.push({
@@ -28,7 +28,8 @@ export default async function ProfileAddressesPage() {
 			type: "Shipping Address",
 			isDefault: true,
 			name: `${user.shippingAddress.firstName} ${user.shippingAddress.lastName}`.trim(),
-			street: `${user.shippingAddress.addressLine1} ${user.shippingAddress.addressLine2 || ""}`.trim(),
+			street:
+				`${user.shippingAddress.addressLine1} ${user.shippingAddress.addressLine2 || ""}`.trim(),
 			city: `${user.shippingAddress.city || ""} ${user.shippingAddress.postalCode || ""}`.trim(),
 			country: user.shippingAddress.country || "UAE",
 			phone: user.phone || "—",

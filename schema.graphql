@@ -1,416 +1,433 @@
+type Product {
+	id: ID!
+	title: String!
+	slug: String!
+	author: String
+	description: String
+	price: Float!
+	originalPrice: Float
+	stock: Int
+	coverImage: String
+	images: [String]
+	categoryId: String
+	categorySlug: String
+	categoryName: String
+	categoryIds: [String]
+	categories: [Category]
+	isbn: String
+	pages: Int
+	language: String
+	format: String
+	ribbon: String
+	publisher: String
+	createdAt: String
+	updatedAt: String
+	sortOrder: Int
+}
 
-  type Product {
-    id: ID!
-    title: String!
-    slug: String!
-    author: String
-    description: String
-    price: Float!
-    originalPrice: Float
-    stock: Int
-    coverImage: String
-    images: [String]
-    categoryId: String
-    categorySlug: String
-    categoryName: String
-    categoryIds: [String]
-    categories: [Category]
-    isbn: String
-    pages: Int
-    language: String
-    format: String
-    ribbon: String
-    publisher: String
-    createdAt: String
-    updatedAt: String
-    sortOrder: Int
-  }
+type Category {
+	id: ID!
+	name: String!
+	slug: String!
+	count: Int
+	status: String
+	sort: Int
+	image: String
+	products: [Product]
+	createdAt: String
+	updatedAt: String
+}
 
-  type Category {
-    id: ID!
-    name: String!
-    slug: String!
-    count: Int
-    status: String
-    sort: Int
-    image: String
-    products: [Product]
-    createdAt: String
-    updatedAt: String
-  }
+type Bundle {
+	id: ID!
+	title: String!
+	slug: String!
+	description: String
+	price: Float!
+	originalPrice: Float
+	coverImage: String
+	books: [Product]
+	isFeatured: Boolean
+	createdAt: String
+	updatedAt: String
+}
 
-  type Bundle {
-    id: ID!
-    title: String!
-    slug: String!
-    description: String
-    price: Float!
-    originalPrice: Float
-    coverImage: String
-    books: [Product]
-    isFeatured: Boolean
-    createdAt: String
-    updatedAt: String
-  }
+type User {
+	id: ID!
+	name: String
+	email: String!
+	role: String
+	phone: String
+	city: String
+	region: String
+	createdAt: String
+}
 
-  type User {
-    id: ID!
-    name: String
-    email: String!
-    role: String
-    phone: String
-    city: String
-    region: String
-    createdAt: String
-  }
+type ShippingConfig {
+	id: ID!
+	name: String!
+	countries: [String!]!
+	standardFee: Float!
+	expressFee: Float!
+	isExpressEnabled: Boolean
+	freeThreshold: Float!
+	deliveryTime: String!
+	expressDeliveryTime: String
+	codFee: Float
+	status: String
+}
 
-  type ShippingConfig {
-    id: ID!
-    name: String!
-    countries: [String!]!
-    standardFee: Float!
-    expressFee: Float!
-    isExpressEnabled: Boolean
-    freeThreshold: Float!
-    deliveryTime: String!
-    expressDeliveryTime: String
-    codFee: Float
-    status: String
-  }
+type TaxConfig {
+	id: ID!
+	name: String!
+	rate: Float!
+	region: String!
+	type: String!
+	appliedToShipping: Boolean
+	status: String
+}
 
-  type TaxConfig {
-    id: ID!
-    name: String!
-    rate: Float!
-    region: String!
-    type: String!
-    appliedToShipping: Boolean
-    status: String
-  }
+type Coupon {
+	id: ID!
+	code: String!
+	discountType: String!
+	discountAmount: Float!
+	minPurchase: Float
+	maxUses: Int
+	usedCount: Int
+	expiryDate: String
+	status: String
+	createdAt: String
+	updatedAt: String
+}
 
-  type Coupon {
-    id: ID!
-    code: String!
-    discountType: String!
-    discountAmount: Float!
-    minPurchase: Float
-    maxUses: Int
-    usedCount: Int
-    expiryDate: String
-    status: String
-    createdAt: String
-    updatedAt: String
-  }
+type HeroBanner {
+	id: ID!
+	title: String!
+	subtitle: String
+	ctaLabel: String
+	ctaHref: String
+	sortOrder: Int
+	enabled: Boolean
+	image: String
+	createdAt: String
+	updatedAt: String
+}
 
-  type HeroBanner {
-    id: ID!
-    title: String!
-    subtitle: String
-    ctaLabel: String
-    ctaHref: String
-    sortOrder: Int
-    enabled: Boolean
-    image: String
-    createdAt: String
-    updatedAt: String
-  }
+type Popup {
+	id: ID!
+	title: String!
+	description: String
+	image: String
+	ctaLabel: String
+	ctaHref: String
+	delaySeconds: Int
+	enabled: Boolean
+	createdAt: String
+	updatedAt: String
+}
 
-  type Popup {
-    id: ID!
-    title: String!
-    description: String
-    image: String
-    ctaLabel: String
-    ctaHref: String
-    delaySeconds: Int
-    enabled: Boolean
-    createdAt: String
-    updatedAt: String
-  }
+type RefundRequest {
+	id: ID!
+	orderId: ID!
+	userId: ID
+	reason: String!
+	status: String!
+	adminNotes: String
+	stripeRefundId: String
+	createdAt: String
+	updatedAt: String
+	order: Order
+}
 
-  type RefundRequest {
-    id: ID!
-    orderId: ID!
-    userId: ID
-    reason: String!
-    status: String!
-    adminNotes: String
-    stripeRefundId: String
-    createdAt: String
-    updatedAt: String
-    order: Order
-  }
+type HomepageSection {
+	id: ID!
+	key: String!
+	title: String!
+	subtitle: String
+	categorySlug: String!
+	limit: Int
+	badge: String
+	sortOrder: Int
+	enabled: Boolean
+	createdAt: String
+	updatedAt: String
+}
 
-  type HomepageSection {
-    id: ID!
-    key: String!
-    title: String!
-    subtitle: String
-    categorySlug: String!
-    limit: Int
-    badge: String
-    sortOrder: Int
-    enabled: Boolean
-    createdAt: String
-    updatedAt: String
-  }
+type OrderItem {
+	productId: ID
+	bundleId: ID
+	title: String!
+	price: Float!
+	quantity: Int!
+	product: Product
+	bundle: Bundle
+}
 
-  type OrderItem {
-    productId: ID
-    bundleId: ID
-    title: String!
-    price: Float!
-    quantity: Int!
-    product: Product
-    bundle: Bundle
-  }
+type ShippingAddress {
+	firstName: String!
+	lastName: String!
+	addressLine1: String!
+	addressLine2: String
+	city: String!
+	state: String!
+	postalCode: String!
+	country: String!
+	phone: String
+}
 
-  type ShippingAddress {
-    firstName: String!
-    lastName: String!
-    addressLine1: String!
-    addressLine2: String
-    city: String!
-    state: String!
-    postalCode: String!
-    country: String!
-    phone: String
-  }
+type Order {
+	id: ID!
+	email: String!
+	status: String!
+	total: Float!
+	shippingCost: Float
+	taxAmount: Float
+	items: [OrderItem!]!
+	shippingAddress: ShippingAddress
+	couponCode: String
+	discountAmount: Float
+	paymentMethod: String
+	shippingMethod: String
+	isPaid: Boolean
+	stripeTransactionId: String
+	invoiceUrl: String
+	invoiceNumber: String
+	createdAt: String
+}
 
-  type Order {
-    id: ID!
-    email: String!
-    status: String!
-    total: Float!
-    shippingCost: Float
-    taxAmount: Float
-    items: [OrderItem!]!
-    shippingAddress: ShippingAddress
-    couponCode: String
-    discountAmount: Float
-    paymentMethod: String
-    shippingMethod: String
-    isPaid: Boolean
-    stripeTransactionId: String
-    invoiceUrl: String
-    invoiceNumber: String
-    createdAt: String
-  }
+type ProductConnection {
+	items: [Product!]!
+	totalCount: Int!
+	totalPages: Int!
+}
 
-  type Query {
-    products: [Product!]!
-    productBySlug(slug: String!): Product
-    bundles: [Bundle!]!
-    bundleBySlug(slug: String!): Bundle
-    orders: [Order!]!
-    orderById(id: ID!): Order
-    heroBanners: [HeroBanner!]!
-    homepageSections: [HomepageSection!]!
-    users: [User!]!
-    shippingConfigs: [ShippingConfig!]!
-    taxConfigs: [TaxConfig!]!
-    categories: [Category!]!
-    coupons: [Coupon!]!
-    coupon(id: ID!): Coupon
-    validateCoupon(code: String!, cartTotal: Float!): Coupon
-    popups: [Popup!]!
-    refundRequests: [RefundRequest!]!
-    refundRequest(id: ID!): RefundRequest
-  }
+type Query {
+	productsPaginated(
+		category: String
+		q: String
+		sort: String
+		page: Int
+		limit: Int
+		customOrderIds: [ID!]
+	): ProductConnection!
+	products: [Product!]!
+	productBySlug(slug: String!): Product
+	bundles: [Bundle!]!
+	bundleBySlug(slug: String!): Bundle
+	orders: [Order!]!
+	orderById(id: ID!): Order
+	heroBanners: [HeroBanner!]!
+	homepageSections: [HomepageSection!]!
+	users: [User!]!
+	shippingConfigs: [ShippingConfig!]!
+	taxConfigs: [TaxConfig!]!
+	categories: [Category!]!
+	coupons: [Coupon!]!
+	coupon(id: ID!): Coupon
+	validateCoupon(code: String!, cartTotal: Float!): Coupon
+	popups: [Popup!]!
+	refundRequests: [RefundRequest!]!
+	refundRequest(id: ID!): RefundRequest
+}
 
-  input ProductInput {
-    title: String!
-    slug: String!
-    author: String
-    description: String
-    price: Float!
-    originalPrice: Float
-    stock: Int
-    coverImage: String
-    categoryId: String
-    categorySlug: String
-    categoryName: String
-    categoryIds: [String]
-    isbn: String
-    pages: Int
-    language: String
-    format: String
-    ribbon: String
-    publisher: String
-    sortOrder: Int
-  }
+input ProductInput {
+	title: String!
+	slug: String!
+	author: String
+	description: String
+	price: Float!
+	originalPrice: Float
+	stock: Int
+	coverImage: String
+	categoryId: String
+	categorySlug: String
+	categoryName: String
+	categoryIds: [String]
+	isbn: String
+	pages: Int
+	language: String
+	format: String
+	ribbon: String
+	publisher: String
+	sortOrder: Int
+}
 
-  input ShippingConfigInput {
-    name: String!
-    countries: [String!]!
-    standardFee: Float!
-    expressFee: Float!
-    isExpressEnabled: Boolean
-    freeThreshold: Float!
-    deliveryTime: String!
-    expressDeliveryTime: String
-    codFee: Float
-    status: String
-  }
+input ShippingConfigInput {
+	name: String!
+	countries: [String!]!
+	standardFee: Float!
+	expressFee: Float!
+	isExpressEnabled: Boolean
+	freeThreshold: Float!
+	deliveryTime: String!
+	expressDeliveryTime: String
+	codFee: Float
+	status: String
+}
 
-  input TaxConfigInput {
-    name: String!
-    rate: Float!
-    region: String!
-    type: String!
-    appliedToShipping: Boolean
-    status: String
-  }
+input TaxConfigInput {
+	name: String!
+	rate: Float!
+	region: String!
+	type: String!
+	appliedToShipping: Boolean
+	status: String
+}
 
-  input CouponInput {
-    code: String!
-    discountType: String!
-    discountAmount: Float!
-    minPurchase: Float
-    maxUses: Int
-    expiryDate: String
-    status: String
-  }
+input CouponInput {
+	code: String!
+	discountType: String!
+	discountAmount: Float!
+	minPurchase: Float
+	maxUses: Int
+	expiryDate: String
+	status: String
+}
 
-  input HeroBannerInput {
-    title: String!
-    subtitle: String
-    ctaLabel: String
-    ctaHref: String
-    sortOrder: Int
-    enabled: Boolean
-    image: String
-  }
+input HeroBannerInput {
+	title: String!
+	subtitle: String
+	ctaLabel: String
+	ctaHref: String
+	sortOrder: Int
+	enabled: Boolean
+	image: String
+}
 
-  input CategoryInput {
-    name: String!
-    slug: String!
-    count: Int
-    status: String
-    sort: Int
-    image: String
-    products: [ID!]
-  }
+input CategoryInput {
+	name: String!
+	slug: String!
+	count: Int
+	status: String
+	sort: Int
+	image: String
+	products: [ID!]
+}
 
-  input OrderItemInput {
-    productId: ID
-    bundleId: ID
-    title: String!
-    price: Float!
-    quantity: Int!
-  }
+input OrderItemInput {
+	productId: ID
+	bundleId: ID
+	title: String!
+	price: Float!
+	quantity: Int!
+}
 
-  input CheckoutInput {
-    email: String!
-    items: [OrderItemInput!]!
-    total: Float!
-    shippingAddress: ShippingAddressInput!
-  }
+input CheckoutInput {
+	email: String!
+	items: [OrderItemInput!]!
+	total: Float!
+	shippingAddress: ShippingAddressInput!
+}
 
-  input ShippingAddressInput {
-    firstName: String!
-    lastName: String!
-    addressLine1: String!
-    addressLine2: String
-    city: String!
-    state: String!
-    postalCode: String!
-    country: String!
-    phone: String
-  }
+input ShippingAddressInput {
+	firstName: String!
+	lastName: String!
+	addressLine1: String!
+	addressLine2: String
+	city: String!
+	state: String!
+	postalCode: String!
+	country: String!
+	phone: String
+}
 
-  input BundleInput {
-    title: String!
-    slug: String!
-    description: String
-    price: Float!
-    originalPrice: Float
-    coverImage: String
-    books: [ID!]
-    isFeatured: Boolean
-  }
+input BundleInput {
+	title: String!
+	slug: String!
+	description: String
+	price: Float!
+	originalPrice: Float
+	coverImage: String
+	books: [ID!]
+	isFeatured: Boolean
+}
 
-  input HeroBannerInput {
-    title: String!
-    subtitle: String
-    ctaLabel: String
-    ctaHref: String
-    sortOrder: Int
-    enabled: Boolean
-    image: String
-  }
+input HeroBannerInput {
+	title: String!
+	subtitle: String
+	ctaLabel: String
+	ctaHref: String
+	sortOrder: Int
+	enabled: Boolean
+	image: String
+}
 
-  input HomepageSectionInput {
-    key: String!
-    title: String!
-    subtitle: String
-    categorySlug: String!
-    limit: Int
-    badge: String
-    sortOrder: Int
-    enabled: Boolean
-  }
+input HomepageSectionInput {
+	key: String!
+	title: String!
+	subtitle: String
+	categorySlug: String!
+	limit: Int
+	badge: String
+	sortOrder: Int
+	enabled: Boolean
+}
 
-  input PopupInput {
-    title: String!
-    description: String
-    image: String
-    ctaLabel: String
-    ctaHref: String
-    delaySeconds: Int
-    enabled: Boolean
-  }
+input PopupInput {
+	title: String!
+	description: String
+	image: String
+	ctaLabel: String
+	ctaHref: String
+	delaySeconds: Int
+	enabled: Boolean
+}
 
-  input RefundRequestInput {
-    orderId: ID!
-    reason: String!
-  }
+input RefundRequestInput {
+	orderId: ID!
+	reason: String!
+}
 
-  input ProductSortOrderInput {
-    id: ID!
-    sortOrder: Int!
-  }
+input ProductSortOrderInput {
+	id: ID!
+	sortOrder: Int!
+}
 
-  type Mutation {
-    updateOrderStatus(id: ID!, status: String!): Order!
-    createProduct(input: ProductInput!): Product!
-    updateProduct(id: ID!, input: ProductInput!): Product!
-    deleteProduct(id: ID!): Boolean!
-    updateProductsSortOrder(updates: [ProductSortOrderInput!]!): Boolean!
-    checkout(input: CheckoutInput!): Order!
-    
-    createBundle(input: BundleInput!): Bundle!
-    updateBundle(id: ID!, input: BundleInput!): Bundle!
-    deleteBundle(id: ID!): Boolean!
-    
-    createHeroBanner(input: HeroBannerInput!): HeroBanner!
-    updateHeroBanner(id: ID!, input: HeroBannerInput!): HeroBanner!
-    deleteHeroBanner(id: ID!): Boolean!
-    
-    createHomepageSection(input: HomepageSectionInput!): HomepageSection!
-    deleteHomepageSection(id: ID!): Boolean!
-    
-    createShippingConfig(input: ShippingConfigInput!): ShippingConfig!
-    updateShippingConfig(id: ID!, input: ShippingConfigInput!): ShippingConfig!
-    deleteShippingConfig(id: ID!): Boolean!
-    
-    createTaxConfig(input: TaxConfigInput!): TaxConfig!
-    updateTaxConfig(id: ID!, input: TaxConfigInput!): TaxConfig!
-    deleteTaxConfig(id: ID!): Boolean!
-    
-    createCategory(input: CategoryInput!): Category!
-    updateCategory(id: ID!, input: CategoryInput!): Category!
-    deleteCategory(id: ID!): Boolean!
+type Mutation {
+	updateOrderStatus(id: ID!, status: String!): Order!
+	createProduct(input: ProductInput!): Product!
+	updateProduct(id: ID!, input: ProductInput!): Product!
+	deleteProduct(id: ID!): Boolean!
+	updateProductsSortOrder(updates: [ProductSortOrderInput!]!): Boolean!
+	checkout(input: CheckoutInput!): Order!
 
-    createCoupon(input: CouponInput!): Coupon!
-    updateCoupon(id: ID!, input: CouponInput!): Coupon!
-    deleteCoupon(id: ID!): Boolean!
+	createBundle(input: BundleInput!): Bundle!
+	updateBundle(id: ID!, input: BundleInput!): Bundle!
+	deleteBundle(id: ID!): Boolean!
 
-    createPopup(input: PopupInput!): Popup!
-    updatePopup(id: ID!, input: PopupInput!): Popup!
-    deletePopup(id: ID!): Boolean!
+	createHeroBanner(input: HeroBannerInput!): HeroBanner!
+	updateHeroBanner(id: ID!, input: HeroBannerInput!): HeroBanner!
+	deleteHeroBanner(id: ID!): Boolean!
 
-    createRefundRequest(input: RefundRequestInput!): RefundRequest!
-    updateRefundRequestStatus(id: ID!, status: String!, adminNotes: String): RefundRequest!
-    processStripeRefund(id: ID!): RefundRequest!
-  }
+	createHomepageSection(input: HomepageSectionInput!): HomepageSection!
+	deleteHomepageSection(id: ID!): Boolean!
+
+	createShippingConfig(input: ShippingConfigInput!): ShippingConfig!
+	updateShippingConfig(id: ID!, input: ShippingConfigInput!): ShippingConfig!
+	deleteShippingConfig(id: ID!): Boolean!
+
+	createTaxConfig(input: TaxConfigInput!): TaxConfig!
+	updateTaxConfig(id: ID!, input: TaxConfigInput!): TaxConfig!
+	deleteTaxConfig(id: ID!): Boolean!
+
+	createCategory(input: CategoryInput!): Category!
+	updateCategory(id: ID!, input: CategoryInput!): Category!
+	deleteCategory(id: ID!): Boolean!
+
+	createCoupon(input: CouponInput!): Coupon!
+	updateCoupon(id: ID!, input: CouponInput!): Coupon!
+	deleteCoupon(id: ID!): Boolean!
+
+	createPopup(input: PopupInput!): Popup!
+	updatePopup(id: ID!, input: PopupInput!): Popup!
+	deletePopup(id: ID!): Boolean!
+
+	createRefundRequest(input: RefundRequestInput!): RefundRequest!
+	updateRefundRequestStatus(
+		id: ID!
+		status: String!
+		adminNotes: String
+	): RefundRequest!
+	processStripeRefund(id: ID!): RefundRequest!
+}

@@ -83,7 +83,7 @@ export function BundleProductInfo({
 						</span>
 					</div>
 				</div>
-				<p className="max-w-lg text-muted-foreground leading-relaxed whitespace-pre-wrap">
+				<p className="max-w-lg whitespace-pre-wrap text-muted-foreground leading-relaxed">
 					{bundle.description ||
 						`The ultimate sequence of literature designed for the profound intellectual and spiritual development of the modern seeker. Includes ${bundle.books?.length || 0} hardcover volumes and exclusive rewards.`}
 				</p>

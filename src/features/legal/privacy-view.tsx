@@ -62,9 +62,9 @@ export const PrivacyView = () => {
 					.
 				</LegalParagraph>
 				<LegalParagraph>
-					When you check out or manage your account, our commerce provider processes orders and
-					payments on our behalf and may collect additional data under their own
-					policies.
+					When you check out or manage your account, our commerce provider
+					processes orders and payments on our behalf and may collect additional
+					data under their own policies.
 				</LegalParagraph>
 			</LegalSection>
 

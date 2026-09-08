@@ -163,24 +163,21 @@ export function BundleImageGallery({ bundle }: BundleImageGalleryProps) {
 	const [mobileThumbsApi, setMobileThumbsApi] = React.useState<CarouselApi>();
 	const [desktopThumbsApi, setDesktopThumbsApi] = React.useState<CarouselApi>();
 
-	const galleryImages = React.useMemo(
-		() => {
-			const images = [];
-			if (bundle.coverImage) {
-				images.push({ src: bundle.coverImage, alt: bundle.title });
+	const galleryImages = React.useMemo(() => {
+		const images = [];
+		if (bundle.coverImage) {
+			images.push({ src: bundle.coverImage, alt: bundle.title });
+		}
+
+		(bundle.books || []).forEach((book: any) => {
+			const img = book.coverImage || book.image;
+			if (img) {
+				images.push({ src: img, alt: book.title });
 			}
-			
-			(bundle.books || []).forEach((book: any) => {
-				const img = book.coverImage || book.image;
-				if (img) {
-					images.push({ src: img, alt: book.title });
-				}
-			});
-			
-			return images;
-		},
-		[bundle.books, bundle.coverImage, bundle.title]
-	);
+		});
+
+		return images;
+	}, [bundle.books, bundle.coverImage, bundle.title]);
 
 	const thumbApis = React.useMemo(
 		() => [mobileThumbsApi, desktopThumbsApi],

@@ -1,9 +1,9 @@
-import { SettingsPage } from "@/features/profile/pages/settings-page";
+import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import connectToDatabase from "@/lib/db/mongodb";
+import { SettingsPage } from "@/features/profile/pages/settings-page";
 import { User } from "@/lib/db/models/User";
-import { redirect } from "next/navigation";
+import connectToDatabase from "@/lib/db/mongodb";
 
 export const metadata = {
 	title: "Account Settings | Rewaya",
@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function ProfileSettingsPage() {
 	const session = await auth();
-	
+
 	if (!session?.user?.email) {
 		redirect("/login");
 	}

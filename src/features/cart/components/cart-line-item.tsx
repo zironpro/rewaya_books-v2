@@ -122,7 +122,7 @@ export function CartLineItem({
 						</Badge>
 					)}
 					<Button
-						className="mt-1 h-auto p-0 text-xs text-muted-foreground hover:bg-transparent hover:text-destructive"
+						className="mt-1 h-auto p-0 text-muted-foreground text-xs hover:bg-transparent hover:text-destructive"
 						onClick={() => lineId && onRemove(lineId)}
 						size="sm"
 						variant="ghost"

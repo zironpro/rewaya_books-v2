@@ -12,6 +12,6 @@ export default async function BundlesPage() {
 	} catch (error) {
 		console.error("Failed to fetch bundles:", error);
 	}
-	
+
 	return <BundlesView bundles={bundles} />;
 }

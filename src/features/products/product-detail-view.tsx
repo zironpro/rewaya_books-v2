@@ -37,9 +37,7 @@ export const ProductDetailView = ({
 	useEffect(() => {
 		if (product) {
 			const customData = {
-				...(product.productId
-					? { content_ids: [product.productId] }
-					: {}),
+				...(product.productId ? { content_ids: [product.productId] } : {}),
 				content_name: product.title,
 				content_type: "product",
 				value: product.price,
@@ -106,8 +104,8 @@ export const ProductDetailView = ({
 							<ProductGallery
 								image={product.image}
 								images={product.images}
-								title={product.title}
 								productId={product.productId}
+								title={product.title}
 							/>
 						</div>
 
@@ -118,14 +116,14 @@ export const ProductDetailView = ({
 						<div className="hidden lg:col-span-3 lg:block xl:col-span-3">
 							<ProductPurchasePanel
 								availableForSale={product.availableForSale}
+								image={product.image}
 								onQuantityChange={setQuantity}
 								price={product.price}
 								productId={product.productId}
 								productVariant={product.defaultVariant}
 								quantity={quantity}
-								title={product.title}
-								image={product.image}
 								stock={product.stock}
+								title={product.title}
 							/>
 						</div>
 					</div>
@@ -142,12 +140,12 @@ export const ProductDetailView = ({
 
 			<ProductMobileBuyBar
 				availableForSale={product.availableForSale}
+				image={product.image}
 				price={product.price}
 				productId={product.productId}
 				productName={product.title}
 				productVariant={product.defaultVariant}
 				quantity={quantity}
-				image={product.image}
 			/>
 		</>
 	);

@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import Link from "next/link";
-import { Plus, Ticket, Pencil, Trash2 } from "lucide-react";
+
+import { Pencil, Plus, Ticket, Trash2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+
+import { DELETE_COUPON, GET_COUPONS } from "@/graphql/queries";
 import { graphqlClient } from "@/lib/graphql-client";
-import { GET_COUPONS, DELETE_COUPON } from "@/graphql/queries";
 
 export function CouponsView() {
 	const [coupons, setCoupons] = useState<any[]>([]);
@@ -41,7 +45,7 @@ export function CouponsView() {
 	return (
 		<div className="flex flex-col space-y-4">
 			<div className="flex items-center justify-between">
-				<h2 className="text-3xl font-bold tracking-tight">Coupons</h2>
+				<h2 className="font-bold text-3xl tracking-tight">Coupons</h2>
 				<Link href="/admin/coupons/new">
 					<Button className="gap-2">
 						<Plus className="h-4 w-4" />
@@ -52,27 +56,33 @@ export function CouponsView() {
 
 			<div className="rounded-md border bg-white shadow-sm">
 				<div className="overflow-x-auto">
-					<table className="w-full text-base text-left">
-						<thead className="text-sm text-stone-500 uppercase bg-stone-50 border-b">
+					<table className="w-full text-left text-base">
+						<thead className="border-b bg-stone-50 text-sm text-stone-500 uppercase">
 							<tr>
 								<th className="px-6 py-4 font-medium">Code</th>
 								<th className="px-6 py-4 font-medium">Discount</th>
 								<th className="px-6 py-4 font-medium">Usage</th>
 								<th className="px-6 py-4 font-medium">Expiry</th>
 								<th className="px-6 py-4 font-medium">Status</th>
-								<th className="px-6 py-4 font-medium text-right">Actions</th>
+								<th className="px-6 py-4 text-right font-medium">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
 							{loading ? (
 								<tr>
-									<td colSpan={6} className="px-6 py-8 text-center text-stone-500">
+									<td
+										className="px-6 py-8 text-center text-stone-500"
+										colSpan={6}
+									>
 										Loading coupons...
 									</td>
 								</tr>
 							) : coupons.length === 0 ? (
 								<tr>
-									<td colSpan={6} className="px-6 py-8 text-center text-stone-500">
+									<td
+										className="px-6 py-8 text-center text-stone-500"
+										colSpan={6}
+									>
 										<div className="flex flex-col items-center justify-center space-y-2">
 											<Ticket className="h-8 w-8 text-stone-300" />
 											<p>No coupons found. Create one to get started.</p>
@@ -81,7 +91,10 @@ export function CouponsView() {
 								</tr>
 							) : (
 								coupons.map((coupon) => (
-									<tr key={coupon.id} className="border-b last:border-0 hover:bg-stone-50/50">
+									<tr
+										className="border-b last:border-0 hover:bg-stone-50/50"
+										key={coupon.id}
+									>
 										<td className="px-6 py-4 font-bold text-stone-900">
 											{coupon.code}
 										</td>
@@ -92,36 +105,49 @@ export function CouponsView() {
 												<span>AED {coupon.discountAmount.toFixed(2)} off</span>
 											)}
 											{coupon.minPurchase > 0 && (
-												<div className="text-xs text-stone-400 mt-1">
+												<div className="mt-1 text-stone-400 text-xs">
 													Min AED {coupon.minPurchase}
 												</div>
 											)}
 										</td>
 										<td className="px-6 py-4 text-stone-600">
-											{coupon.usedCount} {coupon.maxUses ? `/ ${coupon.maxUses}` : ""}
+											{coupon.usedCount}{" "}
+											{coupon.maxUses ? `/ ${coupon.maxUses}` : ""}
 										</td>
 										<td className="px-6 py-4 text-stone-500">
-											{coupon.expiryDate ? new Date(Number(coupon.expiryDate)).toLocaleDateString() : "Never"}
+											{coupon.expiryDate
+												? new Date(
+														Number(coupon.expiryDate)
+													).toLocaleDateString()
+												: "Never"}
 										</td>
 										<td className="px-6 py-4">
-											<span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-												coupon.status === "Active" ? "bg-green-100 text-green-800" : "bg-stone-100 text-stone-800"
-											}`}>
+											<span
+												className={`rounded-full px-2.5 py-1 font-medium text-xs ${
+													coupon.status === "Active"
+														? "bg-green-100 text-green-800"
+														: "bg-stone-100 text-stone-800"
+												}`}
+											>
 												{coupon.status}
 											</span>
 										</td>
 										<td className="px-6 py-4 text-right">
 											<div className="flex items-center justify-end gap-2">
 												<Link href={`/admin/coupons/${coupon.id}`}>
-													<Button variant="ghost" size="icon" className="h-8 w-8 text-stone-500 hover:text-stone-900">
+													<Button
+														className="h-8 w-8 text-stone-500 hover:text-stone-900"
+														size="icon"
+														variant="ghost"
+													>
 														<Pencil className="h-4 w-4" />
 													</Button>
 												</Link>
 												<Button
-													variant="ghost"
-													size="icon"
-													className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+													className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
 													onClick={() => handleDelete(coupon.id)}
+													size="icon"
+													variant="ghost"
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>

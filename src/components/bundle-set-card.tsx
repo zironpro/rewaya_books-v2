@@ -159,7 +159,7 @@ export function BundleSetCard({ bundle }: BundleSetCardProps) {
 					</div>
 				)}
 				<div className="absolute inset-0 rotate-0 transform overflow-hidden rounded-sm border border-stone-300 bg-white shadow-sm transition-transform duration-500 group-hover:-translate-y-2">
-					{(stackImages[2] || bundle.coverImage) ? (
+					{stackImages[2] || bundle.coverImage ? (
 						<Image
 							alt={bundle.title}
 							className="object-cover"

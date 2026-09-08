@@ -34,10 +34,7 @@ export const AddressesTab = ({
 					<p className="mb-6 max-w-xs text-sm text-stone-400">
 						Add a shipping address in settings or at checkout.
 					</p>
-					<Button
-						asChild
-						className="bg-primary hover:bg-primary/90 text-white"
-					>
+					<Button asChild className="bg-primary text-white hover:bg-primary/90">
 						<Link href="/profile/settings">Go to settings</Link>
 					</Button>
 				</CardContent>

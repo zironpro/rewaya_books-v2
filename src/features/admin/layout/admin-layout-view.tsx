@@ -9,48 +9,48 @@ export function AdminLayoutView({
 }) {
 	return (
 		<div className="flex min-h-screen flex-col bg-stone-50">
-			<header className="sticky top-0 z-40 border-b border-stone-200 bg-white">
+			<header className="sticky top-0 z-40 border-stone-200 border-b bg-white">
 				<div className="container flex h-16 items-center px-4">
 					<Link className="font-bold text-xl" href="/admin">
 						Rewaya Admin
 					</Link>
-					<nav className="mx-6 flex items-center space-x-4 lg:space-x-6 hidden md:block">
+					<nav className="mx-6 flex hidden items-center space-x-4 md:block lg:space-x-6">
 						<Link
+							className="font-medium text-base transition-colors hover:text-primary"
 							href="/admin"
-							className="text-base font-medium transition-colors hover:text-primary"
 						>
 							Dashboard
 						</Link>
 						<Link
+							className="font-medium text-base text-stone-500 transition-colors hover:text-primary"
 							href="/admin/products"
-							className="text-base font-medium text-stone-500 transition-colors hover:text-primary"
 						>
 							Products
 						</Link>
 						<Link
+							className="font-medium text-base text-stone-500 transition-colors hover:text-primary"
 							href="/admin/bundles"
-							className="text-base font-medium text-stone-500 transition-colors hover:text-primary"
 						>
 							Bundles
 						</Link>
 						<Link
+							className="font-medium text-base text-stone-500 transition-colors hover:text-primary"
 							href="/admin/orders"
-							className="text-base font-medium text-stone-500 transition-colors hover:text-primary"
 						>
 							Orders
 						</Link>
 						<Link
+							className="font-medium text-base text-stone-500 transition-colors hover:text-primary"
 							href="/admin/users"
-							className="text-base font-medium text-stone-500 transition-colors hover:text-primary"
 						>
 							Users
 						</Link>
 					</nav>
 					<div className="ml-auto flex items-center space-x-4">
-						<div className="text-base font-medium">{email}</div>
+						<div className="font-medium text-base">{email}</div>
 						<Link
-							href="/"
 							className="text-base text-stone-500 hover:text-primary"
+							href="/"
 						>
 							Go to Store
 						</Link>

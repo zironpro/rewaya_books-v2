@@ -44,11 +44,11 @@ export function BundleBuyBox({ bundle, className }: BundleBuyBoxProps) {
 				bundleSlug={bundle.id}
 				checkoutCatalogAppId={bundle.checkoutCatalogAppId}
 				checkoutCatalogItemId={bundle.checkoutCatalogItemId || bundle.id}
-				title={bundle.title}
-				price={bundle.price}
-				image={bundle.coverImage}
 				className="w-full"
+				image={bundle.coverImage}
+				price={bundle.price}
 				size="lg"
+				title={bundle.title}
 			>
 				Add to cart
 			</AddBundleToCartButton>

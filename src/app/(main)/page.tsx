@@ -3,8 +3,8 @@ import { graphqlClient } from "@/lib/graphql-client";
 import {
 	GetBundlesDocument,
 	GetCategoriesDocument,
-	GetProductsDocument,
 	GetHeroBannersDocument,
+	GetProductsDocument,
 } from "@/types/graphql";
 
 export const revalidate = 60;
@@ -16,20 +16,23 @@ export default async function Home() {
 	let banners: any[] = [];
 
 	try {
-		const [productsRes, bundlesRes, categoriesRes, bannersRes] = await Promise.all([
-			graphqlClient.request(GetProductsDocument),
-			graphqlClient.request(GetBundlesDocument),
-			graphqlClient.request(GetCategoriesDocument),
-			graphqlClient.request(GetHeroBannersDocument),
-		]);
+		const [productsRes, bundlesRes, categoriesRes, bannersRes] =
+			await Promise.all([
+				graphqlClient.request(GetProductsDocument),
+				graphqlClient.request(GetBundlesDocument),
+				graphqlClient.request(GetCategoriesDocument),
+				graphqlClient.request(GetHeroBannersDocument),
+			]);
 		products = productsRes.products || [];
-		
+
 		// Hide out of stock products on frontend
 		products = products.filter((p: any) => p.stock > 0);
-		
+
 		bundles = bundlesRes.bundles || [];
 		categories = categoriesRes.categories || [];
-		banners = (bannersRes.heroBanners || []).filter((b: any) => b.enabled !== false).sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
+		banners = (bannersRes.heroBanners || [])
+			.filter((b: any) => b.enabled !== false)
+			.sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
 	} catch (e) {
 		console.error("Failed to fetch homepage data", e);
 	}

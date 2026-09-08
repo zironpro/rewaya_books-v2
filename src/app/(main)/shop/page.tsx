@@ -1,6 +1,9 @@
 import { ShopView } from "@/features/shop/shop-view";
 import { graphqlClient } from "@/lib/graphql-client";
-import { GetProductsDocument, GetCategoriesDocument } from "@/types/graphql";
+import {
+	GetCategoriesDocument,
+	GetProductsPaginatedDocument,
+} from "@/types/graphql";
 
 export const revalidate = 60;
 
@@ -32,97 +35,66 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
 	let books: any[] = [];
 	let categories: any[] = [];
+	let totalCount = 0;
+	let totalPages = 0;
+	let categoryIdToSearch = category;
+	let customOrderIds: string[] = [];
 	try {
-		const [productsRes, categoriesRes] = await Promise.all([
-			graphqlClient.request(GetProductsDocument),
+		const [categoriesRes] = await Promise.all([
 			graphqlClient.request(GetCategoriesDocument),
 		]);
-		books = productsRes.products || [];
-		
-		// Hide out of stock products on frontend
-		books = books.filter((b: any) => b.stock > 0);
-		
 		categories = categoriesRes.categories || [];
+
+		let matchedCategory = null;
 
 		if (category) {
 			const catLower = category.toLowerCase();
-			const matchedCategory = categories.find(c => c.slug?.toLowerCase() === catLower || c.name?.toLowerCase() === catLower || c.id === category);
-			
-			if (matchedCategory) {
-				const orderedProductIds = matchedCategory.products?.map((p: any) => p.id) || [];
-				const productIdsInCategory = new Set(orderedProductIds);
-				
-				books = books.filter(
-					b => productIdsInCategory.has(b.id) || 
-						 b.categorySlug?.toLowerCase() === catLower ||
-						 b.categoryId === matchedCategory.id ||
-						 b.categoryName?.toLowerCase() === catLower ||
-						 (b.categoryIds && b.categoryIds.includes(matchedCategory.id))
-				);
-				
-				// Apply custom sort ONLY if no explicit sort is requested
-				if (!sort && orderedProductIds.length > 0) {
-					const orderMap = new Map(orderedProductIds.map((id: string, index: number) => [id, index]));
-					books.sort((a, b) => {
-						const indexA = orderMap.has(a.id) ? orderMap.get(a.id) : Infinity;
-						const indexB = orderMap.has(b.id) ? orderMap.get(b.id) : Infinity;
-						return indexA - indexB;
-					});
-				}
-			} else {
-				books = books.filter(
-					(b) =>
-						b.categorySlug?.toLowerCase() === catLower ||
-						b.categoryId === category ||
-						b.categoryName?.toLowerCase() === catLower ||
-						(b.categoryIds && b.categoryIds.includes(category))
-				);
-			}
-		}
-		if (q) {
-			const query = q.toLowerCase();
-			books = books.filter(
-				(b) =>
-					b.title.toLowerCase().includes(query) ||
-					(b.author && b.author.toLowerCase().includes(query)) ||
-					(b.isbn && b.isbn.toLowerCase() === query)
+			matchedCategory = categories.find(
+				(c) =>
+					c.slug?.toLowerCase() === catLower ||
+					c.name?.toLowerCase() === catLower ||
+					c.id === category
 			);
+
+			if (matchedCategory) {
+				categoryIdToSearch = matchedCategory.id;
+				customOrderIds = matchedCategory.products?.map((p: any) => p.id) || [];
+			}
 		}
 
-		// Apply explicit sorting if provided
-		if (sort) {
-			switch (sort) {
-				case "price-asc":
-					books.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
-					break;
-				case "price-desc":
-					books.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
-					break;
-				case "title-asc":
-					books.sort((a, b) => a.title.localeCompare(b.title));
-					break;
-				case "title-desc":
-					books.sort((a, b) => b.title.localeCompare(a.title));
-					break;
+		const productsRes = await graphqlClient.request(
+			GetProductsPaginatedDocument,
+			{
+				category: categoryIdToSearch || undefined,
+				q: q || undefined,
+				sort: sort || undefined,
+				page: currentPage,
+				limit: itemsPerPage,
+				customOrderIds:
+					!sort && customOrderIds.length > 0 ? customOrderIds : undefined,
 			}
-		}
+		);
+
+		books = productsRes.productsPaginated?.items || [];
+		totalCount = productsRes.productsPaginated?.totalCount || 0;
+		totalPages = productsRes.productsPaginated?.totalPages || 0;
 	} catch (e) {
 		console.error("Failed to fetch shop data", e);
 	}
-
-	const totalCount = books.length;
-	// Pagination slice
-	books = books.slice(_offset, _offset + itemsPerPage);
 
 	return (
 		<ShopView
 			activeCategory={category}
 			books={books}
 			categories={categories}
+			categoryIdToSearch={categoryIdToSearch}
 			currentPage={currentPage}
-			itemsPerPage={itemsPerPage}
+			customOrderIds={
+				!sort && customOrderIds.length > 0 ? customOrderIds : undefined
+			}
 			searchQuery={q}
-			totalCount={totalCount}
+			totalItems={totalCount}
+			totalPages={totalPages}
 		/>
 	);
 }

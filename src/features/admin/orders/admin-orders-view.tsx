@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { graphqlClient } from "@/lib/graphql-client";
+
 import { gql } from "graphql-request";
+import { Eye } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
+import { graphqlClient } from "@/lib/graphql-client";
 
 const GET_ADMIN_ORDERS = gql`
   query GetAdminOrders {
@@ -46,13 +49,13 @@ export function AdminOrdersView() {
 	return (
 		<div className="flex flex-col space-y-4">
 			<div className="flex items-center justify-between">
-				<h2 className="text-3xl font-bold tracking-tight">Orders</h2>
+				<h2 className="font-bold text-3xl tracking-tight">Orders</h2>
 			</div>
 
 			<div className="rounded-md border bg-white">
 				<div className="overflow-x-auto">
-					<table className="w-full text-base text-left">
-						<thead className="text-sm text-stone-500 uppercase bg-stone-50 border-b">
+					<table className="w-full text-left text-base">
+						<thead className="border-b bg-stone-50 text-sm text-stone-500 uppercase">
 							<tr>
 								<th className="px-6 py-4 font-medium">Order ID</th>
 								<th className="px-6 py-4 font-medium">Date</th>
@@ -60,15 +63,15 @@ export function AdminOrdersView() {
 								<th className="px-6 py-4 font-medium">Items</th>
 								<th className="px-6 py-4 font-medium">Status</th>
 								<th className="px-6 py-4 font-medium">Total</th>
-								<th className="px-6 py-4 font-medium text-right">Actions</th>
+								<th className="px-6 py-4 text-right font-medium">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
 							{loading ? (
 								<tr>
 									<td
-										colSpan={6}
 										className="px-6 py-8 text-center text-stone-500"
+										colSpan={6}
 									>
 										Loading orders...
 									</td>
@@ -76,8 +79,8 @@ export function AdminOrdersView() {
 							) : orders.length === 0 ? (
 								<tr>
 									<td
-										colSpan={6}
 										className="px-6 py-8 text-center text-stone-500"
+										colSpan={6}
 									>
 										No orders found.
 									</td>
@@ -85,8 +88,8 @@ export function AdminOrdersView() {
 							) : (
 								orders.map((order) => (
 									<tr
-										key={order.id}
 										className="border-b last:border-0 hover:bg-stone-50/50"
+										key={order.id}
 									>
 										<td className="px-6 py-4 font-medium text-stone-900">
 											{order.id.slice(-6).toUpperCase()}
@@ -98,15 +101,16 @@ export function AdminOrdersView() {
 										<td className="px-6 py-4">
 											<div className="flex flex-col gap-1">
 												{order.items?.map((item: any, idx: number) => (
-													<span key={idx} className="text-sm">
-														{item.quantity}x {item.bundleId ? "(Bundle) " : ""}{item.title}
+													<span className="text-sm" key={idx}>
+														{item.quantity}x {item.bundleId ? "(Bundle) " : ""}
+														{item.title}
 													</span>
 												))}
 											</div>
 										</td>
 										<td className="px-6 py-4">
 											<span
-												className={`px-2 py-1 rounded-full text-sm font-medium ${
+												className={`rounded-full px-2 py-1 font-medium text-sm ${
 													order.status === "PENDING"
 														? "bg-yellow-100 text-yellow-800"
 														: order.status === "COMPLETED"
@@ -121,7 +125,7 @@ export function AdminOrdersView() {
 											AED {order.total.toFixed(2)}
 										</td>
 										<td className="px-6 py-4 text-right">
-											<Button variant="ghost" size="icon" className="h-8 w-8">
+											<Button className="h-8 w-8" size="icon" variant="ghost">
 												<Eye className="h-4 w-4" />
 											</Button>
 										</td>

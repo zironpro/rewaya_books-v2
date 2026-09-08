@@ -47,7 +47,7 @@ export const OrdersTab = ({ orders, loading = false }: OrdersTabProps) => {
 					<p className="mb-6 max-w-xs text-sm text-stone-400">
 						When you place an order, it will appear here.
 					</p>
-					<Button asChild className="bg-primary hover:bg-primary/90 text-white">
+					<Button asChild className="bg-primary text-white hover:bg-primary/90">
 						<Link href="/shop">Browse shop</Link>
 					</Button>
 				</CardContent>
@@ -75,7 +75,7 @@ export const OrdersTab = ({ orders, loading = false }: OrdersTabProps) => {
 									<Package className="text-stone-400" size={24} />
 								</div>
 								<div>
-									<p className="font-bold text-lg text-secondary hover:text-primary transition-colors">
+									<p className="font-bold text-lg text-secondary transition-colors hover:text-primary">
 										<Link href={`/profile/orders/${order.orderId}`}>
 											{order.id}
 										</Link>

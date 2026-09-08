@@ -86,9 +86,9 @@ export function ProductPurchasePanel({
 				/>
 				<QuantitySelector
 					disabled={!inStock}
+					max={stock}
 					onQuantityChange={onQuantityChange}
 					quantity={quantity}
-					max={stock}
 				/>
 			</div>
 
@@ -98,14 +98,14 @@ export function ProductPurchasePanel({
 						availableForSale={availableForSale}
 						className="hidden w-full gap-2 md:flex"
 						disabled={!productId}
+						image={image}
+						price={price}
 						productId={productId ?? ""}
 						productName={title}
 						productVariant={productVariant}
 						quantity={quantity}
-						price={price}
-						image={image}
-						stock={stock}
 						size="lg"
+						stock={stock}
 						variant="secondary"
 					>
 						<ShoppingBagIcon className="size-4" />
@@ -116,15 +116,15 @@ export function ProductPurchasePanel({
 						availableForSale={availableForSale}
 						className="hidden w-full md:flex"
 						disabled={!productId}
+						image={image}
 						onAdded={() => router.push("/cart")}
+						price={price}
 						productId={productId ?? ""}
 						productName={title}
 						productVariant={productVariant}
 						quantity={quantity}
-						price={price}
-						image={image}
-						stock={stock}
 						size="lg"
+						stock={stock}
 						trackEventName="buy_now"
 						variant="outline"
 					>

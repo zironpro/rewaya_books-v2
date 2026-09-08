@@ -31,7 +31,7 @@ export async function generateMetadata({
 
 	const title = bundle.title
 		? `${bundle.title} · Rewaya Books`
-		: `Bundle · Rewaya Books`;
+		: "Bundle · Rewaya Books";
 
 	const description = bundle.description || "";
 

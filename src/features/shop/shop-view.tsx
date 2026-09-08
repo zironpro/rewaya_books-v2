@@ -1,40 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import {
-	ChevronFirstIcon,
-	ChevronLastIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	SlidersHorizontal,
-} from "lucide-react";
+import { Loader2, SlidersHorizontal } from "lucide-react";
 
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { MobileFilterDrawer } from "@/components/layout/mobile-filter-drawer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationLink,
-} from "@/components/ui/pagination";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 
 import { BookCard } from "@/features/products/components/book-card";
+import { graphqlClient } from "@/lib/graphql-client";
 import { type BookProps, getBookReactKey } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { GetProductsPaginatedDocument } from "@/types/graphql";
 
 import { PriceFilter } from "./components/price-filter";
 import { ShopSortFieldset } from "./components/shop-sort-fieldset";
@@ -47,6 +29,9 @@ interface ShopViewProps {
 	totalCount?: number;
 	currentPage?: number;
 	itemsPerPage?: number;
+	categoryIdToSearch?: string;
+	customOrderIds?: string[];
+	totalPages?: number;
 }
 
 export const ShopView = ({
@@ -57,11 +42,80 @@ export const ShopView = ({
 	totalCount = 0,
 	currentPage = 1,
 	itemsPerPage = 25,
+	categoryIdToSearch,
+	customOrderIds,
+	totalPages = 1,
 }: ShopViewProps) => {
 	const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
+
+	const [loadedBooks, setLoadedBooks] = useState<BookProps[]>(books);
+	const [page, setPage] = useState(currentPage);
+	const [isFetching, setIsFetching] = useState(false);
+	const observerTarget = useRef(null);
+
+	// Reset when props change (like new category or search)
+	useEffect(() => {
+		setLoadedBooks(books);
+		setPage(currentPage);
+	}, [books, currentPage]);
+
+	const loadMore = useCallback(async () => {
+		if (page >= totalPages || isFetching) return;
+
+		setIsFetching(true);
+		try {
+			const nextPage = page + 1;
+			const res = await graphqlClient.request(GetProductsPaginatedDocument, {
+				category: categoryIdToSearch,
+				q: searchQuery,
+				sort: searchParams.get("sort") || undefined,
+				page: nextPage,
+				limit: itemsPerPage,
+				customOrderIds: customOrderIds,
+			});
+
+			if (res.productsPaginated?.items) {
+				setLoadedBooks((prev) => [
+					...prev,
+					...(res.productsPaginated.items as any),
+				]);
+				setPage(nextPage);
+			}
+		} catch (e) {
+			console.error("Failed to fetch more books", e);
+		} finally {
+			setIsFetching(false);
+		}
+	}, [
+		page,
+		totalPages,
+		isFetching,
+		categoryIdToSearch,
+		searchQuery,
+		searchParams,
+		itemsPerPage,
+		customOrderIds,
+	]);
+
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					loadMore();
+				}
+			},
+			{ threshold: 0.1 }
+		);
+
+		if (observerTarget.current) {
+			observer.observe(observerTarget.current);
+		}
+
+		return () => observer.disconnect();
+	}, [loadMore]);
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: "smooth" });
@@ -90,8 +144,6 @@ export const ShopView = ({
 		params.set("page", "1");
 		router.push(`${pathname}?${params.toString()}`);
 	};
-
-	const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
 	const sidebarCategories: Array<
 		| { type: "all"; name: string; count: number }
@@ -248,116 +300,32 @@ export const ShopView = ({
 								</div>
 							</div>
 
-							{books.length === 0 ? (
+							{loadedBooks.length === 0 ? (
 								<p className="py-16 text-center text-muted-foreground">
 									No books found. Try another search or category.
 								</p>
 							) : (
 								<div className="space-y-8">
 									<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-										{books.map((book, index) => (
+										{loadedBooks.map((book, index) => (
 											<BookCard key={getBookReactKey(book, index)} {...book} />
 										))}
 									</div>
 
-									<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-										<div className="flex items-center gap-3">
-											<Label htmlFor="rows-per-page">Books per page</Label>
-											<Select
-												onValueChange={(val) => updateLimit(Number(val))}
-												value={itemsPerPage.toString()}
-											>
-												<SelectTrigger
-													className="w-fit whitespace-nowrap"
-													id="rows-per-page"
-												>
-													<SelectValue placeholder="Select number of results" />
-												</SelectTrigger>
-												<SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
-													<SelectItem value="25">25</SelectItem>
-													<SelectItem value="50">50</SelectItem>
-													<SelectItem value="100">100</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
-
-										<div className="flex items-center gap-4 text-muted-foreground text-sm">
-											<p aria-live="polite" className="whitespace-nowrap">
-												<span className="text-foreground">
-													{totalCount === 0
-														? 0
-														: (currentPage - 1) * itemsPerPage + 1}
-													-{Math.min(currentPage * itemsPerPage, totalCount)}
-												</span>{" "}
-												of <span className="text-foreground">{totalCount}</span>
-											</p>
-
-											<Pagination>
-												<PaginationContent>
-													<PaginationItem>
-														<PaginationLink
-															aria-label="Go to first page"
-															className={cn(
-																currentPage <= 1
-																	? "pointer-events-none opacity-50"
-																	: "cursor-pointer"
-															)}
-															onClick={() => updatePage(1)}
-														>
-															<ChevronFirstIcon aria-hidden="true" size={16} />
-														</PaginationLink>
-													</PaginationItem>
-
-													<PaginationItem>
-														<PaginationLink
-															aria-label="Go to previous page"
-															className={cn(
-																currentPage <= 1
-																	? "pointer-events-none opacity-50"
-																	: "cursor-pointer"
-															)}
-															onClick={() =>
-																updatePage(Math.max(1, currentPage - 1))
-															}
-														>
-															<ChevronLeftIcon aria-hidden="true" size={16} />
-														</PaginationLink>
-													</PaginationItem>
-
-													<PaginationItem>
-														<PaginationLink
-															aria-label="Go to next page"
-															className={cn(
-																currentPage >= totalPages || totalCount === 0
-																	? "pointer-events-none opacity-50"
-																	: "cursor-pointer"
-															)}
-															onClick={() =>
-																updatePage(
-																	Math.min(totalPages, currentPage + 1)
-																)
-															}
-														>
-															<ChevronRightIcon aria-hidden="true" size={16} />
-														</PaginationLink>
-													</PaginationItem>
-
-													<PaginationItem>
-														<PaginationLink
-															aria-label="Go to last page"
-															className={
-																currentPage >= totalPages || totalCount === 0
-																	? "pointer-events-none opacity-50"
-																	: "cursor-pointer"
-															}
-															onClick={() => updatePage(totalPages)}
-														>
-															<ChevronLastIcon aria-hidden="true" size={16} />
-														</PaginationLink>
-													</PaginationItem>
-												</PaginationContent>
-											</Pagination>
-										</div>
+									<div
+										className="flex w-full justify-center py-8"
+										ref={observerTarget}
+									>
+										{isFetching && (
+											<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+										)}
+										{!isFetching &&
+											page >= totalPages &&
+											loadedBooks.length > 0 && (
+												<p className="text-muted-foreground text-sm">
+													You have reached the end of the list.
+												</p>
+											)}
 									</div>
 								</div>
 							)}

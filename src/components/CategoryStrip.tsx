@@ -19,7 +19,8 @@ export function CategoryStrip({ categories = [] }: CategoryStripProps) {
 	const items = categories.map((cat) => ({
 		name: cat.name,
 		image: cat.image || cat.imageUrl || "/categories/islamic.png",
-		href: cat.href || `/shop?category=${encodeURIComponent(cat.slug || cat.id)}`,
+		href:
+			cat.href || `/shop?category=${encodeURIComponent(cat.slug || cat.id)}`,
 	}));
 
 	return (

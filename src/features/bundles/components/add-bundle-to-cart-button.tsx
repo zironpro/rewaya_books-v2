@@ -98,13 +98,13 @@ export function AddBundleToCartButton({
 			})
 			.catch((e: any) => {
 				const isAuthError = e instanceof Error && e.message === "require_auth";
-				const errorMsg = isAuthError 
-					? "Please login to add items to your bag." 
+				const errorMsg = isAuthError
+					? "Please login to add items to your bag."
 					: "Could not add bundle to cart. Please try again.";
-				
+
 				setErrorMessage(isAuthError ? null : errorMsg);
 				setStatus("error");
-				
+
 				if (isAuthError) {
 					toastManager.add({
 						title: "Login Required",
@@ -125,7 +125,7 @@ export function AddBundleToCartButton({
 						type: "error",
 					});
 				}
-				
+
 				dispatchCartUpdated();
 				setTimeout(() => {
 					setStatus("idle");

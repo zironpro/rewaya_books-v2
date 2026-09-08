@@ -1,20 +1,17 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
-import {
-	Plus,
-	Receipt,
-} from "lucide-react";
+
+import { Plus, Receipt } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import {
-	useGetTaxConfigsQuery,
 	useCreateTaxConfigMutation,
-	useUpdateTaxConfigMutation,
 	useDeleteTaxConfigMutation,
+	useGetTaxConfigsQuery,
+	useUpdateTaxConfigMutation,
 } from "@/types/graphql";
 
 const availableCountries = [
@@ -72,7 +69,7 @@ export function TaxesView() {
 	const createTaxMutation = useCreateTaxConfigMutation();
 	const updateTaxMutation = useUpdateTaxConfigMutation();
 	const deleteTaxMutation = useDeleteTaxConfigMutation();
-	
+
 	const taxes = data?.taxConfigs || [];
 
 	const handleDelete = async (id: string) => {
@@ -83,17 +80,17 @@ export function TaxesView() {
 	};
 
 	return (
-		<div className="space-y-6 max-w-5xl">
+		<div className="max-w-5xl space-y-6">
 			{/* Header Banner */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
 				<div>
 					<div className="flex items-center gap-2">
 						<Receipt className="h-5 w-5 text-primary" />
-						<h1 className="font-extrabold text-xl text-slate-900 dark:text-white">
+						<h1 className="font-extrabold text-slate-900 text-xl dark:text-white">
 							Taxes & UAE VAT Settings
 						</h1>
 					</div>
-					<p className="text-sm text-slate-500 mt-1">
+					<p className="mt-1 text-slate-500 text-sm">
 						Configure regional VAT percentages, Tax Registration Numbers (TRN),
 						and storefront invoice calculations.
 					</p>
@@ -102,19 +99,19 @@ export function TaxesView() {
 
 			{/* Tax Rules Table */}
 			<div className="space-y-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+				<div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
 					<div>
 						<h2 className="font-bold text-lg text-slate-900 dark:text-white">
 							Regional Tax & VAT Rates
 						</h2>
-						<p className="text-sm text-slate-500">
+						<p className="text-slate-500 text-sm">
 							Applied rates based on delivery location across UAE, GCC, and
 							International orders
 						</p>
 					</div>
 
 					<Link href="/admin/taxes/new">
-						<Button size="sm" className="gap-1.5 text-sm h-9">
+						<Button className="h-9 gap-1.5 text-sm" size="sm">
 							<Plus className="h-4 w-4" /> Add Tax Rule
 						</Button>
 					</Link>
@@ -122,51 +119,61 @@ export function TaxesView() {
 
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
-						<thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800">
+						<thead className="border-slate-200 border-b text-slate-500 dark:border-slate-800">
 							<tr>
-								<th className="py-2.5 px-3 font-semibold">Rule ID</th>
-								<th className="py-2.5 px-3 font-semibold">Tax Name & Region</th>
-								<th className="py-2.5 px-3 font-semibold">Tax Rate</th>
-								<th className="py-2.5 px-3 font-semibold">Shipping Taxed</th>
-								<th className="py-2.5 px-3 font-semibold">Actions</th>
+								<th className="px-3 py-2.5 font-semibold">Rule ID</th>
+								<th className="px-3 py-2.5 font-semibold">Tax Name & Region</th>
+								<th className="px-3 py-2.5 font-semibold">Tax Rate</th>
+								<th className="px-3 py-2.5 font-semibold">Shipping Taxed</th>
+								<th className="px-3 py-2.5 font-semibold">Actions</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
 							{taxes.map((t) => (
 								<tr
-									key={t.id}
 									className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+									key={t.id}
 								>
-									<td className="py-3 px-3 font-semibold text-primary">
+									<td className="px-3 py-3 font-semibold text-primary">
 										{t.id}
 									</td>
-									<td className="py-3 px-3">
+									<td className="px-3 py-3">
 										<div className="font-semibold text-slate-900 dark:text-white">
 											{t.name}
 										</div>
 										<div className="text-[11px] text-slate-500">
-											{availableCountries.find((ac) => ac.code === t.region)?.name || t.region}
+											{availableCountries.find((ac) => ac.code === t.region)
+												?.name || t.region}
 										</div>
 									</td>
-									<td className="py-3 px-3 font-extrabold text-slate-900 dark:text-white text-base">
+									<td className="px-3 py-3 font-extrabold text-base text-slate-900 dark:text-white">
 										{t.rate.toFixed(1)}%
 									</td>
-									<td className="py-3 px-3">
+									<td className="px-3 py-3">
 										<Badge
-											variant={t.appliedToShipping ? "secondary" : "outline"}
 											className="text-[10px]"
+											variant={t.appliedToShipping ? "secondary" : "outline"}
 										>
 											{t.appliedToShipping ? "Yes (Taxed)" : "No"}
 										</Badge>
 									</td>
-									<td className="py-3 px-3">
+									<td className="px-3 py-3">
 										<div className="flex items-center gap-1">
 											<Link href={`/admin/taxes/${t.id}`}>
-												<Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+												<Button
+													className="h-7 px-2 text-xs"
+													size="sm"
+													variant="ghost"
+												>
 													Edit
 												</Button>
 											</Link>
-											<Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" onClick={() => handleDelete(t.id)}>
+											<Button
+												className="h-7 px-2 text-red-500 text-xs hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+												onClick={() => handleDelete(t.id)}
+												size="sm"
+												variant="ghost"
+											>
 												Delete
 											</Button>
 										</div>

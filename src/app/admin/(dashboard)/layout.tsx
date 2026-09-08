@@ -1,8 +1,10 @@
-import { AppSidebar } from "@/features/admin/layout/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardHeader } from "@/features/admin/dashboard/components/dashboard-header";
 import { redirect } from "next/navigation";
+
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
 import { auth } from "@/auth";
+import { DashboardHeader } from "@/features/admin/dashboard/components/dashboard-header";
+import { AppSidebar } from "@/features/admin/layout/app-sidebar";
 
 export default async function DashboardLayout({
 	children,

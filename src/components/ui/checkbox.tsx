@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import { Check } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 export interface CheckboxProps
@@ -17,17 +19,17 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 		return (
 			<div className="relative inline-flex items-center">
 				<input
-					type="checkbox"
-					ref={ref}
 					checked={checked}
-					onChange={handleChange}
 					className={cn(
-						"peer h-4 w-4 shrink-0 rounded border border-slate-300 dark:border-slate-700 bg-background text-primary focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 appearance-none checked:bg-primary checked:border-primary transition-all",
+						"peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-slate-300 bg-background text-primary transition-all checked:border-primary checked:bg-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700",
 						className
 					)}
+					onChange={handleChange}
+					ref={ref}
+					type="checkbox"
 					{...props}
 				/>
-				<Check className="absolute left-0.5 top-0.5 h-3 w-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity stroke-[3]" />
+				<Check className="pointer-events-none absolute top-0.5 left-0.5 h-3 w-3 stroke-[3] text-white opacity-0 transition-opacity peer-checked:opacity-100" />
 			</div>
 		);
 	}

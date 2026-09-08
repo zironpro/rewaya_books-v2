@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { Cart } from "@/lib/db/models/Cart";
+import { Coupon } from "@/lib/db/models/Coupon";
 import { Order } from "@/lib/db/models/Order";
+import { ShippingConfig } from "@/lib/db/models/ShippingConfig";
+import { TaxConfig } from "@/lib/db/models/TaxConfig";
 import { User } from "@/lib/db/models/User";
 import connectToDatabase from "@/lib/db/mongodb";
 import { stripe } from "@/lib/stripe";
-import { ShippingConfig } from "@/lib/db/models/ShippingConfig";
-import { TaxConfig } from "@/lib/db/models/TaxConfig";
-import { Coupon } from "@/lib/db/models/Coupon";
 
 export async function POST(request: Request) {
 	try {
@@ -17,7 +17,14 @@ export async function POST(request: Request) {
 		const authEmail = session?.user?.email;
 
 		const body = await request.json();
-		const { cartId, paymentMethod, shippingMethod, shippingAddress, contact, couponCode } = body;
+		const {
+			cartId,
+			paymentMethod,
+			shippingMethod,
+			shippingAddress,
+			contact,
+			couponCode,
+		} = body;
 
 		if (!process.env.STRIPE_SECRET_KEY) {
 			return NextResponse.json(
@@ -88,14 +95,20 @@ export async function POST(request: Request) {
 		if (couponCode) {
 			const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
 			if (coupon && coupon.status === "Active") {
-				const isExpired = coupon.expiryDate && new Date(coupon.expiryDate) < new Date();
-				const isLimitReached = coupon.maxUses && coupon.usedCount >= coupon.maxUses;
-				const isMinMet = !coupon.minPurchase || baseCartTotal >= coupon.minPurchase;
-				
+				const isExpired =
+					coupon.expiryDate && new Date(coupon.expiryDate) < new Date();
+				const isLimitReached =
+					coupon.maxUses && coupon.usedCount >= coupon.maxUses;
+				const isMinMet =
+					!coupon.minPurchase || baseCartTotal >= coupon.minPurchase;
+
 				if (!isExpired && !isLimitReached && isMinMet) {
 					appliedCouponDoc = coupon;
 					if (coupon.discountType === "percentage") {
-						cartTotal = Math.max(0, baseCartTotal - (baseCartTotal * (coupon.discountAmount / 100)));
+						cartTotal = Math.max(
+							0,
+							baseCartTotal - baseCartTotal * (coupon.discountAmount / 100)
+						);
 					} else {
 						cartTotal = Math.max(0, baseCartTotal - coupon.discountAmount);
 					}
@@ -103,21 +116,26 @@ export async function POST(request: Request) {
 			}
 		}
 
-
 		let shippingCost = 0;
 		let codFee = 0;
 		const country = shippingAddress?.country || "UAE";
-		const shippingConfigs = await ShippingConfig.find({ status: "Active" }).lean();
+		const shippingConfigs = await ShippingConfig.find({
+			status: "Active",
+		}).lean();
 		if (shippingConfigs && shippingConfigs.length > 0) {
-			const matchedConfig = shippingConfigs.find((c: any) => 
-				c.countries.includes(country) || 
-				c.countries.includes("*") || 
-				c.countries.includes("Worldwide")
+			const matchedConfig = shippingConfigs.find(
+				(c: any) =>
+					c.countries.includes(country) ||
+					c.countries.includes("*") ||
+					c.countries.includes("Worldwide")
 			);
 			if (matchedConfig) {
 				codFee = matchedConfig.codFee || 0;
 				let standardCost = matchedConfig.standardFee || 0;
-				if (matchedConfig.freeThreshold > 0 && cartTotal >= matchedConfig.freeThreshold) {
+				if (
+					matchedConfig.freeThreshold > 0 &&
+					cartTotal >= matchedConfig.freeThreshold
+				) {
 					standardCost = 0;
 				}
 
@@ -133,12 +151,19 @@ export async function POST(request: Request) {
 		const taxConfigs = await TaxConfig.find({ status: "Active" });
 		let taxCost = 0;
 		let taxName = "Tax";
-		
+
 		if (taxConfigs.length > 0) {
-			const matchedTax = taxConfigs.find((t: any) => t.region === country || t.region === "Worldwide" || t.region === "Global");
+			const matchedTax = taxConfigs.find(
+				(t: any) =>
+					t.region === country ||
+					t.region === "Worldwide" ||
+					t.region === "Global"
+			);
 			if (matchedTax) {
 				taxName = matchedTax.name;
-				const amountToTax = matchedTax.appliedToShipping ? (cartTotal + shippingCost) : cartTotal;
+				const amountToTax = matchedTax.appliedToShipping
+					? cartTotal + shippingCost
+					: cartTotal;
 				taxCost = amountToTax * (matchedTax.rate / 100);
 			}
 		}
@@ -174,7 +199,7 @@ export async function POST(request: Request) {
 			});
 
 			await newOrder.save();
-			
+
 			// Reduce stock
 			const { Product } = await import("@/lib/db/models/Product");
 			for (const item of items) {
@@ -184,7 +209,7 @@ export async function POST(request: Request) {
 					});
 				}
 			}
-			
+
 			// Generate Invoice
 			try {
 				const { generateAndUploadInvoice } = await import("@/lib/invoice");
@@ -234,7 +259,10 @@ export async function POST(request: Request) {
 				price_data: {
 					currency: "aed",
 					product_data: {
-						name: shippingMethod === "express" ? "Express Shipping" : "Standard Shipping",
+						name:
+							shippingMethod === "express"
+								? "Express Shipping"
+								: "Standard Shipping",
 					},
 					unit_amount: Math.round(shippingCost * 100),
 				},
@@ -257,14 +285,16 @@ export async function POST(request: Request) {
 		}
 
 		let stripeDiscounts = undefined;
-		
+
 		if (appliedCouponDoc) {
 			try {
 				let couponParams: any = { duration: "once" };
 				if (appliedCouponDoc.discountType === "percentage") {
 					couponParams.percent_off = appliedCouponDoc.discountAmount;
 				} else {
-					couponParams.amount_off = Math.round(appliedCouponDoc.discountAmount * 100);
+					couponParams.amount_off = Math.round(
+						appliedCouponDoc.discountAmount * 100
+					);
 					couponParams.currency = "aed";
 				}
 				const stripeCoupon = await stripe.coupons.create(couponParams);

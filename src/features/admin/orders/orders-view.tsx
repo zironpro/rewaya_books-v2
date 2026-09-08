@@ -4,7 +4,7 @@ import * as React from "react";
 
 import Link from "next/link";
 
-import { Eye, Filter, Search, ShoppingBag } from "lucide-react";
+import { Eye, Search, ShoppingBag } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,14 +88,15 @@ export function OrdersView() {
 		const matchesSearch =
 			o.id.toLowerCase().includes(search.toLowerCase()) ||
 			o.email.toLowerCase().includes(search.toLowerCase());
-		
+
 		let matchesStatus = false;
 		const oStatus = o.status.toUpperCase();
-		
+
 		if (statusFilter === "All") matchesStatus = true;
-		else if (statusFilter === "Completed") matchesStatus = oStatus === "DELIVERED";
+		else if (statusFilter === "Completed")
+			matchesStatus = oStatus === "DELIVERED";
 		else matchesStatus = oStatus === statusFilter.toUpperCase();
-		
+
 		return matchesSearch && matchesStatus;
 	});
 
@@ -128,24 +129,26 @@ export function OrdersView() {
 
 			{/* Tabs and Search Bar */}
 			<div className="flex flex-col gap-4">
-				<div className="flex items-center overflow-x-auto border-b border-slate-200 dark:border-slate-800 hide-scrollbar pb-px">
+				<div className="hide-scrollbar flex items-center overflow-x-auto border-slate-200 border-b pb-px dark:border-slate-800">
 					{tabs.map((tab) => (
 						<button
-							key={tab}
-							onClick={() => setStatusFilter(tab)}
-							className={`whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+							className={`whitespace-nowrap border-b-2 px-4 py-2.5 font-medium text-sm transition-colors ${
 								statusFilter === tab
 									? "border-primary text-primary"
-									: "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-700"
+									: "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200"
 							}`}
+							key={tab}
+							onClick={() => setStatusFilter(tab)}
 						>
 							{tab}
 							<Badge className="ml-2 bg-slate-100 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400">
-								{tab === "All" 
-									? orders.length 
-									: orders.filter((o) => 
-										tab === "Completed" ? o.status.toUpperCase() === "DELIVERED" : o.status.toUpperCase() === tab.toUpperCase()
-									).length}
+								{tab === "All"
+									? orders.length
+									: orders.filter((o) =>
+											tab === "Completed"
+												? o.status.toUpperCase() === "DELIVERED"
+												: o.status.toUpperCase() === tab.toUpperCase()
+										).length}
 							</Badge>
 						</button>
 					))}

@@ -32,12 +32,12 @@ export function ProductMobileBuyBar({
 					availableForSale={availableForSale}
 					className="gap-2"
 					disabled={!productId}
+					image={image}
+					price={price}
 					productId={productId ?? ""}
 					productName={productName}
 					productVariant={productVariant}
 					quantity={quantity}
-					price={price}
-					image={image}
 					size="lg"
 					variant="secondary"
 				>

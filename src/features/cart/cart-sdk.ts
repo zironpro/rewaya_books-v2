@@ -97,34 +97,50 @@ export function readCartSnapshot(): CartSnapshot | null {
 		if (!raw) return null;
 		const parsed = JSON.parse(raw);
 		if (!Array.isArray(parsed?.lineItems)) return null;
-		
+
 		// Repair malformed items from older sessions
 		const repairedItems = parsed.lineItems.map((item: any) => {
-			const priceNum = typeof item.price === "object" ? Number(item.price?.amount || 0) : Number(item.price || 0);
+			const priceNum =
+				typeof item.price === "object"
+					? Number(item.price?.amount || 0)
+					: Number(item.price || 0);
 			const qty = item.quantity || 1;
-			
+
 			return {
 				...item,
-				price: typeof item.price === "object" && item.price?.formattedConvertedAmount ? item.price : {
-					amount: priceNum.toString(),
-					formattedConvertedAmount: `AED ${priceNum.toFixed(2)}`
+				price:
+					typeof item.price === "object" && item.price?.formattedConvertedAmount
+						? item.price
+						: {
+								amount: priceNum.toString(),
+								formattedConvertedAmount: `AED ${priceNum.toFixed(2)}`,
+							},
+				lineItemPrice:
+					typeof item.lineItemPrice === "object" &&
+					item.lineItemPrice?.formattedConvertedAmount
+						? item.lineItemPrice
+						: {
+								amount: (priceNum * qty).toString(),
+								formattedConvertedAmount: `AED ${(priceNum * qty).toFixed(2)}`,
+							},
+				productName: item.productName || {
+					translated: item.title || "Product",
 				},
-				lineItemPrice: typeof item.lineItemPrice === "object" && item.lineItemPrice?.formattedConvertedAmount ? item.lineItemPrice : {
-					amount: (priceNum * qty).toString(),
-					formattedConvertedAmount: `AED ${(priceNum * qty).toFixed(2)}`
-				},
-				productName: item.productName || { translated: item.title || "Product" }
 			};
 		});
 
 		// Repair summary if missing
 		let summary = parsed.summary || { discountNames: [] };
 		if (!summary.subtotal || summary.subtotal === "0") {
-			const subtotal = repairedItems.reduce((acc: number, item: any) => acc + (Number(item.price.amount) * (item.quantity || 1)), 0);
+			const subtotal = repairedItems.reduce(
+				(acc: number, item: any) =>
+					acc + Number(item.price.amount) * (item.quantity || 1),
+				0
+			);
 			summary = {
 				...summary,
 				subtotal: `AED ${subtotal.toFixed(2)}`,
-				total: `AED ${subtotal.toFixed(2)}`
+				total: `AED ${subtotal.toFixed(2)}`,
 			};
 		}
 

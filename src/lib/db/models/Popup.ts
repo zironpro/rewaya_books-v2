@@ -16,4 +16,5 @@ const PopupSchema = new mongoose.Schema(
 );
 
 // We define a default export and reuse the model if it's already compiled
-export const Popup = mongoose.models.Popup || mongoose.model("Popup", PopupSchema);
+export const Popup =
+	mongoose.models.Popup || mongoose.model("Popup", PopupSchema);

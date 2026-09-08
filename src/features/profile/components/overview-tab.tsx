@@ -116,7 +116,7 @@ export const OverviewTab = ({
 									<Package className="text-primary" size={20} />
 								</div>
 								<div>
-									<p className="font-bold text-secondary text-sm hover:text-primary transition-colors">
+									<p className="font-bold text-secondary text-sm transition-colors hover:text-primary">
 										<Link href={`/profile/orders/${recentOrder.orderId}`}>
 											Order {recentOrder.id} — {recentOrder.status}
 										</Link>
@@ -168,7 +168,7 @@ export const OverviewTab = ({
 											<Package className="text-stone-400" size={20} />
 										</div>
 										<div>
-											<p className="font-bold text-secondary hover:text-primary transition-colors">
+											<p className="font-bold text-secondary transition-colors hover:text-primary">
 												<Link href={`/profile/orders/${order.orderId}`}>
 													{order.id}
 												</Link>

@@ -1,21 +1,24 @@
 "use client";
 
 import * as React from "react";
+
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Image as ImageIcon, Save } from "lucide-react";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useUpdatePopupMutation, useGetPopupsQuery } from "@/types/graphql";
+
+import { useGetPopupsQuery, useUpdatePopupMutation } from "@/types/graphql";
 
 export function PopupEditView({ popupId }: { popupId: string }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const updatePopupMutation = useUpdatePopupMutation();
 	const { data, isLoading } = useGetPopupsQuery();
-	
+
 	const popup = data?.popups.find((b) => b.id === popupId);
 
 	const [title, setTitle] = React.useState("");
@@ -37,7 +40,11 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 			setDelaySeconds(popup.delaySeconds?.toString() || "5");
 			setImage(popup.image || "");
 			// Format ISO date to YYYY-MM-DD for the date input
-			setExpiresAt(popup.expiresAt ? new Date(Number(popup.expiresAt)).toISOString().split("T")[0] : "");
+			setExpiresAt(
+				popup.expiresAt
+					? new Date(Number(popup.expiresAt)).toISOString().split("T")[0]
+					: ""
+			);
 			setCountdownText(popup.countdownText || "");
 		}
 	}, [popup]);
@@ -82,7 +89,7 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 					ctaLabel,
 					ctaHref,
 					image,
-					delaySeconds: parseInt(delaySeconds) || 5,
+					delaySeconds: Number.parseInt(delaySeconds) || 5,
 					enabled: popup?.enabled !== false,
 					expiresAt: expiresAt || null,
 					countdownText: countdownText || null,
@@ -101,7 +108,7 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+			<div className="flex flex-col justify-between gap-4 rounded-lg border border-slate-200/80 bg-white p-5 shadow-xs sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
 				<div>
 					<div className="flex items-center gap-2">
 						<ImageIcon className="h-5 w-5 text-primary" />
@@ -126,11 +133,11 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 						Popup Headline *
 					</label>
 					<Input
-						required
-						placeholder="e.g. Welcome to our Store!"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
 						className="h-10 text-sm"
+						onChange={(e) => setTitle(e.target.value)}
+						placeholder="e.g. Welcome to our Store!"
+						required
+						value={title}
 					/>
 				</div>
 
@@ -139,10 +146,10 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 						Description
 					</label>
 					<Input
+						className="h-10 text-sm"
+						onChange={(e) => setDescription(e.target.value)}
 						placeholder="e.g. Get 10% off your first order."
 						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						className="h-10 text-sm"
 					/>
 				</div>
 
@@ -151,12 +158,14 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 						Days Left Text
 					</label>
 					<Input
+						className="h-10 text-sm"
+						onChange={(e) => setCountdownText(e.target.value)}
 						placeholder="e.g. ⏳ Only 3 days left!"
 						value={countdownText}
-						onChange={(e) => setCountdownText(e.target.value)}
-						className="h-10 text-sm"
 					/>
-					<p className="text-xs text-slate-400">Shown as a highlighted badge in the popup. Leave blank to hide.</p>
+					<p className="text-slate-400 text-xs">
+						Shown as a highlighted badge in the popup. Leave blank to hide.
+					</p>
 				</div>
 
 				<div className="space-y-1">
@@ -164,11 +173,11 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 						Delay Seconds
 					</label>
 					<Input
-						type="number"
-						placeholder="5"
-						value={delaySeconds}
-						onChange={(e) => setDelaySeconds(e.target.value)}
 						className="h-10 text-sm"
+						onChange={(e) => setDelaySeconds(e.target.value)}
+						placeholder="5"
+						type="number"
+						value={delaySeconds}
 					/>
 				</div>
 
@@ -177,12 +186,15 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 						Expiry Date (Optional)
 					</label>
 					<Input
+						className="h-10 text-sm"
+						onChange={(e) => setExpiresAt(e.target.value)}
 						type="date"
 						value={expiresAt}
-						onChange={(e) => setExpiresAt(e.target.value)}
-						className="h-10 text-sm"
 					/>
-					<p className="text-xs text-slate-400">Popup will stop showing after this date. Leave blank to show indefinitely.</p>
+					<p className="text-slate-400 text-xs">
+						Popup will stop showing after this date. Leave blank to show
+						indefinitely.
+					</p>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4">
@@ -191,9 +203,9 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 							CTA Button Label
 						</label>
 						<Input
-							value={ctaLabel}
-							onChange={(e) => setCtaLabel(e.target.value)}
 							className="h-10 text-sm"
+							onChange={(e) => setCtaLabel(e.target.value)}
+							value={ctaLabel}
 						/>
 					</div>
 					<div className="space-y-1">
@@ -201,9 +213,9 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 							Target URL Href
 						</label>
 						<Input
-							value={ctaHref}
-							onChange={(e) => setCtaHref(e.target.value)}
 							className="h-10 text-sm"
+							onChange={(e) => setCtaHref(e.target.value)}
+							value={ctaHref}
 						/>
 					</div>
 				</div>
@@ -212,13 +224,13 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
 						Popup Image (Optional)
 					</label>
-					<div className="relative flex h-48 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">
+					<div className="relative flex h-48 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-slate-300 border-dashed bg-slate-50 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">
 						<input
-							type="file"
 							accept="image/*"
 							className="absolute inset-0 z-10 cursor-pointer opacity-0"
-							onChange={handleImageUpload}
 							disabled={isUploading}
+							onChange={handleImageUpload}
+							type="file"
 						/>
 						{isUploading ? (
 							<div className="flex flex-col items-center justify-center text-slate-500">
@@ -226,9 +238,9 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 							</div>
 						) : image ? (
 							<img
-								src={image}
 								alt="Banner preview"
 								className="h-full w-full object-contain p-2"
+								src={image}
 							/>
 						) : (
 							<div className="flex flex-col items-center justify-center text-slate-500">
@@ -240,7 +252,11 @@ export function PopupEditView({ popupId }: { popupId: string }) {
 				</div>
 
 				<div className="flex justify-end pt-4">
-					<Button className="h-10 gap-2 px-6" onClick={handleSave} type="button">
+					<Button
+						className="h-10 gap-2 px-6"
+						onClick={handleSave}
+						type="button"
+					>
 						<Save className="h-4 w-4" /> Update Popup
 					</Button>
 				</div>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
@@ -10,7 +9,6 @@ import {
 	Download,
 	MapPin,
 	Package,
-	RefreshCcw,
 	ShoppingBag,
 	Truck,
 } from "lucide-react";
@@ -18,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
 import { RequestRefundDialog } from "../components/request-refund-dialog";
 
 export function OrderDetailPage({ order }: { order: any }) {
@@ -36,7 +35,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 		0
 	);
 
-	const shippingMethodName = 
+	const shippingMethodName =
 		order.shippingMethod === "express" ? "Express" : "Standard";
 
 	return (
@@ -58,7 +57,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 								<CheckCircle2 className="mr-1 h-3 w-3" /> Paid
 							</Badge>
 						) : (
-							<Badge className="ml-2 font-semibold bg-orange-100 text-orange-700 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400">
+							<Badge className="ml-2 bg-orange-100 font-semibold text-orange-700 hover:bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400">
 								Unpaid
 							</Badge>
 						)}
@@ -68,12 +67,12 @@ export function OrderDetailPage({ order }: { order: any }) {
 					</p>
 				</div>
 				<div className="ml-auto flex gap-3">
-					<RequestRefundDialog orderId={order._id || order.id} isDelivered={order.status === "DELIVERED" || true} />
+					<RequestRefundDialog
+						isDelivered={order.status === "DELIVERED" || true}
+						orderId={order._id || order.id}
+					/>
 					{order.invoiceUrl ? (
-						<Button
-							asChild
-							variant="outline"
-						>
+						<Button asChild variant="outline">
 							<a href={order.invoiceUrl} rel="noreferrer" target="_blank">
 								<Download className="mr-2 h-4 w-4" /> Download Invoice
 							</a>
@@ -84,7 +83,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 
 			<div className="grid gap-6 md:grid-cols-3">
 				{/* Order Items */}
-				<div className="md:col-span-2 space-y-6">
+				<div className="space-y-6 md:col-span-2">
 					<Card>
 						<CardContent className="p-6 pt-6 sm:pt-6">
 							<h3 className="mb-4 flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white">
@@ -93,15 +92,16 @@ export function OrderDetailPage({ order }: { order: any }) {
 							<div className="divide-y divide-slate-100 dark:divide-slate-800">
 								{order.items.map((item: any, i: number) => (
 									<div
-										key={i}
 										className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
+										key={i}
 									>
 										<div className="flex flex-col">
 											<span className="font-medium text-slate-900 dark:text-slate-100">
 												{item.title}
 											</span>
 											<span className="text-slate-500 text-sm">
-												Qty: {item.quantity} {item.isbn ? `• ISBN: ${item.isbn}` : ""}
+												Qty: {item.quantity}{" "}
+												{item.isbn ? `• ISBN: ${item.isbn}` : ""}
 											</span>
 										</div>
 										<span className="font-semibold text-slate-900 dark:text-slate-100">
@@ -146,7 +146,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 										<span>- AED {order.discountAmount.toFixed(2)}</span>
 									</div>
 								)}
-								<div className="flex justify-between border-t border-slate-100 pt-3 font-bold text-base text-slate-900 dark:border-slate-800 dark:text-white">
+								<div className="flex justify-between border-slate-100 border-t pt-3 font-bold text-base text-slate-900 dark:border-slate-800 dark:text-white">
 									<span>Total</span>
 									<span>AED {order.total.toFixed(2)}</span>
 								</div>
@@ -170,9 +170,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 									<p className="font-medium text-slate-900 dark:text-slate-100">
 										{order.status}
 									</p>
-									<p className="text-slate-500 text-sm">
-										Current order status
-									</p>
+									<p className="text-slate-500 text-sm">Current order status</p>
 								</div>
 							</div>
 						</CardContent>
@@ -184,16 +182,18 @@ export function OrderDetailPage({ order }: { order: any }) {
 								<MapPin className="h-5 w-5" /> Shipping Address
 							</h3>
 							{order.shippingAddress ? (
-								<address className="not-italic text-slate-600 text-sm dark:text-slate-400">
+								<address className="text-slate-600 text-sm not-italic dark:text-slate-400">
 									<p className="font-medium text-slate-900 dark:text-slate-100">
-										{order.shippingAddress.firstName} {order.shippingAddress.lastName}
+										{order.shippingAddress.firstName}{" "}
+										{order.shippingAddress.lastName}
 									</p>
 									<p className="mt-1">{order.shippingAddress.addressLine1}</p>
 									{order.shippingAddress.addressLine2 && (
 										<p>{order.shippingAddress.addressLine2}</p>
 									)}
 									<p>
-										{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}
+										{order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+										{order.shippingAddress.postalCode}
 									</p>
 									<p>{order.shippingAddress.country}</p>
 									{order.shippingAddress.phone && (

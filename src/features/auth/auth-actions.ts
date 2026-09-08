@@ -1,10 +1,15 @@
 "use server";
 
-import connectToDatabase from "@/lib/db/mongodb";
-import { User } from "@/lib/db/models/User";
 import bcrypt from "bcryptjs";
 
-export async function registerUser(name: string, email: string, passwordRaw: string) {
+import { User } from "@/lib/db/models/User";
+import connectToDatabase from "@/lib/db/mongodb";
+
+export async function registerUser(
+	name: string,
+	email: string,
+	passwordRaw: string
+) {
 	try {
 		await connectToDatabase();
 
@@ -27,6 +32,9 @@ export async function registerUser(name: string, email: string, passwordRaw: str
 		return { status: "success" };
 	} catch (error) {
 		console.error("Failed to register user", error);
-		return { status: "error", message: "Failed to create account. Please try again." };
+		return {
+			status: "error",
+			message: "Failed to create account. Please try again.",
+		};
 	}
 }

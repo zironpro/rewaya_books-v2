@@ -35,8 +35,11 @@ export function ProductGallery({
 		images?.length && images.length > 0
 			? [...new Set([image, ...images])].filter(Boolean)
 			: [image].filter(Boolean);
-			
-	const finalImages = galleryImages.length > 0 ? galleryImages as string[] : ["/placeholder-image.png"];
+
+	const finalImages =
+		galleryImages.length > 0
+			? (galleryImages as string[])
+			: ["/placeholder-image.png"];
 	const hasMultiple = finalImages.length > 1;
 	const [api, setApi] = useState<CarouselApi>();
 	const [selectedIndex, setSelectedIndex] = useState(0);

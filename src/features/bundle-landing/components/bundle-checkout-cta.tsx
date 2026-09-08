@@ -132,15 +132,15 @@ export function BundleCheckoutCta({
 				bundleSlug={bundle.slug}
 				checkoutCatalogAppId={bundle.checkoutCatalogAppId}
 				checkoutCatalogItemId={bundle.checkoutCatalogItemId || bundle.id}
-				title={bundle.title}
-				price={bundle.price}
-				image={bundle.coverImage}
 				className={cn(
 					shimmerClass,
 					"min-h-11 w-full shrink-0 gap-2",
 					className
 				)}
+				image={bundle.coverImage}
+				price={bundle.price}
 				size={size}
+				title={bundle.title}
 			>
 				<ShoppingBag className="size-4" />
 				{label}

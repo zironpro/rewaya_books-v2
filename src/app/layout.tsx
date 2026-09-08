@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 
+import { SessionProvider } from "next-auth/react";
+
 import MetaPixelProvider from "@/components/meta/MetaPixelProvider";
 import QueryProvider from "@/components/providers/query";
 import { ToastProvider } from "@/components/ui/toast";
@@ -12,7 +14,6 @@ import { CartProvider } from "@/features/cart/cart-provider";
 import { WishlistProvider } from "@/features/wishlist/wishlist-provider";
 import OpenPanelProvider from "@/lib/open-panel/provider";
 import { cn } from "@/lib/utils";
-import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
 	title: "Al Rewaya Book World | Your Premier Bookstore in UAE",
@@ -45,17 +46,19 @@ export default function RootLayout({
 				<SessionProvider>
 					<QueryProvider>
 						<OpenPanelProvider>
-						<CartProvider>
-							<WishlistProvider>
-								<MetaPixelProvider>
-									<TooltipProvider delay={0}>
-										<ToastProvider position="top-center">{children}</ToastProvider>
-									</TooltipProvider>
-								</MetaPixelProvider>
-							</WishlistProvider>
-						</CartProvider>
-					</OpenPanelProvider>
-				</QueryProvider>
+							<CartProvider>
+								<WishlistProvider>
+									<MetaPixelProvider>
+										<TooltipProvider delay={0}>
+											<ToastProvider position="top-center">
+												{children}
+											</ToastProvider>
+										</TooltipProvider>
+									</MetaPixelProvider>
+								</WishlistProvider>
+							</CartProvider>
+						</OpenPanelProvider>
+					</QueryProvider>
 				</SessionProvider>
 			</body>
 		</html>

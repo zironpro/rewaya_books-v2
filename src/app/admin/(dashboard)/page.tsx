@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { DashboardView } from "@/features/admin/dashboard/dashboard-view";
 
 export const metadata: Metadata = {

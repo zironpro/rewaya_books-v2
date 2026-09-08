@@ -1,1 +1,20 @@
-const fs = require('fs'); const env = fs.readFileSync('.env.local', 'utf-8').split('\n').find(l => l.startsWith('MONGODB_URI=')).split('=')[1].trim(); const mongoose = require('mongoose'); async function main() { await mongoose.connect(env); const latestOrder = await mongoose.connection.db.collection('orders').find().sort({createdAt: -1}).limit(1).toArray(); console.log(JSON.stringify(latestOrder, null, 2)); await mongoose.disconnect(); } main().catch(console.error);
+const fs = require("fs");
+const env = fs
+	.readFileSync(".env.local", "utf-8")
+	.split("\n")
+	.find((l) => l.startsWith("MONGODB_URI="))
+	.split("=")[1]
+	.trim();
+const mongoose = require("mongoose");
+async function main() {
+	await mongoose.connect(env);
+	const latestOrder = await mongoose.connection.db
+		.collection("orders")
+		.find()
+		.sort({ createdAt: -1 })
+		.limit(1)
+		.toArray();
+	console.log(JSON.stringify(latestOrder, null, 2));
+	await mongoose.disconnect();
+}
+main().catch(console.error);

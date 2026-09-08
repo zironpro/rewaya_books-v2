@@ -5,10 +5,10 @@ import { useState } from "react";
 import { OverviewTab } from "@/features/profile/components/overview-tab";
 // import type { ProfileOrder } from "@/lib/profile-actions"; // Will define a generic one later
 
-export const OverviewPage = ({ 
-	initialUser, 
-	initialOrders = [] 
-}: { 
+export const OverviewPage = ({
+	initialUser,
+	initialOrders = [],
+}: {
 	initialUser: any;
 	initialOrders?: any[];
 }) => {

@@ -4,8 +4,8 @@ import * as React from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, BookOpen, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,9 @@ export function BookCreateView() {
 		const priceNum = Number.parseFloat(newPrice) || 0;
 		const stockNum = Number.parseInt(newStock) || 0;
 
-		const selectedCats = categories.filter((c: any) => newCategoryIds.includes(c.id));
+		const selectedCats = categories.filter((c: any) =>
+			newCategoryIds.includes(c.id)
+		);
 
 		try {
 			await createProductMutation.mutateAsync({
@@ -84,8 +86,10 @@ export function BookCreateView() {
 					isbn: newIsbn,
 					categoryIds: selectedCats.map((c: any) => c.id),
 					categoryId: selectedCats.length > 0 ? selectedCats[0].id : undefined,
-					categorySlug: selectedCats.length > 0 ? selectedCats[0].slug : undefined,
-					categoryName: selectedCats.length > 0 ? selectedCats[0].name : undefined,
+					categorySlug:
+						selectedCats.length > 0 ? selectedCats[0].slug : undefined,
+					categoryName:
+						selectedCats.length > 0 ? selectedCats[0].name : undefined,
 					price: priceNum,
 					originalPrice: 0,
 					stock: stockNum,
@@ -119,13 +123,16 @@ export function BookCreateView() {
 					</p>
 				</div>
 				<Link href="/admin/catalog/books">
-					<Button className="h-10 gap-2 px-4 text-sm"variant="outline" >
+					<Button className="h-10 gap-2 px-4 text-sm" variant="outline">
 						<ArrowLeft className="h-4 w-4" /> Back to Books
 					</Button>
 				</Link>
 			</div>
 
-			<form className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-3"onSubmit={handleAddBook} >
+			<form
+				className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-3"
+				onSubmit={handleAddBook}
+			>
 				<div className="space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-2 dark:border-slate-800 dark:bg-slate-900">
 					<div className="space-y-2">
 						<label className="font-semibold text-slate-700 dark:text-slate-300">
@@ -203,8 +210,6 @@ export function BookCreateView() {
 						/>
 					</div>
 
-
-
 					<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
 						<div className="space-y-2">
 							<label className="font-semibold text-slate-700 dark:text-slate-300">
@@ -213,11 +218,13 @@ export function BookCreateView() {
 							<div className="max-h-40 overflow-y-auto rounded-lg border border-input bg-background p-3">
 								<div className="flex flex-col gap-2">
 									{categories.map((cat: any) => (
-										<label key={cat.id} className="flex items-center gap-2 text-sm">
+										<label
+											className="flex items-center gap-2 text-sm"
+											key={cat.id}
+										>
 											<input
-												type="checkbox"
-												className="rounded border-slate-300 text-primary focus:ring-primary"
 												checked={newCategoryIds.includes(cat.id)}
+												className="rounded border-slate-300 text-primary focus:ring-primary"
 												onChange={(e) => {
 													if (e.target.checked) {
 														setNewCategoryIds((prev) => [...prev, cat.id]);
@@ -227,6 +234,7 @@ export function BookCreateView() {
 														);
 													}
 												}}
+												type="checkbox"
 											/>
 											{cat.name}
 										</label>
@@ -308,13 +316,19 @@ export function BookCreateView() {
 					</div>
 
 					<div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-						<Button className="h-11 w-full gap-2" disabled={createProductMutation.isPending}type="submit" >
-							<Save className="h-4 w-4" /> 
-							{createProductMutation.isPending ? "Saving..." : "Save Book Title"}
+						<Button
+							className="h-11 w-full gap-2"
+							disabled={createProductMutation.isPending}
+							type="submit"
+						>
+							<Save className="h-4 w-4" />
+							{createProductMutation.isPending
+								? "Saving..."
+								: "Save Book Title"}
 						</Button>
 					</div>
 				</div>
 			</form>
-	</div>
-	)
+		</div>
+	);
 }

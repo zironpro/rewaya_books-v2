@@ -40,10 +40,10 @@ export const AccessibilityView = () => {
 
 			<LegalSection title="3. Known Limitations">
 				<LegalParagraph>
-					Some third-party content—such as payment flows powered by our payment providers—or older
-					pages may not yet meet our full accessibility targets. We continue to
-					improve the site over time and welcome feedback on areas that need
-					attention.
+					Some third-party content—such as payment flows powered by our payment
+					providers—or older pages may not yet meet our full accessibility
+					targets. We continue to improve the site over time and welcome
+					feedback on areas that need attention.
 				</LegalParagraph>
 			</LegalSection>
 
