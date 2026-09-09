@@ -234,13 +234,11 @@ async function main() {
 			const imageUrl = row.productImageUrl?.trim();
 			let coverImage = "";
 			if (imageUrl) {
-				// Upload or fallback to placeholder
+				// Upload or fallback to empty string
 				const uploadedUrl = await uploadImageToCloudinary(imageUrl);
-				coverImage =
-					uploadedUrl ||
-					`https://via.placeholder.com/400x600?text=${encodeURIComponent(name)}`;
+				coverImage = uploadedUrl || "";
 			} else {
-				coverImage = `https://via.placeholder.com/400x600?text=${encodeURIComponent(name)}`;
+				coverImage = "";
 			}
 
 			const newProduct = new Product({
