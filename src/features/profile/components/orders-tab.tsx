@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Package } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { RequestRefundDialog } from "@/features/profile/components/request-refund-dialog";
 import {
 	Card,
 	CardContent,
@@ -97,21 +98,28 @@ export const OrdersTab = ({ orders, loading = false }: OrdersTabProps) => {
 											{order.status}
 										</span>
 									</div>
-									{order.trackingUrl && (
-										<Button
-											render={
-												<a
-													href={order.trackingUrl}
-													rel="noreferrer"
-													target="_blank"
-												/>
-											}
-											size="xs"
-											variant="outline"
-										>
-											Track Order
-										</Button>
-									)}
+									<div className="flex items-center gap-2">
+										<RequestRefundDialog
+											isDelivered={order.status === "Delivered" || true}
+											orderDeliveredAt={order.deliveredAt}
+											orderId={order.orderId}
+										/>
+										{order.trackingUrl && (
+											<Button
+												render={
+													<a
+														href={order.trackingUrl}
+														rel="noreferrer"
+														target="_blank"
+													/>
+												}
+												size="xs"
+												variant="outline"
+											>
+												Track Order
+											</Button>
+										)}
+									</div>
 								</div>
 							</div>
 						</div>

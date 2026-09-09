@@ -44,6 +44,7 @@ export default async function ProfileOrderDetailPage({
 			...rawOrder,
 			_id: rawOrder._id.toString(),
 			userId: rawOrder.userId?.toString(),
+			deliveredAt: rawOrder.deliveredAt ? rawOrder.deliveredAt.toISOString() : null,
 			items: rawOrder.items?.map((item: any) => ({
 				...item,
 				_id: item._id?.toString(),

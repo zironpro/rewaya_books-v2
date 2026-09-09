@@ -45,6 +45,8 @@ export default async function ProfileOrdersPage() {
 				day: "numeric",
 				year: "numeric",
 			}),
+			createdAt: o.createdAt.toISOString(),
+			deliveredAt: o.deliveredAt ? o.deliveredAt.toISOString() : null,
 			status: formattedStatus,
 			items: totalItems,
 			total: `AED ${o.total.toFixed(2)}`,

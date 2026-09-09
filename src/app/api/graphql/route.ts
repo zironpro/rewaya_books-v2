@@ -218,6 +218,7 @@ const typeDefs = gql`
     invoiceUrl: String
     invoiceNumber: String
     createdAt: String
+    deliveredAt: String
   }
 
   type ProductConnection {
@@ -730,6 +731,7 @@ const resolvers = {
 			const updateData: any = { status };
 			if (status === "DELIVERED") {
 				updateData.isPaid = true;
+				updateData.deliveredAt = new Date();
 			}
 
 			const order = await Order.findByIdAndUpdate(id, updateData, {

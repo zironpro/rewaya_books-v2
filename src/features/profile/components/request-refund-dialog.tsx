@@ -25,11 +25,13 @@ import {
 interface RequestRefundDialogProps {
 	orderId: string;
 	isDelivered: boolean;
+	orderDeliveredAt?: string | null;
 }
 
 export function RequestRefundDialog({
 	orderId,
 	isDelivered,
+	orderDeliveredAt,
 }: RequestRefundDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [reason, setReason] = useState("");
@@ -81,6 +83,19 @@ export function RequestRefundDialog({
 				Refund: {existingRequest.status}
 			</Badge>
 		);
+	}
+
+	const isEligibleForRefund = () => {
+		if (!orderDeliveredAt) return false; // Hide if not delivered yet (no delivery date)
+		const deliveryDate = new Date(orderDeliveredAt);
+		const now = new Date();
+		const diffTime = now.getTime() - deliveryDate.getTime();
+		const diffDays = diffTime / (1000 * 60 * 60 * 24);
+		return diffDays <= 3; // 3 full days (72 hours)
+	};
+
+	if (!isEligibleForRefund()) {
+		return null;
 	}
 
 	if (!isDelivered) {

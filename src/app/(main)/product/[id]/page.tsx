@@ -5,9 +5,7 @@ import { ProductDetailView } from "@/features/products/product-detail-view";
 import { graphqlClient } from "@/lib/graphql-client";
 import { GetProductBySlugDocument } from "@/types/graphql";
 
-export async function generateStaticParams() {
-	return [];
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
 	params,

@@ -69,6 +69,7 @@ export function OrderDetailPage({ order }: { order: any }) {
 				<div className="ml-auto flex gap-3">
 					<RequestRefundDialog
 						isDelivered={order.status === "DELIVERED" || true}
+						orderDeliveredAt={order.deliveredAt}
 						orderId={order._id || order.id}
 					/>
 					{order.invoiceUrl ? (
