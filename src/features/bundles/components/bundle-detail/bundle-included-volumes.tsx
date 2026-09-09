@@ -44,14 +44,18 @@ export function BundleIncludedVolumes({ books }: BundleIncludedVolumesProps) {
 							key={book.id}
 						>
 							<div className="group relative flex h-full flex-col items-start gap-8 rounded-lg border bg-card p-4 transition-all hover:scale-102 hover:border-primary hover:shadow-sm md:flex-row">
-								<div className="relative aspect-4/5 w-full shrink-0 transform overflow-hidden rounded-md bg-white transition-transform group-hover:scale-105 sm:w-48 md:w-56">
-									<Image
-										alt={book.title}
-										className="object-cover"
-										fill
-										sizes="(max-width: 768px) 100vw, 176px"
-										src={book.coverImage || "/placeholder.png"}
-									/>
+								<div className="relative aspect-4/5 w-full shrink-0 transform overflow-hidden rounded-md bg-white transition-transform group-hover:scale-105 sm:w-48 md:w-56 flex items-center justify-center bg-muted/20">
+									{book.coverImage ? (
+										<Image
+											alt={book.title}
+											className="object-cover"
+											fill
+											sizes="(max-width: 768px) 100vw, 176px"
+											src={book.coverImage}
+										/>
+									) : (
+										<span className="text-muted-foreground/50 text-sm font-medium">No Image</span>
+									)}
 								</div>
 
 								<div className="flex h-full grow flex-col py-3">

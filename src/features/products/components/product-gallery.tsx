@@ -39,7 +39,7 @@ export function ProductGallery({
 	const finalImages =
 		galleryImages.length > 0
 			? (galleryImages as string[])
-			: ["/placeholder-image.png"];
+			: [];
 	const hasMultiple = finalImages.length > 1;
 	const [api, setApi] = useState<CarouselApi>();
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,15 +61,19 @@ export function ProductGallery({
 	if (!hasMultiple) {
 		return (
 			<div className={cn("space-y-3", className)}>
-				<div className="group relative aspect-4/5 overflow-hidden rounded-xl border bg-card">
-					<Image
-						alt={title}
-						className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
-						fill
-						priority
-						sizes="(max-width: 1024px) 100vw, 38vw"
-						src={finalImages[0]}
-					/>
+				<div className="group relative aspect-4/5 overflow-hidden rounded-xl border bg-card flex items-center justify-center bg-muted/10">
+					{finalImages[0] ? (
+						<Image
+							alt={title}
+							className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+							fill
+							priority
+							sizes="(max-width: 1024px) 100vw, 38vw"
+							src={finalImages[0]}
+						/>
+					) : (
+						<span className="text-muted-foreground/50 text-sm font-medium">No Image</span>
+					)}
 					<WishlistToggleButton
 						className="absolute top-4 right-4 z-10 size-11 rounded-full border bg-background/90 shadow-sm backdrop-blur-sm hover:bg-background"
 						productId={productId?.toString()}

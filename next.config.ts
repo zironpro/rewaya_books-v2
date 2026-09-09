@@ -17,7 +17,6 @@ const nextConfig: NextConfig = {
 			{ hostname: "static.wixstatic.com" },
 			{ hostname: "lh3.googleusercontent.com" },
 			{ hostname: "res.cloudinary.com" },
-			{ hostname: "via.placeholder.com" },
 		],
 	},
 	async redirects() {

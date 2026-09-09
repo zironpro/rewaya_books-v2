@@ -233,7 +233,7 @@ async function main() {
 			// Upload image
 			const imageUrl = row.productImageUrl?.trim();
 			let coverImage = "";
-			if (imageUrl) {
+			if (imageUrl && !imageUrl.includes("placeholder.com")) {
 				// Upload or fallback to empty string
 				const uploadedUrl = await uploadImageToCloudinary(imageUrl);
 				coverImage = uploadedUrl || "";
