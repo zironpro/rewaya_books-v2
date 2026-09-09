@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import dbConnect from "@/lib/db/mongoose";
+import dbConnect from "@/lib/db/mongodb";
 import { User } from "@/lib/db/models/User";
 
 export async function GET() {
