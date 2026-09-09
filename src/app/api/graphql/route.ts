@@ -16,6 +16,36 @@ import { ShippingConfig } from "@/lib/db/models/ShippingConfig";
 import { TaxConfig } from "@/lib/db/models/TaxConfig";
 import { User } from "@/lib/db/models/User";
 import connectToDatabase from "@/lib/db/mongodb";
+import { v2 as cloudinary } from "cloudinary";
+
+if (process.env.CLOUDINARY_URL) {
+	const match = process.env.CLOUDINARY_URL.match(
+		/cloudinary:\/\/([^:]+):([^@]+)@(.+)/
+	);
+	if (match) {
+		cloudinary.config({
+			api_key: match[1],
+			api_secret: match[2],
+			cloud_name: match[3],
+			secure: true,
+		});
+	}
+}
+
+async function uploadToCloudinaryIfNeeded(imageUrl: string): Promise<string> {
+	if (!imageUrl || imageUrl.includes("res.cloudinary.com") || imageUrl.includes("placeholder.com")) {
+		return imageUrl && !imageUrl.includes("placeholder.com") ? imageUrl : "";
+	}
+	
+	try {
+		const fullUrl = imageUrl.startsWith("http") ? imageUrl : `https://static.wixstatic.com/media/${imageUrl}`;
+		const result = await cloudinary.uploader.upload(fullUrl, { folder: "rewaya_books", format: "webp" });
+		return result.secure_url;
+	} catch (error) {
+		console.error(`Failed to upload ${imageUrl} to Cloudinary:`, error);
+		return "";
+	}
+}
 import { stripe } from "@/lib/stripe";
 
 // Define the GraphQL schema
@@ -764,6 +794,13 @@ const resolvers = {
 			await connectToDatabase();
 			console.log("CREATE PRODUCT INPUT:", input);
 
+			if (input.coverImage) {
+				input.coverImage = await uploadToCloudinaryIfNeeded(input.coverImage);
+				if (input.coverImage && (!input.images || input.images.length === 0)) {
+					input.images = [input.coverImage];
+				}
+			}
+
 			if (input.sortOrder === undefined || input.sortOrder === null) {
 				const maxProduct = await Product.findOne().sort({ sortOrder: -1 });
 				input.sortOrder = maxProduct ? (maxProduct.sortOrder || 0) + 1 : 1;
@@ -834,6 +871,13 @@ const resolvers = {
 		) => {
 			await connectToDatabase();
 			console.log("UPDATE PRODUCT INPUT:", input);
+
+			if (input.coverImage) {
+				input.coverImage = await uploadToCloudinaryIfNeeded(input.coverImage);
+				if (input.coverImage && (!input.images || input.images.length === 0)) {
+					input.images = [input.coverImage];
+				}
+			}
 
 			const oldProduct = await Product.findById(id);
 
