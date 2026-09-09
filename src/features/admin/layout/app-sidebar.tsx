@@ -21,7 +21,7 @@ import {
 	Truck,
 	Users,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { adminSignOut } from "@/features/admin/auth/admin-auth-actions";
 
 import {
 	Sidebar,
@@ -243,7 +243,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarFooter className="p-3">
 				<button
 					className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-500 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-red-600 group-data-[collapsible=icon]:p-2"
-					onClick={() => signOut({ callbackUrl: "/admin/login" })}
+					onClick={() => adminSignOut()}
 					title="Log out"
 				>
 					<LogOut className="h-4 w-4 shrink-0" />

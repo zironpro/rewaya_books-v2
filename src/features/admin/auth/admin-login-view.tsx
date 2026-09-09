@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AlertCircle, Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { adminSignIn } from "./admin-auth-actions";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -34,15 +34,16 @@ export function AdminLoginView() {
 		setError(null);
 
 		try {
-			const result = await signIn("credentials", {
-				redirect: false,
-				email,
-				password,
-				isAdminAttempt: "true",
-			});
+			const formData = new FormData();
+			formData.append("email", email);
+			formData.append("password", password);
+			formData.append("isAdminAttempt", "true");
+			formData.append("redirect", "false");
+
+			const result = await adminSignIn(formData);
 
 			if (result?.error) {
-				setError("Invalid email or password. Please try again.");
+				setError(result.error);
 			} else {
 				router.push("/admin");
 				router.refresh(); // Ensure layout session is re-evaluated

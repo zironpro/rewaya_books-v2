@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-import { auth } from "@/auth";
+import { auth } from "@/auth-admin";
 import { DashboardHeader } from "@/features/admin/dashboard/components/dashboard-header";
 import { AppSidebar } from "@/features/admin/layout/app-sidebar";
 
