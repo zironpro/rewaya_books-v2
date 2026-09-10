@@ -306,7 +306,7 @@ export function BooksView() {
 						} as any;
 
 						const existingBook = row.isbn
-							? books.find((b: any) => b.isbn === row.isbn)
+							? orderedBooks.find((b: any) => b.isbn === row.isbn)
 							: null;
 
 						if (existingBook) {
