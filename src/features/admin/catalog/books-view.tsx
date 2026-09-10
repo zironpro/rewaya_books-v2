@@ -40,7 +40,9 @@ import {
 	useGetProductsPaginatedQuery,
 	useUpdateProductMutation,
 	useUpdateProductsSortOrderMutation,
+	GetProductsDocument,
 } from "@/types/graphql";
+import { graphqlClient } from "@/lib/graphql-client";
 
 const initialBooks = [
 	{
@@ -365,39 +367,47 @@ export function BooksView() {
 		});
 	};
 
-	const handleExportBulk = () => {
-		// Use orderedBooks for export so it includes all loaded pages
-		const exportData = orderedBooks.map((book: any) => ({
-			id: book.id || "",
-			slug: book.slug || "",
-			title: book.title || "",
-			author: book.author || "",
-			isbn: book.isbn || "",
-			categoryName:
-				book.categories && book.categories.length > 0
-					? book.categories.map((c: any) => c.name).join(", ")
-					: book.categoryName || "",
-			price: book.price || 0,
-			stock: book.stock || 0,
-			language: book.language || "English",
-			ribbon: book.ribbon || "",
-			description: book.description || "",
-			publisher: book.publisher || "",
-			coverImage: book.coverImage || "",
-			sortOrder: book.sortOrder || 0,
-		}));
-		const csv = Papa.unparse(exportData);
-		const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.setAttribute(
-			"download",
-			`books_export_${new Date().toISOString().split("T")[0]}.csv`
-		);
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
+	const handleExportBulk = async () => {
+		try {
+			// Fetch all products instead of relying on the currently loaded paginated data
+			const data = await graphqlClient.request(GetProductsDocument);
+			const allBooks = data.products || [];
+			
+			const exportData = allBooks.map((book: any) => ({
+				id: book.id || "",
+				slug: book.slug || "",
+				title: book.title || "",
+				author: book.author || "",
+				isbn: book.isbn || "",
+				categoryName:
+					book.categories && book.categories.length > 0
+						? book.categories.map((c: any) => c.name).join(", ")
+						: book.categoryName || "",
+				price: book.price || 0,
+				stock: book.stock || 0,
+				language: book.language || "English",
+				ribbon: book.ribbon || "",
+				description: book.description || "",
+				publisher: book.publisher || "",
+				coverImage: book.coverImage || "",
+				sortOrder: book.sortOrder || 0,
+			}));
+			const csv = Papa.unparse(exportData);
+			const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.setAttribute(
+				"download",
+				`books_export_${new Date().toISOString().split("T")[0]}.csv`
+			);
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		} catch (error) {
+			console.error("Export error:", error);
+			alert("Failed to export all books. Please try again.");
+		}
 	};
 
 	// New book form state removed (moved to separate page)
