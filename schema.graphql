@@ -73,6 +73,7 @@ type ShippingConfig {
 	freeThreshold: Float!
 	deliveryTime: String!
 	expressDeliveryTime: String
+	isCodEnabled: Boolean
 	codFee: Float
 	status: String
 }
@@ -270,6 +271,7 @@ input ShippingConfigInput {
 	freeThreshold: Float!
 	deliveryTime: String!
 	expressDeliveryTime: String
+	isCodEnabled: Boolean
 	codFee: Float
 	status: String
 }

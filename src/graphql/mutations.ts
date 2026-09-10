@@ -187,6 +187,8 @@ export const CREATE_SHIPPING_CONFIG = gql`
       expressFee
       freeThreshold
       deliveryTime
+      expressDeliveryTime
+      isCodEnabled
       codFee
       status
     }
@@ -209,6 +211,8 @@ export const UPDATE_SHIPPING_CONFIG = gql`
       expressFee
       freeThreshold
       deliveryTime
+      expressDeliveryTime
+      isCodEnabled
       codFee
       status
     }

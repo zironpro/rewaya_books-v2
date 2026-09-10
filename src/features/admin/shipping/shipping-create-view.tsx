@@ -45,6 +45,7 @@ export function ShippingCreateView() {
 	const [deliveryTime, setDeliveryTime] = React.useState("2 - 3 Days");
 	const [expressDeliveryTime, setExpressDeliveryTime] =
 		React.useState("1 - 2 Days");
+	const [isCodEnabled, setIsCodEnabled] = React.useState(false);
 	const [codFee, setCodFee] = React.useState("15");
 	const [selectedCountries, setSelectedCountries] = React.useState<string[]>(
 		[]
@@ -72,6 +73,7 @@ export function ShippingCreateView() {
 				freeThreshold: Number.parseFloat(freeThreshold) || 0,
 				deliveryTime,
 				expressDeliveryTime,
+				isCodEnabled,
 				codFee: Number.parseFloat(codFee) || 0,
 				status: "Active",
 			};
@@ -193,16 +195,29 @@ export function ShippingCreateView() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<label className="font-semibold text-slate-700 dark:text-slate-300">
-								COD Fee (AED)
+							<label className="flex w-fit cursor-pointer items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
+								<input
+									checked={isCodEnabled}
+									className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+									onChange={(e) => setIsCodEnabled(e.target.checked)}
+									type="checkbox"
+								/>
+								Enable Cash on Delivery
 							</label>
-							<Input
-								className="h-10 text-sm"
-								onChange={(e) => setCodFee(e.target.value)}
-								placeholder="e.g. 15"
-								type="number"
-								value={codFee}
-							/>
+							{isCodEnabled && (
+								<div className="mt-2">
+									<label className="mb-2 block font-semibold text-slate-700 text-sm dark:text-slate-300">
+										COD Fee (AED)
+									</label>
+									<Input
+										className="h-10 text-sm"
+										onChange={(e) => setCodFee(e.target.value)}
+										placeholder="e.g. 15"
+										type="number"
+										value={codFee}
+									/>
+								</div>
+							)}
 						</div>
 					</div>
 

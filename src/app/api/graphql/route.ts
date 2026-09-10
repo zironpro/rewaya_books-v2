@@ -125,6 +125,7 @@ const typeDefs = gql`
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
+    isCodEnabled: Boolean
     codFee: Float
     status: String
   }
@@ -325,6 +326,7 @@ const typeDefs = gql`
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
+    isCodEnabled: Boolean
     codFee: Float
     status: String
   }

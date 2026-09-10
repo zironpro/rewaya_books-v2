@@ -128,7 +128,14 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 		) {
 			setShippingMethod("standard");
 		}
-	}, [country, matchedConfig, shippingMethod]);
+		if (
+			matchedConfig &&
+			!matchedConfig.isCodEnabled &&
+			paymentMethod === "cod"
+		) {
+			setPaymentMethod("stripe");
+		}
+	}, [country, matchedConfig, shippingMethod, paymentMethod]);
 
 	// Calculate Tax
 	const taxConfigs = taxData?.taxConfigs || [];
@@ -578,34 +585,36 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 								</div>
 							</label>
 
-							<label
-								className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-slate-200 hover:border-slate-300 dark:border-slate-700"}`}
-							>
-								<input
-									checked={paymentMethod === "cod"}
-									className="h-5 w-5 text-primary focus:ring-primary"
-									name="paymentMethod"
-									onChange={() => setPaymentMethod("cod")}
-									type="radio"
-									value="cod"
-								/>
-								<Truck
-									className={`h-6 w-6 ${paymentMethod === "cod" ? "text-primary" : "text-slate-400"}`}
-								/>
-								<div>
-									<div className="font-bold text-slate-900 dark:text-white">
-										Cash on Delivery
-									</div>
-									<div className="text-slate-500 text-sm">
-										Pay when your order arrives
-									</div>
-									{matchedConfig?.codFee > 0 && (
-										<div className="mt-1 font-semibold text-primary text-sm">
-											+ AED {matchedConfig.codFee.toFixed(2)} COD Fee
+							{matchedConfig?.isCodEnabled && (
+								<label
+									className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-slate-200 hover:border-slate-300 dark:border-slate-700"}`}
+								>
+									<input
+										checked={paymentMethod === "cod"}
+										className="h-5 w-5 text-primary focus:ring-primary"
+										name="paymentMethod"
+										onChange={() => setPaymentMethod("cod")}
+										type="radio"
+										value="cod"
+									/>
+									<Truck
+										className={`h-6 w-6 ${paymentMethod === "cod" ? "text-primary" : "text-slate-400"}`}
+									/>
+									<div>
+										<div className="font-bold text-slate-900 dark:text-white">
+											Cash on Delivery
 										</div>
-									)}
-								</div>
-							</label>
+										<div className="text-slate-500 text-sm">
+											Pay when your order arrives
+										</div>
+										{matchedConfig?.codFee > 0 && (
+											<div className="mt-1 font-semibold text-primary text-sm">
+												+ AED {matchedConfig.codFee.toFixed(2)} COD Fee
+											</div>
+										)}
+									</div>
+								</label>
+							)}
 						</div>
 					</section>
 				</div>

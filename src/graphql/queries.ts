@@ -312,6 +312,7 @@ export const GET_SHIPPING_CONFIGS = gql`
       freeThreshold
       deliveryTime
       expressDeliveryTime
+      isCodEnabled
       codFee
       status
     }
