@@ -202,6 +202,13 @@ type ProductConnection {
 	totalPages: Int!
 }
 
+type AdminDashboardStats {
+	totalSales: Float!
+	totalOrders: Int!
+	activeCustomers: Int!
+	totalBooks: Int!
+}
+
 type Query {
 	productsPaginated(
 		category: String
@@ -229,6 +236,7 @@ type Query {
 	popups: [Popup!]!
 	refundRequests: [RefundRequest!]!
 	refundRequest(id: ID!): RefundRequest
+	adminDashboardStats: AdminDashboardStats!
 }
 
 input ProductInput {

@@ -37,7 +37,7 @@ import {
 	useCreateProductMutation,
 	useDeleteProductMutation,
 	useGetCategoriesQuery,
-	useGetProductsQuery,
+	useGetProductsPaginatedQuery,
 	useUpdateProductMutation,
 	useUpdateProductsSortOrderMutation,
 } from "@/types/graphql";
@@ -116,27 +116,89 @@ const initialBooks = [
 ];
 
 export function BooksView() {
-	const { data, isLoading, refetch } = useGetProductsQuery();
-	const { data: categoriesData } = useGetCategoriesQuery();
-	const createProductMutation = useCreateProductMutation();
-	const deleteProductMutation = useDeleteProductMutation();
-	const updateProductMutation = useUpdateProductMutation();
-	const updateProductsSortOrderMutation = useUpdateProductsSortOrderMutation();
-
-	const books = data?.products || [];
-	const categories = categoriesData?.categories || [];
-
 	const [searchQuery, setSearchQuery] = React.useState("");
+	const [debouncedSearch, setDebouncedSearch] = React.useState("");
 	const [selectedCategory, setSelectedCategory] = React.useState("All");
 	const [sortBy, setSortBy] = React.useState("custom");
 	const [isSaved, setIsSaved] = React.useState(false);
 	const [page, setPage] = React.useState(1);
 	const [itemsPerPage, setItemsPerPage] = React.useState(50);
 
+	React.useEffect(() => {
+		const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	const { data, isLoading, refetch, isFetching } = useGetProductsPaginatedQuery(
+		{
+			page,
+			limit: itemsPerPage,
+			q: debouncedSearch || undefined,
+			category: selectedCategory === "All" ? undefined : selectedCategory,
+			sort: sortBy === "custom" ? undefined : sortBy,
+		}
+	);
+
+	// Reset page when filters change
+	React.useEffect(() => {
+		setPage(1);
+	}, [debouncedSearch, selectedCategory, sortBy]);
+
+	const { data: categoriesData } = useGetCategoriesQuery();
+	const createProductMutation = useCreateProductMutation();
+	const deleteProductMutation = useDeleteProductMutation();
+	const updateProductMutation = useUpdateProductMutation();
+	const updateProductsSortOrderMutation = useUpdateProductsSortOrderMutation();
+
+	const fetchedBooks = data?.productsPaginated?.items || [];
+	const totalCount = data?.productsPaginated?.totalCount || 0;
+	const totalPages = data?.productsPaginated?.totalPages || 0;
+	const categories = categoriesData?.categories || [];
+
 	// Drag and Drop States
 	const [orderedBooks, setOrderedBooks] = React.useState<any[]>([]);
 	const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
 	const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+	const observerTarget = React.useRef(null);
+
+	React.useEffect(() => {
+		if (fetchedBooks.length > 0) {
+			if (page === 1) {
+				setOrderedBooks([...fetchedBooks]);
+			} else {
+				setOrderedBooks((prev) => {
+					const existingIds = new Set(prev.map((b) => b.id));
+					const newBooks = fetchedBooks.filter(
+						(b: any) => !existingIds.has(b.id)
+					);
+					return [...prev, ...newBooks];
+				});
+			}
+		} else if (page === 1) {
+			setOrderedBooks([]);
+		}
+	}, [fetchedBooks, page]);
+
+	React.useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && page < totalPages && !isFetching) {
+					setPage((p) => p + 1);
+				}
+			},
+			{ threshold: 1.0 }
+		);
+
+		if (observerTarget.current) {
+			observer.observe(observerTarget.current);
+		}
+
+		return () => {
+			if (observerTarget.current) {
+				observer.unobserve(observerTarget.current);
+			}
+		};
+	}, [page, totalPages, isFetching]);
 
 	const [isUploadingBulk, setIsUploadingBulk] = React.useState(false);
 	const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -304,7 +366,8 @@ export function BooksView() {
 	};
 
 	const handleExportBulk = () => {
-		const exportData = books.map((book: any) => ({
+		// Use orderedBooks for export so it includes all loaded pages
+		const exportData = orderedBooks.map((book: any) => ({
 			id: book.id || "",
 			slug: book.slug || "",
 			title: book.title || "",
@@ -336,20 +399,6 @@ export function BooksView() {
 		link.click();
 		document.body.removeChild(link);
 	};
-
-	React.useEffect(() => {
-		if (books.length > 0 && orderedBooks.length === 0) {
-			setOrderedBooks([...books]);
-		} else if (books.length > 0 && books.length !== orderedBooks.length) {
-			// Update orderedBooks if new books were added/deleted
-			const existingIds = new Set(orderedBooks.map((b) => b.id));
-			const newBooks = books.filter((b) => !existingIds.has(b.id));
-			const activeBooks = orderedBooks.filter((ob) =>
-				books.some((b) => b.id === ob.id)
-			);
-			setOrderedBooks([...activeBooks, ...newBooks]);
-		}
-	}, [books]);
 
 	// New book form state removed (moved to separate page)
 
@@ -468,26 +517,8 @@ export function BooksView() {
 	};
 
 	const getProcessedBooks = () => {
-		let result = orderedBooks.filter((book) => {
-			const search = searchQuery.toLowerCase();
-			const matchesSearch =
-				book.title?.toLowerCase().includes(search) ||
-				book.author?.toLowerCase().includes(search) ||
-				book.isbn?.includes(searchQuery);
-			const matchesCategory =
-				selectedCategory === "All" || book.categoryName === selectedCategory;
-			return matchesSearch && matchesCategory;
-		});
-
-		if (sortBy === "price-asc") {
-			result = [...result].sort((a, b) => a.price - b.price);
-		} else if (sortBy === "price-desc") {
-			result = [...result].sort((a, b) => b.price - a.price);
-		} else if (sortBy === "stock") {
-			result = [...result].sort((a, b) => (b.stock || 0) - (a.stock || 0));
-		}
-
-		return result;
+		// Sorting and filtering are now handled by the backend!
+		return orderedBooks;
 	};
 
 	const processedBooks = getProcessedBooks();
@@ -670,203 +701,168 @@ export function BooksView() {
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-							{processedBooks
-								.slice((page - 1) * itemsPerPage, page * itemsPerPage)
-								.map((book, pIndex) => {
-									const index = (page - 1) * itemsPerPage + pIndex;
-									const isDragging = draggedIndex === index;
-									const isDragOver =
-										dragOverIndex === index && draggedIndex !== index;
+							{processedBooks.map((book, index) => {
+								const isDragging = draggedIndex === index;
+								const isDragOver =
+									dragOverIndex === index && draggedIndex !== index;
 
-									return (
-										<tr
-											className={`transition-all ${
-												isDragging
-													? "border-2 border-primary border-dashed bg-primary/5 opacity-30"
-													: isDragOver
-														? "border-primary border-t-2 bg-primary/10 shadow-md"
-														: "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-											}`}
-											draggable={sortBy === "custom"}
-											key={book.id}
-											onDragEnd={() => {
-												setDraggedIndex(null);
-												setDragOverIndex(null);
-											}}
-											onDragLeave={() => {
-												if (dragOverIndex === index) setDragOverIndex(null);
-											}}
-											onDragOver={(e) => {
-												e.preventDefault();
-												setDragOverIndex(index);
-												e.dataTransfer.dropEffect = "move";
-											}}
-											onDragStart={(e) => {
-												setDraggedIndex(index);
-												e.dataTransfer.setData("text/plain", index.toString());
-												e.dataTransfer.effectAllowed = "move";
-											}}
-											onDrop={(e) => {
-												e.preventDefault();
-												if (draggedIndex !== null) {
-													reorderList(draggedIndex, index);
-												}
-												setDraggedIndex(null);
-												setDragOverIndex(null);
-											}}
-										>
-											<td className="px-3 py-3">
-												<div className="font-semibold text-slate-900 dark:text-white">
-													{book.title}
-												</div>
-												<div className="text-[11px] text-slate-500">
-													{book.author}
-												</div>
-											</td>
-											<td className="px-3 py-3">
-												<div className="font-semibold text-slate-900 dark:text-white">
-													{book.isbn || "N/A"}
-												</div>
-											</td>
-											<td className="px-3 py-3">
-												<div className="font-bold text-slate-900 dark:text-white">
-													AED {book.price.toFixed(2)}
-												</div>
-												<div className="text-[10px] text-slate-400 line-through">
-													AED {book.originalPrice?.toFixed(2) || "N/A"}
-												</div>
-											</td>
+								return (
+									<tr
+										className={`transition-all ${
+											isDragging
+												? "border-2 border-primary border-dashed bg-primary/5 opacity-30"
+												: isDragOver
+													? "border-primary border-t-2 bg-primary/10 shadow-md"
+													: "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+										}`}
+										draggable={sortBy === "custom"}
+										key={book.id}
+										onDragEnd={() => {
+											setDraggedIndex(null);
+											setDragOverIndex(null);
+										}}
+										onDragLeave={() => {
+											if (dragOverIndex === index) setDragOverIndex(null);
+										}}
+										onDragOver={(e) => {
+											e.preventDefault();
+											setDragOverIndex(index);
+											e.dataTransfer.dropEffect = "move";
+										}}
+										onDragStart={(e) => {
+											setDraggedIndex(index);
+											e.dataTransfer.setData("text/plain", index.toString());
+											e.dataTransfer.effectAllowed = "move";
+										}}
+										onDrop={(e) => {
+											e.preventDefault();
+											if (draggedIndex !== null) {
+												reorderList(draggedIndex, index);
+											}
+											setDraggedIndex(null);
+											setDragOverIndex(null);
+										}}
+									>
+										<td className="px-3 py-3">
+											<div className="font-semibold text-slate-900 dark:text-white">
+												{book.title}
+											</div>
+											<div className="text-[11px] text-slate-500">
+												{book.author}
+											</div>
+										</td>
+										<td className="px-3 py-3">
+											<div className="font-semibold text-slate-900 dark:text-white">
+												{book.isbn || "N/A"}
+											</div>
+										</td>
+										<td className="px-3 py-3">
+											<div className="font-bold text-slate-900 dark:text-white">
+												AED {book.price.toFixed(2)}
+											</div>
+											<div className="text-[10px] text-slate-400 line-through">
+												AED {book.originalPrice?.toFixed(2) || "N/A"}
+											</div>
+										</td>
 
-											<td className="px-3 py-3">
-												{(() => {
-													const stockCount = book.stock || 0;
-													const isOutOfStock = stockCount === 0;
-													const isLowStock = stockCount > 0 && stockCount <= 20;
-													const badgeVariant = isOutOfStock
-														? "destructive"
-														: isLowStock
-															? "secondary"
-															: "success";
-													const badgeText = isOutOfStock
-														? "Out of Stock"
-														: isLowStock
-															? "Low Stock"
-															: "In Stock";
-													return (
-														<Badge
-															className="px-2 py-0 text-[10px]"
-															variant={badgeVariant}
+										<td className="px-3 py-3">
+											{(() => {
+												const stockCount = book.stock || 0;
+												const isOutOfStock = stockCount === 0;
+												const isLowStock = stockCount > 0 && stockCount <= 20;
+												const badgeVariant = isOutOfStock
+													? "destructive"
+													: isLowStock
+														? "secondary"
+														: "success";
+												const badgeText = isOutOfStock
+													? "Out of Stock"
+													: isLowStock
+														? "Low Stock"
+														: "In Stock";
+												return (
+													<Badge
+														className="px-2 py-0 text-[10px]"
+														variant={badgeVariant}
+													>
+														{badgeText}
+													</Badge>
+												);
+											})()}
+										</td>
+										<td className="px-3 py-3 text-right">
+											<div className="flex items-center justify-end gap-1">
+												{sortBy === "custom" && (
+													<>
+														<Button
+															className="text-slate-500 hover:bg-primary/10 hover:text-primary"
+															onClick={() => moveToTop(index)}
+															size="sm"
+															title="Move to Top"
+															variant="ghost"
 														>
-															{badgeText}
-														</Badge>
-													);
-												})()}
-											</td>
-											<td className="px-3 py-3 text-right">
-												<div className="flex items-center justify-end gap-1">
-													{sortBy === "custom" && (
-														<>
-															<Button
-																className="text-slate-500 hover:bg-primary/10 hover:text-primary"
-																onClick={() => moveToTop(index)}
-																size="sm"
-																title="Move to Top"
-																variant="ghost"
-															>
-																<ArrowUpToLine className="h-4 w-4" />
-															</Button>
-															<Button
-																className="text-slate-500 hover:bg-primary/10 hover:text-primary"
-																onClick={() => moveToBottom(index)}
-																size="sm"
-																title="Move to Bottom"
-																variant="ghost"
-															>
-																<ArrowDownToLine className="h-4 w-4" />
-															</Button>
-														</>
-													)}
+															<ArrowUpToLine className="h-4 w-4" />
+														</Button>
+														<Button
+															className="text-slate-500 hover:bg-primary/10 hover:text-primary"
+															onClick={() => moveToBottom(index)}
+															size="sm"
+															title="Move to Bottom"
+															variant="ghost"
+														>
+															<ArrowDownToLine className="h-4 w-4" />
+														</Button>
+													</>
+												)}
 
-													<Button
-														asChild
-														className="text-slate-500 hover:bg-primary/10 hover:text-primary"
-														size="sm"
-														title="View Full Details"
-														variant="ghost"
-													>
-														<Link href={`/admin/catalog/${book.slug}`}>
-															<Eye className="h-4 w-4" />
-														</Link>
-													</Button>
+												<Button
+													asChild
+													className="text-slate-500 hover:bg-primary/10 hover:text-primary"
+													size="sm"
+													title="View Full Details"
+													variant="ghost"
+												>
+													<Link href={`/admin/catalog/${book.slug}`}>
+														<Eye className="h-4 w-4" />
+													</Link>
+												</Button>
 
-													<Button
-														className="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
-														disabled={deleteProductMutation.isPending}
-														onClick={() => handleDeleteBook(book.id)}
-														size="sm"
-														variant="ghost"
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-											</td>
-										</tr>
-									);
-								})}
+												<Button
+													className="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+													disabled={deleteProductMutation.isPending}
+													onClick={() => handleDeleteBook(book.id)}
+													size="sm"
+													variant="ghost"
+												>
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</div>
+										</td>
+									</tr>
+								);
+							})}
+							{page < totalPages && (
+								<tr ref={observerTarget}>
+									<td
+										className="py-6 text-center text-slate-500 text-sm"
+										colSpan={8}
+									>
+										{isFetching
+											? "Loading more books..."
+											: "Scroll to load more"}
+									</td>
+								</tr>
+							)}
 						</tbody>
 					</table>
 
-					{/* Pagination Controls */}
-					{processedBooks.length > 0 && (
+					{/* Stats / Actions Footer */}
+					{totalCount > 0 && (
 						<div className="mt-4 flex items-center justify-between border-slate-200 border-t pt-4 dark:border-slate-800">
 							<div className="flex items-center gap-4">
 								<div className="text-slate-500 text-sm">
-									Showing {(page - 1) * itemsPerPage + 1} to{" "}
-									{Math.min(page * itemsPerPage, processedBooks.length)} of{" "}
-									{processedBooks.length} books
+									Loaded {orderedBooks.length} of {totalCount} books
 								</div>
-								<div className="flex items-center gap-2 text-slate-500 text-sm">
-									<span>Show:</span>
-									<select
-										className="h-8 rounded-md border border-slate-200 bg-transparent px-2 text-sm dark:border-slate-800 dark:bg-transparent"
-										onChange={(e) => {
-											setItemsPerPage(Number(e.target.value));
-											setPage(1);
-										}}
-										value={itemsPerPage}
-									>
-										<option value={50}>50</option>
-										<option value={100}>100</option>
-										<option value={10000}>All</option>
-									</select>
-								</div>
-							</div>
-							<div className="flex gap-2">
-								<Button
-									disabled={page === 1}
-									onClick={() => setPage((p) => Math.max(1, p - 1))}
-									size="sm"
-									variant="outline"
-								>
-									Previous
-								</Button>
-								<Button
-									disabled={
-										page >= Math.ceil(processedBooks.length / itemsPerPage)
-									}
-									onClick={() =>
-										setPage((p) =>
-											Math.min(
-												Math.ceil(processedBooks.length / itemsPerPage),
-												p + 1
-											)
-										)
-									}
-									size="sm"
-									variant="outline"
-								>
-									Next
-								</Button>
 							</div>
 						</div>
 					)}

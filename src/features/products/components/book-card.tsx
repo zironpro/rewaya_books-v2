@@ -26,22 +26,23 @@ export function BookCard({
 	stock,
 }: BookProps & { coverImage?: string }) {
 	const productHref = `/product/${slug ?? id}`;
-	const finalImage =
-		image ||
-		coverImage ||
-		"https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400&auto=format&fit=crop";
+	const finalImage = image || coverImage || "";
 
 	return (
 		<div className="group relative">
 			<Link className="absolute inset-0 z-10" href={productHref} />
-			<div className="relative mb-4 aspect-4/5 overflow-hidden rounded-md border bg-card group-hover:shadow-md">
-				<Image
-					alt={title}
-					className="object-contain transition-transform duration-700 group-hover:scale-105"
-					fill
-					sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-					src={finalImage}
-				/>
+			<div className="relative mb-4 aspect-4/5 overflow-hidden rounded-md border bg-card group-hover:shadow-md flex items-center justify-center bg-muted/10">
+				{finalImage ? (
+					<Image
+						alt={title}
+						className="object-contain transition-transform duration-700 group-hover:scale-105"
+						fill
+						sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+						src={finalImage}
+					/>
+				) : (
+					<span className="text-sm text-muted-foreground">No Image</span>
+				)}
 
 				<div className="absolute top-4 right-4 z-20 flex flex-col gap-2 opacity-0 transition-opacity group-hover:opacity-100">
 					<WishlistToggleButton

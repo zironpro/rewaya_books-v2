@@ -257,6 +257,13 @@ const typeDefs = gql`
     totalPages: Int!
   }
 
+  type AdminDashboardStats {
+    totalSales: Float!
+    totalOrders: Int!
+    activeCustomers: Int!
+    totalBooks: Int!
+  }
+
   type Query {
     productsPaginated(
       category: String
@@ -284,6 +291,7 @@ const typeDefs = gql`
     popups: [Popup!]!
     refundRequests: [RefundRequest!]!
     refundRequest(id: ID!): RefundRequest
+    adminDashboardStats: AdminDashboardStats!
   }
 
   input ProductInput {
@@ -489,6 +497,27 @@ const typeDefs = gql`
 // Define the resolvers
 const resolvers = {
 	Query: {
+		adminDashboardStats: async () => {
+			await connectToDatabase();
+			const [salesResult, ordersCount, usersCount, productsCount] = await Promise.all([
+				Order.aggregate([
+					{ $match: { isPaid: true } },
+					{ $group: { _id: null, total: { $sum: "$total" } } }
+				]),
+				Order.countDocuments(),
+				User.countDocuments(),
+				Product.countDocuments()
+			]);
+			
+			const totalSales = salesResult.length > 0 ? salesResult[0].total : 0;
+			
+			return {
+				totalSales,
+				totalOrders: ordersCount,
+				activeCustomers: usersCount,
+				totalBooks: productsCount
+			};
+		},
 		productsPaginated: async (_: any, args: any) => {
 			await connectToDatabase();
 			const { category, q, sort, page = 1, limit = 25, customOrderIds } = args;

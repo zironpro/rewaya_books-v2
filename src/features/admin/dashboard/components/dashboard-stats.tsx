@@ -8,27 +8,19 @@ import {
 	Users,
 } from "lucide-react";
 
-import {
-	useGetOrdersQuery,
-	useGetProductsQuery,
-	useGetUsersQuery,
-} from "@/types/graphql";
+import { useGetAdminDashboardStatsQuery } from "@/types/graphql";
 
 export function DashboardStats() {
-	const { data: ordersData } = useGetOrdersQuery();
-	const { data: usersData } = useGetUsersQuery();
-	const { data: productsData } = useGetProductsQuery();
+	const { data, isLoading } = useGetAdminDashboardStatsQuery();
 
-	const orders = ordersData?.orders || [];
-	const users = usersData?.users || [];
-	const products = productsData?.products || [];
+	const statsData = data?.adminDashboardStats || {
+		totalSales: 0,
+		totalOrders: 0,
+		activeCustomers: 0,
+		totalBooks: 0,
+	};
 
-	const totalSales = orders
-		.filter((o) => o.isPaid)
-		.reduce((sum, o) => sum + o.total, 0);
-	const totalOrders = orders.length;
-	const activeCustomers = users.length;
-	const totalBooks = products.length;
+	const { totalSales, totalOrders, activeCustomers, totalBooks } = statsData;
 
 	const stats = [
 		{

@@ -1,5 +1,16 @@
 import { gql } from "graphql-tag";
 
+export const GetAdminDashboardStats = gql`
+	query GetAdminDashboardStats {
+		adminDashboardStats {
+			totalSales
+			totalOrders
+			activeCustomers
+			totalBooks
+		}
+	}
+`;
+
 export const GetProductsPaginated = gql`
 	query GetProductsPaginated(
 		$category: String
