@@ -106,6 +106,7 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 		if (matchedConfig) {
 			standardShippingCost = matchedConfig.standardFee;
 			if (
+				matchedConfig.isFreeDeliveryEnabled &&
 				matchedConfig.freeThreshold > 0 &&
 				baseCartTotal >= matchedConfig.freeThreshold
 			) {

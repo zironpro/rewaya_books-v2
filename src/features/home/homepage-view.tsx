@@ -91,12 +91,13 @@ export const HomepageView = ({
 							Dubai, United Arab Emirates
 						</p> */}
 						<Button
+							asChild
 							className="mt-4 md:mt-8"
-							nativeButton={false}
-							render={<Link href="/shop" />}
 							size="lg"
 						>
-							Browse the collection
+							<Link href="/shop">
+								Browse the collection
+							</Link>
 						</Button>
 					</div>
 				</div>

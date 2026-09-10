@@ -93,7 +93,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 				!sort && customOrderIds.length > 0 ? customOrderIds : undefined
 			}
 			searchQuery={q}
-			totalItems={totalCount}
+			totalCount={totalCount}
 			totalPages={totalPages}
 		/>
 	);

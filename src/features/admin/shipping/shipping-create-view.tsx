@@ -41,6 +41,7 @@ export function ShippingCreateView() {
 	const [standardFee, setStandardFee] = React.useState("20");
 	const [expressFee, setExpressFee] = React.useState("40");
 	const [isExpressEnabled, setIsExpressEnabled] = React.useState(false);
+	const [isFreeDeliveryEnabled, setIsFreeDeliveryEnabled] = React.useState(false);
 	const [freeThreshold, setFreeThreshold] = React.useState("300");
 	const [deliveryTime, setDeliveryTime] = React.useState("2 - 3 Days");
 	const [expressDeliveryTime, setExpressDeliveryTime] =
@@ -70,6 +71,7 @@ export function ShippingCreateView() {
 				standardFee: Number.parseFloat(standardFee) || 0,
 				expressFee: Number.parseFloat(expressFee) || 0,
 				isExpressEnabled,
+				isFreeDeliveryEnabled,
 				freeThreshold: Number.parseFloat(freeThreshold) || 0,
 				deliveryTime,
 				expressDeliveryTime,
@@ -170,15 +172,28 @@ export function ShippingCreateView() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<label className="font-semibold text-slate-700 dark:text-slate-300">
-								Free Delivery Over (AED)
+							<label className="flex w-fit cursor-pointer items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
+								<input
+									checked={isFreeDeliveryEnabled}
+									className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+									onChange={(e) => setIsFreeDeliveryEnabled(e.target.checked)}
+									type="checkbox"
+								/>
+								Enable Free Delivery
 							</label>
-							<Input
-								className="h-10 text-sm"
-								onChange={(e) => setFreeThreshold(e.target.value)}
-								type="number"
-								value={freeThreshold}
-							/>
+							{isFreeDeliveryEnabled && (
+								<div className="mt-2">
+									<label className="mb-2 block font-semibold text-slate-700 text-sm dark:text-slate-300">
+										Free Delivery Over (AED)
+									</label>
+									<Input
+										className="h-10 text-sm"
+										onChange={(e) => setFreeThreshold(e.target.value)}
+										type="number"
+										value={freeThreshold}
+									/>
+								</div>
+							)}
 						</div>
 					</div>
 

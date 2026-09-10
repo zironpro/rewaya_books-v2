@@ -626,6 +626,7 @@ export type ShippingConfig = {
   id: Scalars['ID']['output'];
   isCodEnabled?: Maybe<Scalars['Boolean']['output']>;
   isExpressEnabled?: Maybe<Scalars['Boolean']['output']>;
+  isFreeDeliveryEnabled?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   standardFee: Scalars['Float']['output'];
   status?: Maybe<Scalars['String']['output']>;
@@ -640,6 +641,7 @@ export type ShippingConfigInput = {
   freeThreshold: Scalars['Float']['input'];
   isCodEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   isExpressEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  isFreeDeliveryEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   standardFee: Scalars['Float']['input'];
   status?: InputMaybe<Scalars['String']['input']>;
@@ -805,7 +807,7 @@ export type CreateShippingConfigMutationVariables = Exact<{
 }>;
 
 
-export type CreateShippingConfigMutation = { createShippingConfig: { id: string, name: string, countries: Array<string>, standardFee: number, expressFee: number, freeThreshold: number, deliveryTime: string, expressDeliveryTime: string | null, isCodEnabled: boolean | null, codFee: number | null, status: string | null } };
+export type CreateShippingConfigMutation = { createShippingConfig: { id: string, name: string, countries: Array<string>, standardFee: number, expressFee: number, isFreeDeliveryEnabled: boolean | null, freeThreshold: number, deliveryTime: string, expressDeliveryTime: string | null, isCodEnabled: boolean | null, codFee: number | null, status: string | null } };
 
 export type DeleteShippingConfigMutationVariables = Exact<{
   id: string | number;
@@ -820,7 +822,7 @@ export type UpdateShippingConfigMutationVariables = Exact<{
 }>;
 
 
-export type UpdateShippingConfigMutation = { updateShippingConfig: { id: string, name: string, countries: Array<string>, standardFee: number, expressFee: number, freeThreshold: number, deliveryTime: string, expressDeliveryTime: string | null, isCodEnabled: boolean | null, codFee: number | null, status: string | null } };
+export type UpdateShippingConfigMutation = { updateShippingConfig: { id: string, name: string, countries: Array<string>, standardFee: number, expressFee: number, isFreeDeliveryEnabled: boolean | null, freeThreshold: number, deliveryTime: string, expressDeliveryTime: string | null, isCodEnabled: boolean | null, codFee: number | null, status: string | null } };
 
 export type CreateTaxConfigMutationVariables = Exact<{
   input: TaxConfigInput;
@@ -973,7 +975,7 @@ export type GetUsersQuery = { users: Array<{ id: string, name: string | null, em
 export type GetShippingConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetShippingConfigsQuery = { shippingConfigs: Array<{ id: string, name: string, countries: Array<string>, standardFee: number, expressFee: number, isExpressEnabled: boolean | null, freeThreshold: number, deliveryTime: string, expressDeliveryTime: string | null, isCodEnabled: boolean | null, codFee: number | null, status: string | null }> };
+export type GetShippingConfigsQuery = { shippingConfigs: Array<{ id: string, name: string, countries: Array<string>, standardFee: number, expressFee: number, isExpressEnabled: boolean | null, isFreeDeliveryEnabled: boolean | null, freeThreshold: number, deliveryTime: string, expressDeliveryTime: string | null, isCodEnabled: boolean | null, codFee: number | null, status: string | null }> };
 
 export type GetTaxConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1429,6 +1431,7 @@ export const CreateShippingConfigDocument = new TypedDocumentString(`
     countries
     standardFee
     expressFee
+    isFreeDeliveryEnabled
     freeThreshold
     deliveryTime
     expressDeliveryTime
@@ -1479,6 +1482,7 @@ export const UpdateShippingConfigDocument = new TypedDocumentString(`
     countries
     standardFee
     expressFee
+    isFreeDeliveryEnabled
     freeThreshold
     deliveryTime
     expressDeliveryTime
@@ -2237,6 +2241,7 @@ export const GetShippingConfigsDocument = new TypedDocumentString(`
     standardFee
     expressFee
     isExpressEnabled
+    isFreeDeliveryEnabled
     freeThreshold
     deliveryTime
     expressDeliveryTime

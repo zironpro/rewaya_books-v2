@@ -70,6 +70,7 @@ type ShippingConfig {
 	standardFee: Float!
 	expressFee: Float!
 	isExpressEnabled: Boolean
+	isFreeDeliveryEnabled: Boolean
 	freeThreshold: Float!
 	deliveryTime: String!
 	expressDeliveryTime: String
@@ -269,6 +270,7 @@ input ShippingConfigInput {
 	standardFee: Float!
 	expressFee: Float!
 	isExpressEnabled: Boolean
+	isFreeDeliveryEnabled: Boolean
 	freeThreshold: Float!
 	deliveryTime: String!
 	expressDeliveryTime: String

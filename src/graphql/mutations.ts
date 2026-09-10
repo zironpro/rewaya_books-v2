@@ -185,6 +185,7 @@ export const CREATE_SHIPPING_CONFIG = gql`
       countries
       standardFee
       expressFee
+      isFreeDeliveryEnabled
       freeThreshold
       deliveryTime
       expressDeliveryTime
@@ -209,6 +210,7 @@ export const UPDATE_SHIPPING_CONFIG = gql`
       countries
       standardFee
       expressFee
+      isFreeDeliveryEnabled
       freeThreshold
       deliveryTime
       expressDeliveryTime

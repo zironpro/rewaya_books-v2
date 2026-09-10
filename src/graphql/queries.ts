@@ -309,6 +309,7 @@ export const GET_SHIPPING_CONFIGS = gql`
       standardFee
       expressFee
       isExpressEnabled
+      isFreeDeliveryEnabled
       freeThreshold
       deliveryTime
       expressDeliveryTime

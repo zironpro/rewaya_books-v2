@@ -204,7 +204,7 @@ export function ShippingView() {
 							</div>
 
 							{/* Rate Rules Grid */}
-							<div className="grid grid-cols-3 gap-2 border-slate-100 border-t pt-3 dark:border-slate-800">
+							<div className="grid grid-cols-2 gap-2 border-slate-100 border-t pt-3 md:grid-cols-4 dark:border-slate-800">
 								<div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/50">
 									<div className="text-[10px] text-slate-500">
 										Standard Rate
@@ -234,7 +234,28 @@ export function ShippingView() {
 										Free Delivery Over
 									</div>
 									<div className="font-extrabold text-base text-emerald-600 dark:text-emerald-400">
-										AED {zone.freeThreshold.toFixed(2)}
+										{zone.isFreeDeliveryEnabled ? (
+											`AED ${zone.freeThreshold.toFixed(2)}`
+										) : (
+											<span className="font-normal text-xs opacity-70">
+												Disabled
+											</span>
+										)}
+									</div>
+								</div>
+
+								<div className="rounded-lg border border-amber-500/20 bg-amber-50/60 p-2.5 text-center dark:bg-amber-950/20">
+									<div className="font-semibold text-[10px] text-amber-600 dark:text-amber-400">
+										Cash on Delivery
+									</div>
+									<div className="font-extrabold text-base text-amber-600 dark:text-amber-400">
+										{zone.isCodEnabled ? (
+											`AED ${zone.codFee?.toFixed(2) || "0.00"}`
+										) : (
+											<span className="font-normal text-xs opacity-70">
+												Disabled
+											</span>
+										)}
 									</div>
 								</div>
 							</div>

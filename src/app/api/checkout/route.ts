@@ -141,6 +141,7 @@ export async function POST(request: Request) {
 				codFee = matchedConfig.codFee || 0;
 				let standardCost = matchedConfig.standardFee || 0;
 				if (
+					matchedConfig.isFreeDeliveryEnabled &&
 					matchedConfig.freeThreshold > 0 &&
 					cartTotal >= matchedConfig.freeThreshold
 				) {

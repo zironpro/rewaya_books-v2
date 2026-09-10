@@ -122,6 +122,7 @@ const typeDefs = gql`
     standardFee: Float!
     expressFee: Float!
     isExpressEnabled: Boolean
+    isFreeDeliveryEnabled: Boolean
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String
@@ -324,6 +325,7 @@ const typeDefs = gql`
     standardFee: Float!
     expressFee: Float!
     isExpressEnabled: Boolean
+    isFreeDeliveryEnabled: Boolean
     freeThreshold: Float!
     deliveryTime: String!
     expressDeliveryTime: String

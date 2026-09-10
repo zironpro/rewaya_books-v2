@@ -187,7 +187,7 @@ export const ShopView = ({
 
 						const { category } = item;
 						const isActive = activeCategory === category.slug;
-						const count = category.productCount ?? 0;
+						const count = category.count ?? 0;
 
 						return (
 							<Link

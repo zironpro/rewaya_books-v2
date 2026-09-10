@@ -136,13 +136,14 @@ export function HeroCarousel({ banners = [] }: HeroCarouselProps) {
 							transition={{ delay: 0.3 }}
 						>
 							<Button
+								asChild
 								className="md:hover:px-6"
 								data-track="banner"
-								nativeButton={false}
-								render={<Link href={slide.href} />}
 								size="lg"
 							>
-								{slide.cta} <ArrowRight className="ml-2" size={16} />
+								<Link href={slide.href}>
+									{slide.cta} <ArrowRight className="ml-2" size={16} />
+								</Link>
 							</Button>
 						</motion.div>
 					</div>
