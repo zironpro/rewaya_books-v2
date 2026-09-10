@@ -23,6 +23,10 @@ const couponSchema = new Schema(
 			type: Number,
 			default: 0,
 		},
+		isFirstOrder: {
+			type: Boolean,
+			default: false,
+		},
 		maxUses: {
 			type: Number,
 			default: null,

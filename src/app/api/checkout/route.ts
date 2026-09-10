@@ -102,7 +102,15 @@ export async function POST(request: Request) {
 				const isMinMet =
 					!coupon.minPurchase || baseCartTotal >= coupon.minPurchase;
 
-				if (!isExpired && !isLimitReached && isMinMet) {
+				let isFirstOrderMet = true;
+				if (coupon.isFirstOrder) {
+					const existingOrder = await Order.findOne({ email: contact?.email || authEmail || "guest@example.com" }).lean();
+					if (existingOrder) {
+						isFirstOrderMet = false;
+					}
+				}
+
+				if (!isExpired && !isLimitReached && isMinMet && isFirstOrderMet) {
 					appliedCouponDoc = coupon;
 					if (coupon.discountType === "percentage") {
 						cartTotal = Math.max(

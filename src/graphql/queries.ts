@@ -411,6 +411,7 @@ export const GET_COUPONS = gql`
       discountType
       discountAmount
       minPurchase
+      isFirstOrder
       maxUses
       usedCount
       expiryDate
@@ -427,6 +428,7 @@ export const GET_COUPON = gql`
       discountType
       discountAmount
       minPurchase
+      isFirstOrder
       maxUses
       usedCount
       expiryDate
@@ -436,13 +438,14 @@ export const GET_COUPON = gql`
 `;
 
 export const VALIDATE_COUPON = gql`
-  query ValidateCoupon($code: String!, $cartTotal: Float!) {
-    validateCoupon(code: $code, cartTotal: $cartTotal) {
+  query ValidateCoupon($code: String!, $cartTotal: Float!, $email: String) {
+    validateCoupon(code: $code, cartTotal: $cartTotal, email: $email) {
       id
       code
       discountType
       discountAmount
       minPurchase
+      isFirstOrder
     }
   }
 `;

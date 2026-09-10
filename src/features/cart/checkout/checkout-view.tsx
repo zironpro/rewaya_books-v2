@@ -174,6 +174,7 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 			const data: any = await graphqlClient.request(VALIDATE_COUPON, {
 				code: couponCode,
 				cartTotal: baseCartTotal,
+				email: email || user?.email || undefined,
 			});
 			if (data.validateCoupon) {
 				setAppliedCoupon(data.validateCoupon);

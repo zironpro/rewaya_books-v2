@@ -24,6 +24,7 @@ export function CouponCreateView() {
 		discountType: "percentage",
 		discountAmount: "",
 		minPurchase: "",
+		isFirstOrder: false,
 		maxUses: "",
 		expiryDate: "",
 		status: "Active",
@@ -43,6 +44,7 @@ export function CouponCreateView() {
 					minPurchase: formData.minPurchase
 						? Number.parseFloat(formData.minPurchase)
 						: null,
+					isFirstOrder: formData.isFirstOrder,
 					maxUses: formData.maxUses ? Number.parseInt(formData.maxUses) : null,
 					expiryDate: formData.expiryDate
 						? new Date(formData.expiryDate).toISOString()
@@ -185,6 +187,24 @@ export function CouponCreateView() {
 							<option value="Inactive">Inactive</option>
 						</select>
 					</div>
+				</div>
+
+				<div className="border-t pt-4">
+					<label className="flex w-fit cursor-pointer items-center gap-2 font-semibold text-sm">
+						<input
+							checked={formData.isFirstOrder}
+							className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-900"
+							onChange={(e) =>
+								setFormData({ ...formData, isFirstOrder: e.target.checked })
+							}
+							type="checkbox"
+						/>
+						Valid for First-Time Orders Only
+					</label>
+					<p className="mt-1 text-stone-500 text-xs">
+						If checked, customers must provide an email and have no previous
+						orders to use this coupon.
+					</p>
 				</div>
 
 				<div className="flex justify-end pt-4">

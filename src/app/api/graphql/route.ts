@@ -146,6 +146,7 @@ const typeDefs = gql`
     discountType: String!
     discountAmount: Float!
     minPurchase: Float
+    isFirstOrder: Boolean
     maxUses: Int
     usedCount: Int
     expiryDate: String
@@ -288,7 +289,7 @@ const typeDefs = gql`
     categories: [Category!]!
     coupons: [Coupon!]!
     coupon(id: ID!): Coupon
-    validateCoupon(code: String!, cartTotal: Float!): Coupon
+    validateCoupon(code: String!, cartTotal: Float!, email: String): Coupon
     popups: [Popup!]!
     refundRequests: [RefundRequest!]!
     refundRequest(id: ID!): RefundRequest
@@ -345,6 +346,7 @@ const typeDefs = gql`
     discountType: String!
     discountAmount: Float!
     minPurchase: Float
+    isFirstOrder: Boolean
     maxUses: Int
     expiryDate: String
     status: String
@@ -711,7 +713,7 @@ const resolvers = {
 		},
 		validateCoupon: async (
 			_: any,
-			{ code, cartTotal }: { code: string; cartTotal: number }
+			{ code, cartTotal, email }: { code: string; cartTotal: number; email?: string }
 		) => {
 			await connectToDatabase();
 			const coupon = await Coupon.findOne({ code: code.toUpperCase() });
@@ -732,6 +734,16 @@ const resolvers = {
 				throw new Error(
 					`Minimum purchase of AED ${coupon.minPurchase} required`
 				);
+
+			if (coupon.isFirstOrder) {
+				if (!email) {
+					throw new Error("Please enter your email to use this first-order coupon");
+				}
+				const existingOrder = await Order.findOne({ email });
+				if (existingOrder) {
+					throw new Error("This coupon is only valid for your first order");
+				}
+			}
 
 			return coupon;
 		},

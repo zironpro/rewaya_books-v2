@@ -94,6 +94,7 @@ type Coupon {
 	discountType: String!
 	discountAmount: Float!
 	minPurchase: Float
+	isFirstOrder: Boolean
 	maxUses: Int
 	usedCount: Int
 	expiryDate: String
@@ -233,7 +234,7 @@ type Query {
 	categories: [Category!]!
 	coupons: [Coupon!]!
 	coupon(id: ID!): Coupon
-	validateCoupon(code: String!, cartTotal: Float!): Coupon
+	validateCoupon(code: String!, cartTotal: Float!, email: String): Coupon
 	popups: [Popup!]!
 	refundRequests: [RefundRequest!]!
 	refundRequest(id: ID!): RefundRequest
@@ -290,6 +291,7 @@ input CouponInput {
 	discountType: String!
 	discountAmount: Float!
 	minPurchase: Float
+	isFirstOrder: Boolean
 	maxUses: Int
 	expiryDate: String
 	status: String

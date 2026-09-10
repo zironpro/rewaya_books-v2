@@ -103,6 +103,7 @@ export type Coupon = {
   discountType: Scalars['String']['output'];
   expiryDate?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  isFirstOrder?: Maybe<Scalars['Boolean']['output']>;
   maxUses?: Maybe<Scalars['Int']['output']>;
   minPurchase?: Maybe<Scalars['Float']['output']>;
   status?: Maybe<Scalars['String']['output']>;
@@ -115,6 +116,7 @@ export type CouponInput = {
   discountAmount: Scalars['Float']['input'];
   discountType: Scalars['String']['input'];
   expiryDate?: InputMaybe<Scalars['String']['input']>;
+  isFirstOrder?: InputMaybe<Scalars['Boolean']['input']>;
   maxUses?: InputMaybe<Scalars['Int']['input']>;
   minPurchase?: InputMaybe<Scalars['Float']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
@@ -566,6 +568,7 @@ export type QueryRefundRequestArgs = {
 export type QueryValidateCouponArgs = {
   cartTotal: Scalars['Float']['input'];
   code: Scalars['String']['input'];
+  email?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type RefundRequest = {
@@ -992,22 +995,23 @@ export type GetOrderByIdQuery = { orderById: { id: string, email: string, status
 export type GetCouponsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCouponsQuery = { coupons: Array<{ id: string, code: string, discountType: string, discountAmount: number, minPurchase: number | null, maxUses: number | null, usedCount: number | null, expiryDate: string | null, status: string | null }> };
+export type GetCouponsQuery = { coupons: Array<{ id: string, code: string, discountType: string, discountAmount: number, minPurchase: number | null, isFirstOrder: boolean | null, maxUses: number | null, usedCount: number | null, expiryDate: string | null, status: string | null }> };
 
 export type GetCouponQueryVariables = Exact<{
   id: string | number;
 }>;
 
 
-export type GetCouponQuery = { coupon: { id: string, code: string, discountType: string, discountAmount: number, minPurchase: number | null, maxUses: number | null, usedCount: number | null, expiryDate: string | null, status: string | null } | null };
+export type GetCouponQuery = { coupon: { id: string, code: string, discountType: string, discountAmount: number, minPurchase: number | null, isFirstOrder: boolean | null, maxUses: number | null, usedCount: number | null, expiryDate: string | null, status: string | null } | null };
 
 export type ValidateCouponQueryVariables = Exact<{
   code: string;
   cartTotal: number;
+  email?: string | null | undefined;
 }>;
 
 
-export type ValidateCouponQuery = { validateCoupon: { id: string, code: string, discountType: string, discountAmount: number, minPurchase: number | null } | null };
+export type ValidateCouponQuery = { validateCoupon: { id: string, code: string, discountType: string, discountAmount: number, minPurchase: number | null, isFirstOrder: boolean | null } | null };
 
 export type CreateCouponMutationVariables = Exact<{
   input: CouponInput;
@@ -2399,6 +2403,7 @@ export const GetCouponsDocument = new TypedDocumentString(`
     discountType
     discountAmount
     minPurchase
+    isFirstOrder
     maxUses
     usedCount
     expiryDate
@@ -2431,6 +2436,7 @@ export const GetCouponDocument = new TypedDocumentString(`
     discountType
     discountAmount
     minPurchase
+    isFirstOrder
     maxUses
     usedCount
     expiryDate
@@ -2456,13 +2462,14 @@ export const useGetCouponQuery = <
     )};
 
 export const ValidateCouponDocument = new TypedDocumentString(`
-    query ValidateCoupon($code: String!, $cartTotal: Float!) {
-  validateCoupon(code: $code, cartTotal: $cartTotal) {
+    query ValidateCoupon($code: String!, $cartTotal: Float!, $email: String) {
+  validateCoupon(code: $code, cartTotal: $cartTotal, email: $email) {
     id
     code
     discountType
     discountAmount
     minPurchase
+    isFirstOrder
   }
 }
     `);
