@@ -72,6 +72,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 				limit: itemsPerPage,
 				customOrderIds:
 					!sort && customOrderIds.length > 0 ? customOrderIds : undefined,
+				inStockOnly: true,
 			}
 		);
 

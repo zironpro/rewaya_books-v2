@@ -356,6 +356,13 @@ export function BooksView() {
 				}));
 				setIsUploadingBulk(false);
 				if (fileInputRef.current) fileInputRef.current.value = "";
+				// Flush the Next.js page cache once after all rows are done
+				fetch("/api/revalidate", {
+					method: "POST",
+					headers: process.env.NEXT_PUBLIC_REVALIDATE_SECRET
+						? { authorization: `Bearer ${process.env.NEXT_PUBLIC_REVALIDATE_SECRET}` }
+						: {},
+				}).catch(() => {});
 				refetch();
 			},
 			error: (error) => {

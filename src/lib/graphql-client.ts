@@ -6,7 +6,12 @@ if (endpoint.startsWith("/")) {
 	if (typeof window !== "undefined") {
 		endpoint = `${window.location.origin}${endpoint}`;
 	} else {
-		endpoint = `http://localhost:${process.env.PORT || 3000}${endpoint}`;
+		// Use NEXTAUTH_URL in production (Vercel), fallback to localhost in dev
+		const baseUrl =
+			process.env.NEXTAUTH_URL ||
+			process.env.NEXT_PUBLIC_SITE_URL ||
+			`http://localhost:${process.env.PORT || 3000}`;
+		endpoint = `${baseUrl.replace(/\/$/, "")}${endpoint}`;
 	}
 }
 
@@ -23,10 +28,13 @@ export function customFetcher<TData, TVariables extends Record<string, any>>(
 	options?: RequestInit["headers"]
 ) {
 	return async (): Promise<TData> => {
-		// Depending on if this is server or client, we might need absolute URL
 		let url = endpoint;
 		if (typeof window === "undefined" && url.startsWith("/")) {
-			url = `http://localhost:${process.env.PORT || 3000}${url}`;
+			const baseUrl =
+				process.env.NEXTAUTH_URL ||
+				process.env.NEXT_PUBLIC_SITE_URL ||
+				`http://localhost:${process.env.PORT || 3000}`;
+			url = `${baseUrl.replace(/\/$/, "")}${url}`;
 		}
 		const client = new GraphQLClient(url, {
 			fetch:

@@ -1,6 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
 import { gql } from "graphql-tag";
+import { revalidatePath } from "next/cache";
 
 import { Bundle } from "@/lib/db/models/Bundle";
 import { Category } from "@/lib/db/models/Category";
@@ -275,6 +276,7 @@ const typeDefs = gql`
       page: Int
       limit: Int
       customOrderIds: [ID!]
+      inStockOnly: Boolean
     ): ProductConnection!
     products: [Product!]!
     productBySlug(slug: String!): Product
@@ -526,10 +528,10 @@ const resolvers = {
 		},
 		productsPaginated: async (_: any, args: any) => {
 			await connectToDatabase();
-			const { category, q, sort, page = 1, limit = 25, customOrderIds } = args;
+			const { category, q, sort, page = 1, limit = 25, customOrderIds, inStockOnly } = args;
 			const skip = (page - 1) * limit;
 
-			let filter: any = { stock: { $gt: 0 } };
+			let filter: any = inStockOnly ? { stock: { $gt: 0 } } : {};
 
 			if (category) {
 				const catLower = category.toLowerCase();
@@ -908,6 +910,14 @@ const resolvers = {
 				product.categorySlug = cat.slug;
 				await product.save();
 			}
+			// Bust page cache so shop/home immediately show the new product
+			try {
+				revalidatePath("/", "page");
+				revalidatePath("/shop", "page");
+				if (product.slug) {
+					revalidatePath(`/product/${product.slug}`, "page");
+				}
+			} catch (_) {}
 			return product;
 		},
 		updateProduct: async (
@@ -997,7 +1007,16 @@ const resolvers = {
 				}
 			}
 
-			return await Product.findByIdAndUpdate(id, input, { new: true });
+			const updated = await Product.findByIdAndUpdate(id, input, { new: true });
+			// Bust page cache so shop/home/detail immediately show updated image
+			try {
+				revalidatePath("/", "page");
+				revalidatePath("/shop", "page");
+				if (updated?.slug) {
+					revalidatePath(`/product/${updated.slug}`, "page");
+				}
+			} catch (_) {}
+			return updated;
 		},
 		updateProductsSortOrder: async (
 			_: any,
