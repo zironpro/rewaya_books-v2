@@ -8,7 +8,14 @@ export const TermsView = () => {
 	return (
 		<LegalPageShell
 			breadcrumbLabel="Terms and Conditions"
-			footerNote={<p>Legal Team: legal@alrewaya.com</p>}
+			footerNote={
+				<p>
+					Legal Team:{" "}
+					<a className="hover:underline" href="mailto:basim@alrewaya.com">
+						basim@alrewaya.com
+					</a>
+				</p>
+			}
 			title={
 				<>
 					Terms & <span className="font-normal italic">Conditions</span>.

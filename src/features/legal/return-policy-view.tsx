@@ -8,7 +8,14 @@ export const ReturnPolicyView = () => {
 	return (
 		<LegalPageShell
 			breadcrumbLabel="Return Policy"
-			footerNote={<p>Legal Team: legal@alrewaya.com</p>}
+			footerNote={
+				<p>
+					Legal Team:{" "}
+					<a className="hover:underline" href="mailto:basim@alrewaya.com">
+						basim@alrewaya.com
+					</a>
+				</p>
+			}
 			title={
 				<>
 					Return & <span className="font-normal italic">Policy</span>.

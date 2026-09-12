@@ -10,7 +10,14 @@ export const CookiePolicyView = () => {
 	return (
 		<LegalPageShell
 			breadcrumbLabel="Cookie Policy"
-			footerNote={<p>Contact: privacy@alrewaya.com</p>}
+			footerNote={
+				<p>
+					Contact:{" "}
+					<a className="hover:underline" href="mailto:basim@alrewaya.com">
+						basim@alrewaya.com
+					</a>
+				</p>
+			}
 			title={
 				<>
 					Cookie <span className="font-normal italic">Policy</span>.
@@ -75,12 +82,13 @@ export const CookiePolicyView = () => {
 
 			<LegalSection title="6. Contact">
 				<LegalParagraph>
-					Questions about this policy? Email privacy@alrewaya.com. For how we
-					handle personal data more broadly, see our{" "}
-					<Link
-						className="text-secondary underline underline-offset-2 hover:text-secondary/80"
-						href="/privacy"
-					>
+					Questions about this policy? Email{" "}
+					<a className="hover:underline" href="mailto:basim@alrewaya.com">
+						basim@alrewaya.com
+					</a>
+					. For how we
+					handle other personal data, see our{" "}
+					<Link className="underline hover:text-primary" href="/privacy">
 						Privacy Policy
 					</Link>
 					.

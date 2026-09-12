@@ -10,7 +10,14 @@ export const PrivacyView = () => {
 	return (
 		<LegalPageShell
 			breadcrumbLabel="Privacy Policy"
-			footerNote={<p>Contact: privacy@alrewaya.com</p>}
+			footerNote={
+				<p>
+					Contact:{" "}
+					<a className="hover:underline" href="mailto:basim@alrewaya.com">
+						basim@alrewaya.com
+					</a>
+				</p>
+			}
 			title={
 				<>
 					Privacy <span className="font-normal italic">Policy</span>.

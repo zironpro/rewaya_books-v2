@@ -152,7 +152,7 @@ export function BooksView() {
 	const updateProductMutation = useUpdateProductMutation();
 	const updateProductsSortOrderMutation = useUpdateProductsSortOrderMutation();
 
-	const fetchedBooks = data?.productsPaginated?.items || [];
+	const fetchedBooks = data?.productsPaginated?.items;
 	const totalCount = data?.productsPaginated?.totalCount || 0;
 	const totalPages = data?.productsPaginated?.totalPages || 0;
 	const categories = categoriesData?.categories || [];
@@ -164,20 +164,21 @@ export function BooksView() {
 	const observerTarget = React.useRef(null);
 
 	React.useEffect(() => {
-		if (fetchedBooks.length > 0) {
+		const books = fetchedBooks || [];
+		if (books.length > 0) {
 			if (page === 1) {
-				setOrderedBooks([...fetchedBooks]);
+				setOrderedBooks([...books]);
 			} else {
 				setOrderedBooks((prev) => {
 					const existingIds = new Set(prev.map((b) => b.id));
-					const newBooks = fetchedBooks.filter(
+					const newBooks = books.filter(
 						(b: any) => !existingIds.has(b.id)
 					);
 					return [...prev, ...newBooks];
 				});
 			}
 		} else if (page === 1) {
-			setOrderedBooks([]);
+			setOrderedBooks((prev) => (prev.length === 0 ? prev : []));
 		}
 	}, [fetchedBooks, page]);
 

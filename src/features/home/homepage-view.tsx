@@ -37,7 +37,7 @@ export const HomepageView = ({
 	categories = [],
 }: HomepageViewProps) => {
 	const childrenSection = sections.find((s) => s.sectionKey === "children");
-	const childrenCategorySlug = "children-books";
+	const childrenCategorySlug = "children";
 
 	return (
 		<main className="overflow-hidden">
@@ -78,8 +78,7 @@ export const HomepageView = ({
 							Event recap
 						</Badge>
 						<h3 className="mt-2 font-bold font-display text-2xl leading-tight sm:text-3xl md:mt-3 md:text-5xl">
-							Rewaya at the{" "}
-							<span className="text-accent italic">Book Fair</span>
+							Rewaya at the <span className="italic">Book Fair</span>
 						</h3>
 						<p className="mt-4 font-light text-card/90 text-xs sm:text-base">
 							Thank you to everyone who visited our stand. We loved meeting
@@ -90,14 +89,8 @@ export const HomepageView = ({
 							<MapPin aria-hidden className="size-4 shrink-0" />
 							Dubai, United Arab Emirates
 						</p> */}
-						<Button
-							asChild
-							className="mt-4 md:mt-8"
-							size="lg"
-						>
-							<Link href="/shop">
-								Browse the collection
-							</Link>
+						<Button asChild className="mt-4 md:mt-8" size="lg">
+							<Link href="/shop">Browse the collection</Link>
 						</Button>
 					</div>
 				</div>
@@ -126,16 +119,12 @@ export const HomepageView = ({
 							<span className="text-accent italic">Next Generation</span> of
 							Seekers.
 						</h3>
-						<Button
-							nativeButton={false}
-							render={
-								<Link
-									href={`/shop?category=${encodeURIComponent(childrenCategorySlug)}`}
-								/>
-							}
-							size="lg"
-						>
-							Shop Children&apos;s books
+						<Button asChild size="lg">
+							<Link
+								href={`/shop?category=${encodeURIComponent(childrenCategorySlug)}`}
+							>
+								Shop Children&apos;s books
+							</Link>
 						</Button>
 					</div>
 				</div>
