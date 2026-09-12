@@ -919,7 +919,7 @@ export type GetProductsPaginatedQuery = { productsPaginated: { totalCount: numbe
 export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProductsQuery = { products: Array<{ id: string, title: string, slug: string, author: string | null, description: string | null, price: number, originalPrice: number | null, stock: number | null, coverImage: string | null, categoryId: string | null, categorySlug: string | null, categoryName: string | null, categoryIds: Array<string | null> | null, isbn: string | null, pages: number | null, language: string | null, format: string | null, ribbon: string | null, publisher: string | null, sortOrder: number | null, categories: Array<{ id: string, name: string, slug: string } | null> | null }> };
+export type GetProductsQuery = { products: Array<{ id: string, title: string, slug: string, author: string | null, description: string | null, price: number, originalPrice: number | null, stock: number | null, coverImage: string | null, images: Array<string | null> | null, categoryId: string | null, categorySlug: string | null, categoryName: string | null, categoryIds: Array<string | null> | null, isbn: string | null, pages: number | null, language: string | null, format: string | null, ribbon: string | null, publisher: string | null, sortOrder: number | null, categories: Array<{ id: string, name: string, slug: string } | null> | null }> };
 
 export type GetProductBySlugQueryVariables = Exact<{
   slug: string;
@@ -1851,6 +1851,7 @@ export const GetProductsDocument = new TypedDocumentString(`
     originalPrice
     stock
     coverImage
+    images
     categoryId
     categorySlug
     categoryName

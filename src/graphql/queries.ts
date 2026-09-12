@@ -76,6 +76,7 @@ export const GET_PRODUCTS = gql`
       originalPrice
       stock
       coverImage
+      images
       categoryId
       categorySlug
       categoryName

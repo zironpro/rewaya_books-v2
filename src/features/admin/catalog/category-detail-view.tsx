@@ -9,7 +9,8 @@ import {
 	Move,
 	UploadCloud,
 	X,
-	Search
+	Search,
+	Image as ImageIcon
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

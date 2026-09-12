@@ -24,9 +24,10 @@ export function BookCard({
 	defaultVariant,
 	availableForSale,
 	stock,
-}: BookProps & { coverImage?: string }) {
+	images,
+}: BookProps & { coverImage?: string; images?: string[] }) {
 	const productHref = `/product/${slug ?? id}`;
-	const finalImage = image || coverImage || "";
+	const finalImage = image || coverImage || (images && images.length > 0 ? images[0] : "");
 
 	return (
 		<div className="group relative">
