@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const HeroBannerSchema = new mongoose.Schema(
 	{
-		title: { type: String, required: true },
+		title: { type: String },
 		subtitle: { type: String },
 		ctaLabel: { type: String },
 		ctaHref: { type: String },

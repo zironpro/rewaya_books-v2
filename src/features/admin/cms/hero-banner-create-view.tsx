@@ -59,13 +59,13 @@ export function HeroBannerCreateView() {
 
 	const handleAdd = async (e: React.MouseEvent) => {
 		e.preventDefault();
-		if (!title) return;
+		if (!title && !image) return;
 
 		try {
 			await createBannerMutation.mutateAsync({
 				input: {
-					title,
-					subtitle: subtitle || "Special featured banner on Rewaya storefront.",
+					title: title || "",
+					subtitle: subtitle || "",
 					ctaLabel,
 					ctaHref,
 					image,
@@ -105,13 +105,12 @@ export function HeroBannerCreateView() {
 			<div className="max-w-2xl space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
 				<div className="space-y-1">
 					<label className="font-semibold text-slate-700 dark:text-slate-300">
-						Banner Headline *
+						Banner Headline
 					</label>
 					<Input
 						className="h-10 text-sm"
 						onChange={(e) => setTitle(e.target.value)}
 						placeholder="e.g. Summer Reading Festival 2026"
-						required
 						value={title}
 					/>
 				</div>

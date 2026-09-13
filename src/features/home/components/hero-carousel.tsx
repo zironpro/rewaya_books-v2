@@ -22,10 +22,10 @@ export function HeroCarousel({ banners = [] }: HeroCarouselProps) {
 	const slides =
 		banners.length > 0
 			? banners.map((b) => ({
-					title: b.title,
-					subtitle: b.subtitle ?? "",
-					cta: b.ctaLabel ?? "Shop now",
-					href: b.ctaHref ?? "/shop",
+					title: b.title || "",
+					subtitle: b.subtitle || "",
+					cta: b.ctaLabel || "",
+					href: b.ctaHref || "/shop",
 					image: b.image,
 				}))
 			: FALLBACK_BANNERS.map((b) => ({
@@ -93,59 +93,67 @@ export function HeroCarousel({ banners = [] }: HeroCarouselProps) {
 				>
 					<div className="absolute inset-0">
 						<Image
-							alt={slide.title}
+							alt={slide.title || "Banner image"}
 							className="object-cover"
 							fill
 							priority={current === 0}
 							sizes="100vw"
 							src={slide.image}
 						/>
-						<div className="absolute inset-0 bg-black/20 backdrop-brightness-80" />
+						{(slide.title || slide.subtitle || slide.cta) && (
+							<div className="absolute inset-0 bg-black/20 backdrop-brightness-80" />
+						)}
 					</div>
 
 					<div className="container relative mx-auto flex h-full flex-col items-center justify-center text-center text-card">
 						<h1 className="sr-only">
 							Al Rewaya Book world: Your Premier Bookstore
 						</h1>
-						<motion.span
-							animate={{ opacity: 1, y: 0 }}
-							className="text-balance font-light text-sm sm:text-base md:text-xl"
-							initial={{ opacity: 0, y: 20 }}
-							transition={{ delay: 0.1 }}
-						>
-							{slide.subtitle}
-						</motion.span>
-						<motion.h2
-							animate={{ opacity: 1, y: 0 }}
-							className="mb-4 font-black font-serif text-4xl uppercase leading-none sm:text-5xl md:mb-8 md:text-8xl"
-							initial={{ opacity: 0, y: 30 }}
-							transition={{ delay: 0.2 }}
-						>
-							{slide.title.split(" ").map((word: string, i: number) => (
-								<span
-									className={i % 2 !== 0 ? "font-normal italic" : ""}
-									key={Number(i + 1)}
-								>
-									{word}{" "}
-								</span>
-							))}
-						</motion.h2>
-						<motion.div
-							animate={{ opacity: 1, y: 0 }}
-							initial={{ opacity: 0, y: 20 }}
-							transition={{ delay: 0.3 }}
-						>
-							<Button
-								asChild
-								className="md:hover:px-6"
-								data-track="banner"
-								size="lg"
+						{slide.subtitle && (
+							<motion.span
+								animate={{ opacity: 1, y: 0 }}
+								className="text-balance font-light text-sm sm:text-base md:text-xl"
+								initial={{ opacity: 0, y: 20 }}
+								transition={{ delay: 0.1 }}
 							>
-								<Link href={slide.href}>
-									{slide.cta} <ArrowRight className="ml-2" size={16} />
-								</Link>
-							</Button>
-						</motion.div>
+								{slide.subtitle}
+							</motion.span>
+						)}
+						{slide.title && (
+							<motion.h2
+								animate={{ opacity: 1, y: 0 }}
+								className="mb-4 font-black font-serif text-4xl uppercase leading-none sm:text-5xl md:mb-8 md:text-8xl"
+								initial={{ opacity: 0, y: 30 }}
+								transition={{ delay: 0.2 }}
+							>
+								{slide.title.split(" ").map((word: string, i: number) => (
+									<span
+										className={i % 2 !== 0 ? "font-normal italic" : ""}
+										key={Number(i + 1)}
+									>
+										{word}{" "}
+									</span>
+								))}
+							</motion.h2>
+						)}
+						{slide.cta && (
+							<motion.div
+								animate={{ opacity: 1, y: 0 }}
+								initial={{ opacity: 0, y: 20 }}
+								transition={{ delay: 0.3 }}
+							>
+								<Button
+									asChild
+									className="md:hover:px-6"
+									data-track="banner"
+									size="lg"
+								>
+									<Link href={slide.href}>
+										{slide.cta} <ArrowRight className="ml-2" size={16} />
+									</Link>
+								</Button>
+							</motion.div>
+						)}
 					</div>
 				</motion.div>
 			</AnimatePresence>

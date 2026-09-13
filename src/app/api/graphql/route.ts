@@ -159,7 +159,7 @@ const typeDefs = gql`
 
   type HeroBanner {
     id: ID!
-    title: String!
+    title: String
     subtitle: String
     ctaLabel: String
     ctaHref: String
@@ -357,7 +357,7 @@ const typeDefs = gql`
   }
 
   input HeroBannerInput {
-    title: String!
+    title: String
     subtitle: String
     ctaLabel: String
     ctaHref: String
@@ -415,7 +415,7 @@ const typeDefs = gql`
   }
 
   input HeroBannerInput {
-    title: String!
+    title: String
     subtitle: String
     ctaLabel: String
     ctaHref: String
