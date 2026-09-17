@@ -95,7 +95,7 @@ export function BookDetailView() {
 						The book you are looking for does not exist or has been removed.
 					</p>
 				</div>
-				<Button onClick={() => router.push("/admin/catalog")} variant="outline">
+				<Button onClick={() => router.push("/admin/catalog/books")} variant="outline">
 					<ArrowLeft className="mr-2 h-4 w-4" /> Back to Catalog
 				</Button>
 			</div>

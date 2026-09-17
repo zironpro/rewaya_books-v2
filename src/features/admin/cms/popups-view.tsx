@@ -118,7 +118,7 @@ export function PopupsView() {
 								</Link>
 								<Button
 									className="h-6 w-6 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/50"
-									onClick={() => handleDelete(bnr.id)}
+									onClick={() => handleDelete(popup.id)}
 									size="icon"
 									variant="ghost"
 								>
