@@ -70,3 +70,55 @@ export async function sendOrderConfirmationEmail(order: any, customerEmail: stri
 		return null;
 	}
 }
+
+export async function sendWelcomeEmail(customerEmail: string) {
+	if (!process.env.RESEND_API_KEY) {
+		console.warn("RESEND_API_KEY is not set. Skipping welcome email.");
+		return;
+	}
+
+	const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+	const baseUrl = process.env.NEXTAUTH_URL || "https://rewayabooks.com";
+	const unsubscribeUrl = `${baseUrl}/api/unsubscribe?email=${encodeURIComponent(customerEmail)}`;
+	
+	try {
+		const html = `
+			<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333; text-align: center;">
+				<div style="margin-bottom: 20px;">
+					<img src="https://rewayabooks.com/logo-website.png" alt="Rewaya Books Logo" style="max-width: 150px; height: auto;" />
+				</div>
+				<h1 style="color: #000;">Welcome to Rewaya Books!</h1>
+				<p style="font-size: 16px; line-height: 1.5;">Hello there,</p>
+				<p style="font-size: 16px; line-height: 1.5;">
+					Thank you for subscribing to our newsletter! We're thrilled to have you on board.
+					You'll be the first to know about our latest book releases, special bundles, and exclusive offers.
+				</p>
+				<br/>
+				<p style="font-size: 16px;">Happy Reading,<br/>The Rewaya Team</p>
+				
+				<hr style="border: none; border-top: 1px solid #eaeaea; margin: 40px 0;" />
+				<p style="font-size: 12px; color: #888;">
+					If you no longer wish to receive these emails, you can <a href="${unsubscribeUrl}" style="color: #007bff; text-decoration: underline;">unsubscribe here</a>.
+				</p>
+			</div>
+		`;
+
+		const { data, error } = await resend.emails.send({
+			from: `Rewaya Updates <${fromEmail}>`,
+			to: customerEmail,
+			subject: "Welcome to Rewaya Books! \uD83C\uDF89",
+			html,
+		});
+
+		if (error) {
+			console.error("Error sending welcome email:", error);
+			return null;
+		}
+
+		console.log("Welcome email sent successfully", data);
+		return data;
+	} catch (error) {
+		console.error("Failed to send welcome email:", error);
+		return null;
+	}
+}
