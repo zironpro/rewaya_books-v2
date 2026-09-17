@@ -8,6 +8,8 @@ const UserSchema = new mongoose.Schema(
 		password: { type: String }, // Hashed password
 		image: { type: String },
 		role: { type: String, enum: ["USER", "ADMIN", "VIP"], default: "USER" },
+		adminPermissions: { type: [String], default: [] },
+		passwordChangedAt: { type: Date },
 		phone: { type: String },
 		nickname: { type: String },
 		city: { type: String },

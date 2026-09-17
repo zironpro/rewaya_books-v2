@@ -42,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 							name: user.name,
 							email: user.email,
 							role: user.role,
+							adminPermissions: Array.from(user.adminPermissions || []),
 						} as any;
 					}
 				}
@@ -69,12 +70,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		async jwt({ token, user }) {
 			if (user) {
 				token.role = (user as any).role || "USER";
+				token.adminPermissions = (user as any).adminPermissions || [];
 			}
+
+			if (token.sub) {
+				try {
+					const { User } = await import("./lib/db/models/User");
+					const connectToDatabase = (await import("./lib/db/mongodb")).default;
+					await connectToDatabase();
+					
+					const dbUser = await User.findById(token.sub).select("passwordChangedAt role adminPermissions");
+					
+					if (!dbUser) {
+						return {} as any; // User deleted
+					}
+
+					// Invalidate session if password was changed after token issuance
+					if (dbUser.passwordChangedAt && token.iat) {
+						const passwordChangedTime = Math.floor(dbUser.passwordChangedAt.getTime() / 1000);
+						if (token.iat < passwordChangedTime) {
+							return {} as any; // Invalid token
+						}
+					}
+
+					// Auto-refresh permissions
+					token.role = dbUser.role;
+					token.adminPermissions = Array.from(dbUser.adminPermissions || []);
+				} catch (err) {
+					console.error("Error validating admin JWT:", err);
+				}
+			}
+
 			return token;
 		},
 		async session({ session, token }) {
 			if (session.user) {
 				(session.user as any).role = token.role;
+				(session.user as any).adminPermissions = token.adminPermissions || [];
 				(session.user as any).id = token.sub;
 			}
 			return session;

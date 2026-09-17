@@ -2,12 +2,12 @@ import { FacebookIcon, InstagramIcon } from "@/assets/icons/brands";
 
 export const SOCIAL_LINKS = [
 	{
-		href: "https://www.instagram.com",
+		href: "https://www.instagram.com/alrewayabook/",
 		label: "Follow us on Instagram",
 		Icon: InstagramIcon,
 	},
 	{
-		href: "https://www.facebook.com",
+		href: "https://www.facebook.com/profile.php?id=61590568501519#",
 		label: "Follow us on Facebook",
 		Icon: FacebookIcon,
 	},

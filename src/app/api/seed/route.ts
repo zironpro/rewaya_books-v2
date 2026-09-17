@@ -14,7 +14,12 @@ export async function GET() {
 		const existingAdmin = await User.findOne({ email: adminEmail });
 
 		if (existingAdmin) {
-			return NextResponse.json({ message: "Admin already exists." });
+			if (!existingAdmin.adminPermissions?.includes("MASTER")) {
+				existingAdmin.adminPermissions = ["MASTER"];
+				await existingAdmin.save();
+				return NextResponse.json({ message: "Admin already exists. Upgraded to MASTER." });
+			}
+			return NextResponse.json({ message: "Admin already exists and is MASTER." });
 		}
 
 		// Hash password
@@ -26,6 +31,7 @@ export async function GET() {
 			email: adminEmail,
 			password: hashedPassword,
 			role: "ADMIN",
+			adminPermissions: ["MASTER"],
 			emailVerified: new Date(),
 		});
 

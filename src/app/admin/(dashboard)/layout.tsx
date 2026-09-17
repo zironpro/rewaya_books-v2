@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
 	return (
 		<SidebarProvider>
-			<AppSidebar />
+			<AppSidebar session={session} />
 			<SidebarInset className="bg-white dark:bg-slate-950">
 				<DashboardHeader />
 				<div className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">{children}</div>

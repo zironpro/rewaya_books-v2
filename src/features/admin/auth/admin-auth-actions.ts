@@ -3,7 +3,7 @@
 import { signIn } from "@/auth-admin";
 import { AuthError } from "next-auth";
 
-import { isRedirectError } from "next/dist/client/components/redirect";
+import { isRedirectError } from "next/navigation";
 
 export async function adminSignIn(formData: FormData) {
 	try {
