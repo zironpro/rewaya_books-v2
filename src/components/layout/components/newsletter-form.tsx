@@ -60,6 +60,7 @@ export const NewsletterForm = () => {
 					placeholder="you@example.com"
 					required
 					type="email"
+					className="bg-white text-slate-900 placeholder:text-slate-400 border-white/20 focus-visible:ring-white/30"
 					onChange={(e) => setEmail(e.target.value)}
 					value={email}
 					disabled={loading}
