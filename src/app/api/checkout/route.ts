@@ -20,6 +20,7 @@ export async function POST(request: Request) {
 		const body = await request.json();
 		const {
 			cartId,
+			guestLineItems,
 			paymentMethod,
 			shippingMethod,
 			shippingAddress,
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
 			);
 		}
 
-		if (!cartId && !userId) {
+		if (!cartId && !userId && (!guestLineItems || guestLineItems.length === 0)) {
 			return NextResponse.json(
 				{ error: "Missing cart ID or user session" },
 				{ status: 400 }
@@ -46,8 +47,35 @@ export async function POST(request: Request) {
 
 		await connectToDatabase();
 
-		const query = userId ? { userId } : { _id: cartId };
-		const cart = await Cart.findOne(query).lean();
+		let cart: any = { lineItems: [], _id: "guest_cart_" + Date.now() };
+
+		if (userId || cartId) {
+			const query = userId ? { userId } : { _id: cartId };
+			const dbCart = await Cart.findOne(query).lean();
+			if (dbCart) {
+				cart = dbCart;
+			}
+		} else if (guestLineItems && guestLineItems.length > 0) {
+			const { Product } = await import("@/lib/db/models/Product");
+			
+			const verifiedLineItems = [];
+			for (const item of guestLineItems) {
+				const productId = item.productId || item._id;
+				if (!item.isBundle && !item.bundleSlug) {
+					const product = await Product.findById(productId).lean();
+					if (product) {
+						verifiedLineItems.push({
+							...item,
+							price: product.price || 0,
+							title: product.title || item.title || "Product",
+						});
+					}
+				} else {
+					verifiedLineItems.push(item);
+				}
+			}
+			cart.lineItems = verifiedLineItems;
+		}
 
 		if (!cart || !cart.lineItems || cart.lineItems.length === 0) {
 			return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -237,10 +265,12 @@ export async function POST(request: Request) {
 				await appliedCouponDoc.save();
 			}
 
-			// Clear the user's cart
-			await Cart.findByIdAndUpdate(cart._id, {
-				$set: { lineItems: [], summary: { total: 0 } },
-			});
+			// Clear the user's cart if it's a DB cart
+			if (cart._id && !cart._id.toString().startsWith("guest_cart")) {
+				await Cart.findByIdAndUpdate(cart._id, {
+					$set: { lineItems: [], summary: { total: 0 } },
+				});
+			}
 
 			// Send confirmation email (must await so Next.js doesn't kill the request)
 			await sendOrderConfirmationEmail(newOrder, newOrder.email).catch(console.error);

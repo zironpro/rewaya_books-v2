@@ -45,6 +45,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
+	const saveGuestCart = useCallback((newSnapshot: CartSnapshot) => {
+		setSnapshot(newSnapshot);
+		sessionStorage.setItem("guest_cart", JSON.stringify(newSnapshot));
+	}, []);
+
 	const refresh = useCallback(async () => {
 		if (status === "loading") return;
 		setIsLoading(true);
@@ -54,10 +59,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 				const serverCart = await fetchCart();
 				if (serverCart) setSnapshot(serverCart);
 			} else {
-				setSnapshot({
-					lineItems: [],
-					summary: { subtotal: "0", total: "0", discountNames: [] },
-				});
+				const guestCartStr = sessionStorage.getItem("guest_cart");
+				if (guestCartStr) {
+					setSnapshot(JSON.parse(guestCartStr));
+				} else {
+					setSnapshot({
+						lineItems: [],
+						summary: { subtotal: "0", total: "0", discountNames: [] },
+					});
+				}
 			}
 		} catch (e) {
 			console.error("Cart refresh error", e);
@@ -110,8 +120,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	const addItem = useCallback(
 		async (item: any) => {
 			if (!session?.user) {
-				throw new Error("require_auth");
+				const currentItems = snapshot?.lineItems || [];
+				const actualProductId = item.productId || item.catalogItemId || item._id;
+				const existingIndex = currentItems.findIndex(
+					(i) => (i.productId || i._id) === actualProductId
+				);
+
+				const newItems = [...currentItems];
+				if (existingIndex >= 0) {
+					newItems[existingIndex].quantity =
+						(newItems[existingIndex].quantity || 1) + (item.quantity || 1);
+				} else {
+					newItems.push({
+						_id: actualProductId,
+						productId: actualProductId,
+						title: item.title || item.productName?.translated || "Product",
+						price: item.price || 0,
+						quantity: item.quantity || 1,
+						image: item.image,
+						isBundle: item.isBundle || !!item.bundleSlug,
+						bundleSlug: item.bundleSlug,
+					});
+				}
+				
+				saveGuestCart(updateCartTotals(newItems));
+				return;
 			}
+
 			const res = await serverAddItem(null, item);
 			if (res.error) {
 				throw new Error(res.error);
@@ -120,25 +155,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
 				setSnapshot(res.cart);
 			}
 		},
-		[session?.user]
+		[session?.user, snapshot, saveGuestCart]
 	);
 
 	const removeItem = useCallback(
 		async (lineId: string) => {
-			if (!session?.user) return;
 			const currentItems = snapshot?.lineItems || [];
 			const newItems = currentItems.filter(
 				(i) => i._id !== lineId && i.productId !== lineId
 			);
-			setSnapshot(updateCartTotals(newItems));
+			const newSnapshot = updateCartTotals(newItems);
+			
+			if (!session?.user) {
+				saveGuestCart(newSnapshot);
+				return;
+			}
+			
+			setSnapshot(newSnapshot);
 			await syncCart(newItems);
 		},
-		[session?.user, snapshot]
+		[session?.user, snapshot, saveGuestCart]
 	);
 
 	const updateQuantity = useCallback(
 		async (lineId: string, quantity: number) => {
-			if (!session?.user) return;
 			const currentItems = snapshot?.lineItems || [];
 			const newItems = [...currentItems];
 			const item = newItems.find(
@@ -154,21 +194,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
 					amount: (itemPrice * quantity).toString(),
 					formattedConvertedAmount: `AED ${(itemPrice * quantity).toFixed(2)}`,
 				};
-				setSnapshot(updateCartTotals(newItems));
+				const newSnapshot = updateCartTotals(newItems);
+				
+				if (!session?.user) {
+					saveGuestCart(newSnapshot);
+					return;
+				}
+				
+				setSnapshot(newSnapshot);
 				await syncCart(newItems);
 			}
 		},
-		[session?.user, snapshot]
+		[session?.user, snapshot, saveGuestCart]
 	);
 
 	const clearCartAction = useCallback(async () => {
-		if (!session?.user) return;
-		setSnapshot({
+		const emptySnapshot = {
 			lineItems: [],
 			summary: { subtotal: "0", total: "0", discountNames: [] },
-		});
+		};
+		if (!session?.user) {
+			saveGuestCart(emptySnapshot);
+			return;
+		}
+		setSnapshot(emptySnapshot);
 		await serverClearCart();
-	}, [session?.user]);
+	}, [session?.user, saveGuestCart]);
 
 	const count = useMemo(
 		() =>

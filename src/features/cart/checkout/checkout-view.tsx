@@ -17,9 +17,11 @@ import {
 
 export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 	const [loading, setLoading] = useState(false);
-	const { clearCart } = useCart();
+	const { clearCart, snapshot } = useCart();
 	const { data: shippingData } = useGetShippingConfigsQuery();
 	const { data: taxData } = useGetTaxConfigsQuery();
+
+	const activeCart = snapshot?.lineItems?.length ? snapshot : cart;
 
 	// Address Display State
 	const hasSavedAddress = !!user?.shippingAddress?.addressLine1;
@@ -70,7 +72,7 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 	}, [user, email]);
 
 	const baseCartTotal =
-		cart?.lineItems?.reduce((acc: number, item: any) => {
+		activeCart?.lineItems?.reduce((acc: number, item: any) => {
 			const price =
 				typeof item.price === "object"
 					? Number(item.price.amount || 0)
@@ -231,7 +233,8 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					cartId: cart._id,
+					cartId: activeCart._id,
+					guestLineItems: !activeCart._id ? activeCart.lineItems : undefined,
 					paymentMethod,
 					shippingMethod,
 					shippingAddress,
@@ -265,7 +268,7 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 		}
 	}
 
-	if (!cart?.lineItems?.length) {
+	if (!activeCart?.lineItems?.length) {
 		return (
 			<div className="container mx-auto py-24 text-center">
 				<h1 className="mb-4 font-bold text-3xl">Your cart is empty</h1>
@@ -636,7 +639,7 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 						</h2>
 
 						<div className="mb-6 max-h-[400px] space-y-4 overflow-y-auto pr-2">
-							{cart?.lineItems?.map((item: any) => (
+							{activeCart?.lineItems?.map((item: any) => (
 								<div
 									className="flex items-start justify-between gap-4"
 									key={item._id}
