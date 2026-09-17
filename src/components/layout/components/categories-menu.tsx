@@ -73,30 +73,15 @@ export const CategoriesMenu = ({ categories }: { categories?: any[] }) => {
 									</div>
 
 									{/* Featured Section */}
-									<div className="col-span-1 border-stone-100 border-l pl-12">
-										<div className="group/feat relative mb-4 aspect-3/4 overflow-hidden rounded-lg">
+									<div className="col-span-1 border-stone-100 border-l pl-12 flex flex-col items-center justify-center">
+										<Link href="/shop" className="relative w-full max-w-[180px] hover:opacity-80 transition-opacity">
 											<Image
-												alt="Featured"
-												className="object-cover transition-transform duration-700 group-hover/feat:scale-110"
-												fill
-												sizes="(max-width: 1024px) 20vw, 300px"
-												src={MEGA_MENU_DATA.featured.image}
+												alt="Al Rewaya Logo"
+												src="/logo-website.png"
+												width={180}
+												height={180}
+												className="object-contain"
 											/>
-											<div className="absolute inset-0 bg-secondary/10 transition-colors group-hover/feat:bg-transparent" />
-											<div className="absolute bottom-4 left-4">
-												<span className="bg-primary px-2 py-1 font-bold text-sm text-white">
-													{MEGA_MENU_DATA.featured.tag}
-												</span>
-											</div>
-										</div>
-										<h4 className="mb-2 font-bold text-secondary text-sm">
-											{MEGA_MENU_DATA.featured.title}
-										</h4>
-										<Link
-											className="font-bold text-primary text-sm hover:underline"
-											href="/shop"
-										>
-											Discover Collection
 										</Link>
 									</div>
 								</div>

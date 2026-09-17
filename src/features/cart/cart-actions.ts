@@ -154,16 +154,21 @@ export async function addItem(
 
 	await connectToDatabase();
 
+	const actualProductId = item.productId || item.catalogItemId || item._id;
+
 	// Atomic update to avoid VersionError
 	let cart = await Cart.findOne({ userId });
 	if (!cart) cart = new Cart({ userId, lineItems: [] });
 
-	const { Product } = await import("@/lib/db/models/Product");
-	const product = await Product.findById(item.productId).select("stock").lean();
-	const maxStock = product?.stock ?? 0;
+	let maxStock = 99;
+	if (!item.isBundle && !item.bundleSlug) {
+		const { Product } = await import("@/lib/db/models/Product");
+		const product = await Product.findById(actualProductId).select("stock").lean();
+		if (product) maxStock = product.stock ?? 0;
+	}
 
 	const existing = cart.lineItems.find(
-		(i: any) => i.productId === item.productId
+		(i: any) => i.productId === actualProductId
 	);
 	if (existing) {
 		const currentQty = existing.quantity || 1;
@@ -172,7 +177,7 @@ export async function addItem(
 			return { error: `Cannot add more than ${maxStock} to cart.` };
 		}
 		await Cart.findOneAndUpdate(
-			{ userId, "lineItems.productId": item.productId },
+			{ userId, "lineItems.productId": actualProductId },
 			{ $inc: { "lineItems.$.quantity": addQty } }
 		);
 		cart = await Cart.findOne({ userId });
@@ -186,12 +191,12 @@ export async function addItem(
 			{
 				$push: {
 					lineItems: {
-						productId: item.productId,
+						productId: actualProductId,
 						quantity: addQty,
 						price: item.price || 0,
-						title: item.title || "Product " + item.productId,
+						title: item.title || "Product " + actualProductId,
 						image: item.image,
-						isBundle: item.isBundle || false,
+						isBundle: item.isBundle || !!item.bundleSlug,
 						bundleSlug: item.bundleSlug,
 					},
 				},
