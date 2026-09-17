@@ -199,6 +199,7 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 	const validateForm = () => {
 		const newErrors: Record<string, string> = {};
 		if (!email) newErrors.email = "Required";
+		if (!phone) newErrors.phone = "Required";
 		if (!firstName) newErrors.firstName = "Required";
 		if (!lastName) newErrors.lastName = "Required";
 		if (!addressLine1) newErrors.addressLine1 = "Required";
@@ -312,8 +313,14 @@ export function CheckoutView({ cart, user }: { cart: any; user?: any }) {
 								/>
 							</div>
 							<div className="space-y-1.5">
-								<Label htmlFor="phone">Phone Number</Label>
+								<Label
+									className={errors.phone ? "text-red-500" : ""}
+									htmlFor="phone"
+								>
+									Phone Number *
+								</Label>
 								<Input
+									className={errors.phone ? "border-red-500" : ""}
 									id="phone"
 									onChange={(e) => setPhone(e.target.value)}
 									type="tel"

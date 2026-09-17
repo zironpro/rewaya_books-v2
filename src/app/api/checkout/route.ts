@@ -8,6 +8,7 @@ import { ShippingConfig } from "@/lib/db/models/ShippingConfig";
 import { TaxConfig } from "@/lib/db/models/TaxConfig";
 import { User } from "@/lib/db/models/User";
 import connectToDatabase from "@/lib/db/mongodb";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 import { stripe } from "@/lib/stripe";
 
 export async function POST(request: Request) {
@@ -240,6 +241,9 @@ export async function POST(request: Request) {
 			await Cart.findByIdAndUpdate(cart._id, {
 				$set: { lineItems: [], summary: { total: 0 } },
 			});
+
+			// Send confirmation email (must await so Next.js doesn't kill the request)
+			await sendOrderConfirmationEmail(newOrder, newOrder.email).catch(console.error);
 
 			return NextResponse.json({
 				url: `${origin}/thank-you?orderId=${newOrder._id.toString()}`,

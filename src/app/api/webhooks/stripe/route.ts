@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { Cart } from "@/lib/db/models/Cart";
 import { Order } from "@/lib/db/models/Order";
 import connectToDatabase from "@/lib/db/mongodb";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 import { stripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {
@@ -133,6 +134,9 @@ export async function POST(req: Request) {
 			await Cart.findByIdAndUpdate(cartId, {
 				$set: { lineItems: [], summary: { total: 0 } },
 			});
+
+			// Send confirmation email (must await so Next.js doesn't kill the request)
+			await sendOrderConfirmationEmail(newOrder, newOrder.email).catch(console.error);
 		}
 	}
 
