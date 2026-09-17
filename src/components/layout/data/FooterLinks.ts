@@ -41,7 +41,7 @@ export const FOOTER_HELP_LINKS: FooterNavLink[] = [
 	{ label: "Track Order", href: "/profile" },
 	{ label: "Returns & Exchanges", href: "/return" },
 	{ label: "Shipping Info", href: "/terms" },
-	{ label: "FAQs", href: "/contact" },
+	{ label: "FAQs", href: "/faq" },
 	{ label: "Contact Us", href: "/contact" },
 	{ label: "Accessibility", href: "/accessibility" },
 ];

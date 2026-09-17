@@ -122,3 +122,45 @@ export async function sendWelcomeEmail(customerEmail: string) {
 		return null;
 	}
 }
+
+export async function sendContactEmail(name: string, email: string, message: string) {
+	if (!process.env.RESEND_API_KEY) {
+		console.warn("RESEND_API_KEY is not set. Skipping contact email.");
+		return;
+	}
+
+	const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+	const supportEmail = "basim@alrewaya.com"; // Default fallback, but it will go to the configured fromEmail for testing
+	
+	try {
+		const html = `
+			<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+				<h2 style="color: #000; border-bottom: 1px solid #eaeaea; padding-bottom: 10px;">New Contact Form Submission</h2>
+				<p><strong>Name:</strong> ${name}</p>
+				<p><strong>Email:</strong> ${email}</p>
+				<div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px;">
+					<p style="white-space: pre-wrap; margin: 0;">${message}</p>
+				</div>
+			</div>
+		`;
+
+		const { data, error } = await resend.emails.send({
+			from: `Rewaya Contact <${fromEmail}>`,
+			to: supportEmail, // Send to the support inbox
+			reply_to: email, // Allow replying directly to the customer
+			subject: `New Contact Inquiry from ${name}`,
+			html,
+		});
+
+		if (error) {
+			console.error("Error sending contact email:", error);
+			return null;
+		}
+
+		console.log("Contact email sent successfully", data);
+		return data;
+	} catch (error) {
+		console.error("Failed to send contact email:", error);
+		return null;
+	}
+}
