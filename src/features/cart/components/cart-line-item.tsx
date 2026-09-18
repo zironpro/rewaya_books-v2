@@ -52,14 +52,29 @@ export function CartLineItem({
 			? "No longer available"
 			: "Out of stock";
 
+	const itemTitle = item.productName?.translated ?? (item as any).title ?? "Product";
+	const priceStr =
+		typeof item.price === "object"
+			? item.price?.formattedConvertedAmount
+			: typeof item.price === "number" || typeof item.price === "string"
+				? `AED ${Number(item.price).toFixed(2)}`
+				: undefined;
+
+	const lineItemPriceStr =
+		typeof item.lineItemPrice === "object" && item.lineItemPrice?.formattedConvertedAmount
+			? item.lineItemPrice.formattedConvertedAmount
+			: typeof item.price === "number" || typeof item.price === "string"
+				? `AED ${(Number(item.price) * (item.quantity || 1)).toFixed(2)}`
+				: priceStr ?? "—";
+
 	return (
 		<div
 			className={cn(
-				"grid grid-cols-1 items-center gap-8 border-b pb-8 md:grid-cols-4",
+				"grid grid-cols-1 gap-6 border-b pb-6 md:grid-cols-4 md:items-center md:gap-8 md:pb-8",
 				unavailable && "opacity-75"
 			)}
 		>
-			<div className="col-span-2 flex gap-6">
+			<div className="flex gap-4 md:col-span-2 md:gap-6">
 				<div className="relative aspect-3/4 h-24 shrink-0 overflow-hidden rounded-sm bg-card sm:h-32">
 					{imageUrl ? (
 						href ? (
@@ -90,11 +105,11 @@ export function CartLineItem({
 								className="font-bold text-secondary text-sm hover:text-primary hover:underline"
 								href={href}
 							>
-								{item.productName?.translated}
+								{itemTitle}
 							</Link>
 						) : (
 							<h3 className="font-bold text-secondary text-sm">
-								{item.productName?.translated}
+								{itemTitle}
 							</h3>
 						)}
 						{isBundle ? (
@@ -111,9 +126,9 @@ export function CartLineItem({
 							{item.fullPrice?.formattedConvertedAmount}
 						</p>
 					)}
-					{item.price?.formattedConvertedAmount && (
-						<p className="text-mauve-500 text-sm">
-							{item.price.formattedConvertedAmount}
+					{priceStr && (
+						<p className="font-medium text-mauve-500 text-sm">
+							{priceStr}
 						</p>
 					)}
 					{unavailable && (
@@ -133,33 +148,33 @@ export function CartLineItem({
 				</div>
 			</div>
 
-			<div className="flex items-center justify-center">
-				{unavailable ? (
-					<span className="text-mauve-400 text-sm">-</span>
-				) : (
-					<NumberField
-						className="w-28"
-						max={maxQty}
-						onValueChange={(val) =>
-							lineId && onUpdateQuantity(lineId, val ?? 1)
-						}
-						value={item.quantity}
-					>
-						<NumberFieldGroup>
-							<NumberFieldDecrement />
-							<NumberFieldInput />
-							<NumberFieldIncrement />
-						</NumberFieldGroup>
-					</NumberField>
-				)}
-			</div>
+			<div className="flex items-center justify-between md:col-span-2 md:grid md:grid-cols-2 md:gap-8">
+				<div className="flex items-center md:justify-center">
+					{unavailable ? (
+						<span className="text-mauve-400 text-sm">-</span>
+					) : (
+						<NumberField
+							className="w-28"
+							max={maxQty}
+							onValueChange={(val) =>
+								lineId && onUpdateQuantity(lineId, val ?? 1)
+							}
+							value={item.quantity}
+						>
+							<NumberFieldGroup>
+								<NumberFieldDecrement />
+								<NumberFieldInput />
+								<NumberFieldIncrement />
+							</NumberFieldGroup>
+						</NumberField>
+					)}
+				</div>
 
-			<div className="text-right">
-				<span className="font-semibold text-base text-foreground">
-					{item.lineItemPrice?.formattedConvertedAmount ??
-						item.price?.formattedConvertedAmount ??
-						"—"}
-				</span>
+				<div className="text-right">
+					<span className="font-semibold text-base text-foreground">
+						{lineItemPriceStr}
+					</span>
+				</div>
 			</div>
 		</div>
 	);

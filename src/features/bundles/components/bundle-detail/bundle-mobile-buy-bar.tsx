@@ -1,4 +1,7 @@
+"use client";
+
 import { ShoppingBagIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { MobileBuyBar } from "@/components/commerce/mobile-buy-bar";
 
@@ -12,23 +15,40 @@ interface BundleMobileBuyBarProps {
 }
 
 export function BundleMobileBuyBar({ bundle }: BundleMobileBuyBarProps) {
+	const router = useRouter();
+
 	return (
 		<MobileBuyBar
 			actions={
-				<AddBundleToCartButton
-					bundleSlug={bundle.id}
-					checkoutCatalogAppId={bundle.checkoutCatalogAppId}
-					checkoutCatalogItemId={bundle.checkoutCatalogItemId || bundle.id}
-					className="gap-2"
-					image={bundle.coverImage}
-					price={bundle.price}
-					size="lg"
-					title={bundle.title}
-					variant="secondary"
-				>
-					<ShoppingBagIcon size={18} />
-					Add to Cart
-				</AddBundleToCartButton>
+				<div className="flex gap-2">
+					<AddBundleToCartButton
+						bundleSlug={bundle.id}
+						checkoutCatalogAppId={bundle.checkoutCatalogAppId}
+						checkoutCatalogItemId={bundle.checkoutCatalogItemId || bundle.id}
+						className="px-3"
+						image={bundle.coverImage}
+						price={bundle.price}
+						size="lg"
+						title={bundle.title}
+						variant="secondary"
+					>
+						<ShoppingBagIcon size={18} />
+						<span className="sr-only">Add to Cart</span>
+					</AddBundleToCartButton>
+					<AddBundleToCartButton
+						bundleSlug={bundle.id}
+						checkoutCatalogAppId={bundle.checkoutCatalogAppId}
+						checkoutCatalogItemId={bundle.checkoutCatalogItemId || bundle.id}
+						image={bundle.coverImage}
+						onAdded={() => router.push("/cart")}
+						price={bundle.price}
+						size="lg"
+						title={bundle.title}
+						variant="default"
+					>
+						Buy Now
+					</AddBundleToCartButton>
+				</div>
 			}
 			priceLabel={
 				<div className="flex items-center gap-1">
