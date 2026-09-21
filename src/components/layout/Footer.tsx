@@ -19,6 +19,8 @@ import {
 	getVisibleFooterLinkColumns,
 } from "./data/FooterLinks";
 
+import { CATEGORIES } from "./data";
+
 const linkClass =
 	"block py-0.5 font-sans text-muted-foreground text-sm transition-all duration-150 hover:text-secondary-foreground hover:translate-x-0.5";
 
@@ -40,8 +42,17 @@ function FooterNavLinks({ links }: { links: FooterNavLink[] }) {
 export async function Footer() {
 	const year = new Date().getFullYear();
 
-	const footerLinkColumns = getVisibleFooterLinkColumns(
+	const categories: FooterNavLink[] = CATEGORIES.map((c) => ({
+		label: c.name,
+		href: c.href,
+	}));
+
+	const baseFooterLinkColumns = getVisibleFooterLinkColumns(
 		featureFlags.footerDiscoverSection
+	);
+
+	const footerLinkColumns = baseFooterLinkColumns.map((col) =>
+		col.id === "shop" ? { ...col, links: categories.length > 0 ? categories : col.links } : col
 	);
 
 	const bundleDealLinks: FooterNavLink[] = [FOOTER_VIEW_ALL_BUNDLES];
