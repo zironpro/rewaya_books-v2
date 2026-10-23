@@ -403,6 +403,7 @@ type Mutation {
 	createProduct(input: ProductInput!): Product!
 	updateProduct(id: ID!, input: ProductInput!): Product!
 	deleteProduct(id: ID!): Boolean!
+	deleteProducts(ids: [ID!]!): Boolean!
 	updateProductsSortOrder(updates: [ProductSortOrderInput!]!): Boolean!
 	checkout(input: CheckoutInput!): Order!
 

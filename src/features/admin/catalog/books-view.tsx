@@ -23,6 +23,7 @@ import Papa from "papaparse";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -36,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import {
 	useCreateProductMutation,
 	useDeleteProductMutation,
+	useDeleteProductsMutation,
 	useGetCategoriesQuery,
 	useGetProductsPaginatedQuery,
 	useUpdateProductMutation,
@@ -149,8 +151,13 @@ export function BooksView() {
 	const { data: categoriesData } = useGetCategoriesQuery();
 	const createProductMutation = useCreateProductMutation();
 	const deleteProductMutation = useDeleteProductMutation();
+	const deleteProductsMutation = useDeleteProductsMutation();
 	const updateProductMutation = useUpdateProductMutation();
 	const updateProductsSortOrderMutation = useUpdateProductsSortOrderMutation();
+
+	// Bulk Selection States
+	const [selectedBookIds, setSelectedBookIds] = React.useState<string[]>([]);
+	const [isBulkDeleting, setIsBulkDeleting] = React.useState(false);
 
 	const fetchedBooks = data?.productsPaginated?.items;
 	const totalCount = data?.productsPaginated?.totalCount || 0;
@@ -528,10 +535,49 @@ export function BooksView() {
 		if (!confirm("Are you sure you want to delete this book?")) return;
 		try {
 			await deleteProductMutation.mutateAsync({ id });
+			setSelectedBookIds((prev) => prev.filter((item) => item !== id));
 			refetch();
 		} catch (error) {
 			console.error("Failed to delete book", error);
 		}
+	};
+
+	const handleBulkDelete = async () => {
+		if (selectedBookIds.length === 0) return;
+		if (
+			!confirm(
+				`Are you sure you want to delete ${selectedBookIds.length} selected book(s)? This action cannot be undone.`
+			)
+		) {
+			return;
+		}
+
+		setIsBulkDeleting(true);
+		try {
+			await deleteProductsMutation.mutateAsync({ ids: selectedBookIds });
+			setSelectedBookIds([]);
+			refetch();
+		} catch (error) {
+			console.error("Failed to bulk delete books", error);
+			alert("Failed to delete selected books. Please try again.");
+		} finally {
+			setIsBulkDeleting(false);
+		}
+	};
+
+	const toggleSelectAll = (checked: boolean) => {
+		if (checked) {
+			const allIds = processedBooks.map((b: any) => b.id);
+			setSelectedBookIds(allIds);
+		} else {
+			setSelectedBookIds([]);
+		}
+	};
+
+	const toggleSelectBook = (id: string) => {
+		setSelectedBookIds((prev) =>
+			prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+		);
 	};
 
 	const getProcessedBooks = () => {
@@ -700,17 +746,54 @@ export function BooksView() {
 
 			{/* Book Catalog Table with Drag & Drop */}
 			<div className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-				<div className="mb-3 flex items-center gap-1 text-[11px] text-slate-500">
-					<GripVertical className="h-4 w-4 animate-pulse text-primary" />
-					<span>
-						Click & drag any row handle to reorder storefront display sequence.
-					</span>
+				<div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+					<div className="flex items-center gap-1 text-[11px] text-slate-500">
+						<GripVertical className="h-4 w-4 animate-pulse text-primary" />
+						<span>
+							Click & drag any row handle to reorder storefront display sequence.
+						</span>
+					</div>
+
+					{selectedBookIds.length > 0 && (
+						<div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50/60 px-3 py-1.5 dark:border-red-900/40 dark:bg-red-950/20">
+							<span className="font-medium text-red-700 text-xs dark:text-red-400">
+								{selectedBookIds.length} book{selectedBookIds.length > 1 ? "s" : ""} selected
+							</span>
+							<Button
+								className="h-7 gap-1.5 bg-red-600 px-2.5 text-white text-xs hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+								disabled={isBulkDeleting}
+								onClick={handleBulkDelete}
+								size="sm"
+							>
+								<Trash2 className="h-3.5 w-3.5" />
+								{isBulkDeleting ? "Deleting..." : "Delete Selected"}
+							</Button>
+							<Button
+								className="h-7 px-2 text-slate-500 text-xs hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+								onClick={() => setSelectedBookIds([])}
+								size="sm"
+								variant="ghost"
+							>
+								Clear
+							</Button>
+						</div>
+					)}
 				</div>
 
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
 						<thead className="border-slate-200 border-b text-slate-500 dark:border-slate-800">
 							<tr>
+								<th className="w-10 px-3 py-3">
+									<Checkbox
+										aria-label="Select all books"
+										checked={
+											processedBooks.length > 0 &&
+											processedBooks.every((b) => selectedBookIds.includes(b.id))
+										}
+										onCheckedChange={(checked) => toggleSelectAll(!!checked)}
+									/>
+								</th>
 								<th className="px-3 py-3 font-semibold">Name</th>
 								<th className="px-3 py-3 font-semibold">ISBN</th>
 								<th className="px-3 py-3 font-semibold">Price (AED)</th>
@@ -723,10 +806,15 @@ export function BooksView() {
 								const isDragging = draggedIndex === index;
 								const isDragOver =
 									dragOverIndex === index && draggedIndex !== index;
+								const isSelected = selectedBookIds.includes(book.id);
 
 								return (
 									<tr
 										className={`transition-all ${
+											isSelected
+												? "bg-red-50/40 dark:bg-red-950/15 "
+												: ""
+										}${
 											isDragging
 												? "border-2 border-primary border-dashed bg-primary/5 opacity-30"
 												: isDragOver
@@ -761,6 +849,13 @@ export function BooksView() {
 											setDragOverIndex(null);
 										}}
 									>
+										<td className="w-10 px-3 py-3">
+											<Checkbox
+												aria-label={`Select ${book.title}`}
+												checked={isSelected}
+												onCheckedChange={() => toggleSelectBook(book.id)}
+											/>
+										</td>
 										<td className="px-3 py-3">
 											<div className="font-semibold text-slate-900 dark:text-white">
 												{book.title}

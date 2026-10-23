@@ -192,6 +192,7 @@ export type Mutation = {
   deleteHomepageSection: Scalars['Boolean']['output'];
   deletePopup: Scalars['Boolean']['output'];
   deleteProduct: Scalars['Boolean']['output'];
+  deleteProducts: Scalars['Boolean']['output'];
   deleteShippingConfig: Scalars['Boolean']['output'];
   deleteTaxConfig: Scalars['Boolean']['output'];
   processStripeRefund: RefundRequest;
@@ -296,6 +297,11 @@ export type MutationDeletePopupArgs = {
 
 export type MutationDeleteProductArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteProductsArgs = {
+  ids: Array<Scalars['ID']['input']>;
 };
 
 
@@ -714,6 +720,13 @@ export type DeleteProductMutationVariables = Exact<{
 
 
 export type DeleteProductMutation = { deleteProduct: boolean };
+
+export type DeleteProductsMutationVariables = Exact<{
+  ids: Array<string | number> | string | number;
+}>;
+
+
+export type DeleteProductsMutation = { deleteProducts: boolean };
 
 export type UpdateProductsSortOrderMutationVariables = Exact<{
   updates: Array<ProductSortOrderInput> | ProductSortOrderInput;
@@ -1136,6 +1149,25 @@ export const useDeleteProductMutation = <
       {
     mutationKey: ['DeleteProduct'],
     mutationFn: (variables?: DeleteProductMutationVariables) => customFetcher<DeleteProductMutation, DeleteProductMutationVariables>(DeleteProductDocument, variables)(),
+    ...options
+  }
+    )};
+
+export const DeleteProductsDocument = new TypedDocumentString(`
+    mutation DeleteProducts($ids: [ID!]!) {
+  deleteProducts(ids: $ids)
+}
+    `);
+
+export const useDeleteProductsMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<DeleteProductsMutation, TError, DeleteProductsMutationVariables, TContext>) => {
+    
+    return useMutation<DeleteProductsMutation, TError, DeleteProductsMutationVariables, TContext>(
+      {
+    mutationKey: ['DeleteProducts'],
+    mutationFn: (variables?: DeleteProductsMutationVariables) => customFetcher<DeleteProductsMutation, DeleteProductsMutationVariables>(DeleteProductsDocument, variables)(),
     ...options
   }
     )};

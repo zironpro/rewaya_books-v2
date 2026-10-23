@@ -50,6 +50,12 @@ export const DELETE_PRODUCT = gql`
   }
 `;
 
+export const DELETE_PRODUCTS = gql`
+  mutation DeleteProducts($ids: [ID!]!) {
+    deleteProducts(ids: $ids)
+  }
+`;
+
 export const UPDATE_PRODUCTS_SORT_ORDER = gql`
   mutation UpdateProductsSortOrder($updates: [ProductSortOrderInput!]!) {
     updateProductsSortOrder(updates: $updates)

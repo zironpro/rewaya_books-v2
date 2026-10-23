@@ -462,6 +462,7 @@ const typeDefs = gql`
     createProduct(input: ProductInput!): Product!
     updateProduct(id: ID!, input: ProductInput!): Product!
     deleteProduct(id: ID!): Boolean!
+    deleteProducts(ids: [ID!]!): Boolean!
     updateProductsSortOrder(updates: [ProductSortOrderInput!]!): Boolean!
     checkout(input: CheckoutInput!): Order!
     
@@ -1046,6 +1047,34 @@ const resolvers = {
 			}
 			const res = await Product.findByIdAndDelete(id);
 			return !!res;
+		},
+		deleteProducts: async (_: any, { ids }: { ids: string[] }) => {
+			await connectToDatabase();
+			if (!ids || ids.length === 0) return true;
+
+			const products = await Product.find({ _id: { $in: ids } }).select("_id categoryId");
+			const categoryCountMap: Record<string, number> = {};
+			const categoryIdsMap: Record<string, string[]> = {};
+
+			for (const p of products) {
+				if (p.categoryId) {
+					categoryCountMap[p.categoryId] = (categoryCountMap[p.categoryId] || 0) + 1;
+					if (!categoryIdsMap[p.categoryId]) {
+						categoryIdsMap[p.categoryId] = [];
+					}
+					categoryIdsMap[p.categoryId].push(p._id.toString());
+				}
+			}
+
+			for (const catId of Object.keys(categoryCountMap)) {
+				await Category.findByIdAndUpdate(catId, {
+					$pull: { products: { $in: categoryIdsMap[catId] } },
+					$inc: { count: -categoryCountMap[catId] },
+				});
+			}
+
+			await Product.deleteMany({ _id: { $in: ids } });
+			return true;
 		},
 		checkout: async (_: any, { input }: { input: any }) => {
 			await connectToDatabase();
